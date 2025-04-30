@@ -377,7 +377,21 @@
     opacity: 1;
   }
 }
-
+@media screen and (max-width: 900px) {
+  .sellarea-item-container {
+    grid-template-columns: 1fr;
+    margin-left: -100px;
+  }
+  .sellarea-start-selling-btn,
+  .sellarea-check-orders-btn {
+    width: 30%;
+    justify-content: center;
+    margin-left: -100px;
+  }
+  .sellarea-balance-section {
+    margin-left: -100px;
+  }
+}
 @media screen and (max-width: 768px) {
   .sellarea-main-content {
     margin-left: 0;
@@ -386,6 +400,7 @@
   
   .sellarea-item-container {
     grid-template-columns: 1fr;
+    margin-left: 100px;
   }
   
   .sellarea-modal-contents,
@@ -411,6 +426,7 @@
     flex-direction: column;
     gap: 1rem;
     text-align: center;
+    margin-left: 80px;
   }
 
   .sellarea-balance-section p {
@@ -421,12 +437,32 @@
     width: 100%;
     justify-content: center;
   }
+  .sellarea-start-selling-btn,
+  .sellarea-check-orders-btn {
+    width: 50%;
+    justify-content: center;
+    margin-left: 65px;
+    margin-left: 100px;
+  }
 }
 
 @media screen and (max-width: 480px) {
   .sellarea-start-selling-btn,
   .sellarea-check-orders-btn {
-    width: 100%;
+    width: 50%;
     justify-content: center;
+    margin-left: 65px;
   }
+  .sellarea-item-container {
+    grid-template-columns: 1fr;
+    margin-left: 60px;
+  }
+  .sellarea-balance-section {
+    padding: 1.5rem;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    margin-left: 50px;
+  }
+  
 }

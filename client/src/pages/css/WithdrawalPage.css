@@ -388,3 +388,25 @@
     margin-bottom: 0.5rem;
   }
 }
+
+@media screen and (max-width: 480px) {
+  .withdraw-page  {
+    font-size: 24px; 
+    margin-left: 70px;
+  }
+  
+  .withdraw-page input,
+  .withdraw-page select {
+    font-size: 14px;
+  }
+  
+  .withdraw-modal {
+    padding: 1rem;
+  }
+  
+  .withdraw-modal-buttons button {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+}

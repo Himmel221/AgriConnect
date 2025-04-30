@@ -25,7 +25,10 @@ const Sidebar = ({ handleOpenSignIn }) => {
     if (apiKey) {
       fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&units=metric&appid=${apiKey}`)
         .then(response => response.json())
-        .then(data => setWeather(data));
+        .then(data => {
+          console.log('Weather API Response:', data);
+          setWeather(data);
+        });
     }
   }, [apiKey]);
 
@@ -41,17 +44,17 @@ const Sidebar = ({ handleOpenSignIn }) => {
     <aside className="sidebar">
       {}
       <div className="weather-widget">
-        {weather ? (
-          <div>
-            <h4>{weather.name}</h4>
-            <img src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} alt="Weather Icon" />
-            <p>{weather.weather[0].description}</p>
-            <p>{weather.main.temp}°C</p>
-          </div>
-        ) : (
-          <p>Loading weather...</p>
-        )}
-      </div>
+  {weather && weather.weather && weather.weather.length > 0 ? (
+    <div>
+      <h4>{weather.name}</h4>
+      <img src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} alt="Weather Icon" />
+      <p>{weather.weather[0].description}</p>
+      <p>{weather.main.temp}°C</p>
+    </div>
+  ) : (
+    <p>Loading weather...</p>
+  )}
+</div>
 
       <Link to="/" className="icon-button">
         <Home className="icon" />

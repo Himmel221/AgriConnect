@@ -43,7 +43,8 @@
   background: white;
   border-radius: 999px; 
   padding: 0.3rem 1rem;
-  margin-left: 290px;
+  margin-left: 590px;
+  width: 300px;
 }
 
 .settings-nav .nav-search input[type="text"] {
@@ -52,7 +53,7 @@
   font-size: 0.95rem;
   color: #555;
   background: transparent;
-  width: 150px;
+  width: 300px;
 }
 .settings-nav .nav-search i {
   color: black;
@@ -61,7 +62,7 @@
 .settings-nav .nav-right {
   display: flex;
   align-items: center;
-  margin-right: 50px;
+  margin-right: 20px;
   padding-right: 1rem;
   gap: 1.5rem;
 }
@@ -1062,10 +1063,12 @@
     padding: 1rem;
   }
 
+  .setting
   .settings-nav .nav-left {
     width: 100%;
     justify-content: space-between;
     margin-bottom: 0.5rem;
+    margin-left: 50px;
   }
 
   .settings-nav .nav-logo {
@@ -1073,7 +1076,7 @@
   }
 
   .settings-nav .nav-search {
-    margin-left: 1rem;
+    margin-left: 70px;
     margin-top: 0.5rem;
   }
 
@@ -1095,10 +1098,11 @@
     padding: 1rem 0.8rem;
     height: auto;
     min-height: fit-content;
+    margin-right: 150px;
   }
 
   .settings-nav .nav-left {
-    width: 100%;
+    width: 80px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1106,13 +1110,15 @@
 
   .settings-nav .nav-logo {
     font-size: 1rem;
-    margin-left: 0;
+    margin-left: 125px;
   }
 
   .settings-nav .nav-search {
-    width: 100%;
+    width:60%;
     margin: 0.5rem 0;
     justify-content: space-between;
+    margin-left: 5px;
+    margin-right: 70px;
   }
 
   .settings-nav .nav-search input[type="text"] {
@@ -1129,6 +1135,7 @@
     width: 100%;
     gap: 0.8rem;
     margin: 0.5rem 0;
+    margin-left: 150px;
   }
 
   .settings-nav .nav-link {
@@ -1143,6 +1150,56 @@
     padding: 1rem;
     font-size: 0.9rem;
     margin-left: 15px;
+  }
+
+  .nav-search {
+    margin-left: 100px;
+    margin-top: 0.5rem;
+  }
+  
+  .password-security-content {
+    padding: 1rem;
+    font-size: 0.9rem;
+    margin-left: 60px;
+    margin-right: 20px;
+    margin-top: 20px;
+  }
+
+  .verify-email-content {
+    padding: 1rem;
+    font-size: 0.9rem;
+    margin-left: 80px;
+    margin-right: 5px;
+    margin-top: 80px;
+  }
+
+  .accessibility-content {
+    padding: 1rem;
+    font-size: 0.9rem;
+    margin-left: 60px;
+    margin-right: 20px;
+    margin-top: 20px;
+  }
+
+  .privacy-content {
+    padding: 1rem;
+    font-size: 0.9rem;
+    margin-left: 60px;
+    margin-top: 20px;
+  }
+  .activity-log-content {
+    padding: 1rem;
+    font-size: 0.9rem;
+    margin-left: 60px;
+    margin-right: 20px;
+    margin-top: 60px;
+  }
+
+  .settings-sidebar {
+    width: 130px;
+    padding-top: 0;
+    position: fixed;
+    lenght: 100px;
   }
 }
 
