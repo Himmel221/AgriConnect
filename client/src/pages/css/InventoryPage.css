@@ -12,7 +12,7 @@
 .inventory-title {
   text-align: center;
   font-size: 2.5rem;
-  color: #2c3e50;
+  color: #1a7712;
   margin-bottom: 2rem;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -95,7 +95,7 @@
 .inventory-item-name {
   font-weight: 600;
   font-size: 1.2rem;
-  color: #2c3e50;
+  color: #0a9758;
   text-align: center;
   margin-bottom: 1rem;
   width: 100%;
@@ -171,7 +171,7 @@
 }
 
 .inventory-table th {
-  background: linear-gradient(135deg, #27548A, #1d4ed8);
+  background: linear-gradient(135deg, #0a9758, #0ca860);
   color: white;
   font-weight: bold;
   text-transform: uppercase;
@@ -249,8 +249,8 @@
   justify-self: center;
   margin-top: 0.5rem;
   padding: 0.75rem 2rem;
-  background-color: #27548A;
-  color: white;
+  background-color: #139e2a;
+  color: rgb(0, 0, 0);
   font-size: 1rem;
   font-weight: 600;
   border: none;
@@ -261,7 +261,7 @@
 }
 
 .inventory-submit-btn:hover {
-  background-color: #1d4ed8;
+  background-color: #54ca67;
   transform: translateY(-1px);
   box-shadow: 0 6px 14px rgba(29, 78, 216, 0.25);
 }

@@ -1,5 +1,4 @@
 /* SideBar.css */
-
 .sidebar {
   position: fixed;
   top: 0;
@@ -11,10 +10,26 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  z-index: 3;
+  z-index: 7;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  z-index: 7;
+  transition: all 0.3s ease;
+}
+
+/* Toggle button for sidebar */
+.toggle-button {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  color: #1877f2;
+  cursor: pointer;
+  padding: 5px;
+  margin-bottom: 0.5rem;
+  display: none; 
+}
+
+.toggle-button:hover {
+  color: #0e5fc6;
 }
 
 .sidebar .icon-button {
@@ -33,11 +48,20 @@
   overflow: hidden;
 }
 
+.sidebar.collapsed .icon-button {
+  justify-content: center;
+  padding: 0.8rem;
+}
+
 .sidebar .icon {
-  color: #1877f2;
+  color: #1a9448;
   margin-right: 12px;
   font-size: 1.8rem;
   min-width: 1.8rem;
+}
+
+.sidebar.collapsed .icon {
+  margin-right: 0;
 }
 
 .sidebar .icon-button:hover {
@@ -53,6 +77,7 @@
   color: #1c1e21;
   font-weight: 500;
   opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
 .sidebar .text-sm:hover {
@@ -71,50 +96,144 @@
   text-align: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   font-weight: bold;
-  transition: transform 0.3s ease-in-out; 
-
+  transition: transform 0.3s ease-in-out, padding 0.3s ease; 
   align-self: center;
+  width: 90%;
+}
+
+.weather-widget.mini-weather {
+  padding: 5px;
 }
 
 .weather-widget h4, .weather-widget p {
-  color: #333; 
+  color: #333;
+  margin: 5px 0;
+  transition: all 0.3s ease;
+}
+
+.weather-widget img {
+  transition: all 0.3s ease;
+}
+
+.weather-widget img.small-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.weather-widget .temp-only {
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .weather-widget:hover {
   transform: scale(1.02); 
 }
 
+
 @media (max-width: 1024px) {
   .sidebar {
     width: 80px;
   }
-
+  
   .sidebar .icon-button {
     justify-content: center;
     padding: 0.8rem;
   }
-
+  
   .sidebar .text-sm {
     display: none;
   }
+  
+  .toggle-button {
+    display: block;
+  }
 }
+
+@media (max-width: 768px) {
+  .sidebar {
+    left: auto;
+    right: 0;
+    width: 60px;
+    border-radius: 10px 0 0 10px;
+    transform: translateX(0);
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sidebar.expanded {
+    width: 170px;
+    transform: translateX(0);
+  }
+  
+  .sidebar.collapsed {
+    transform: translateX(calc(100% - 15px));
+  }
+  
+  .sidebar:hover {
+    transform: translateX(0);
+  }
+  
+  .toggle-button {
+    display: block;
+  }
+  
+  .weather-widget {
+    max-width: 100%;
+    padding: 5px;
+  }
+  
+  .weather-widget h4 {
+    font-size: 12px;
+  }
+  
+  .weather-widget p {
+    font-size: 11px;
+  }
+}
+
 
 @media (max-width: 600px) {
   .sidebar {
     width: 50px;
     padding: 0.2rem;
+    transform: translateX(calc(100% - 15px));
   }
-
+  
+  .sidebar:hover {
+    transform: translateX(0);
+  }
+  
   .sidebar .icon {
     font-size: 1.5rem;
     margin-right: 0; 
   }
-
+  
   .sidebar .icon-button {
     padding: 0.4rem;
+    margin-top: 2rem;
   }
-
+  
   .sidebar .text-sm {
     display: none;
+  }
+  
+  .weather-widget {
+    padding: 3px;
+  }
+}
+
+
+@media (max-width: 320px) {
+  .sidebar {
+    width: 40px;
+    padding: 0.2rem;
+  }
+  
+  .sidebar .icon {
+    font-size: 1.2rem;
+  }
+  
+  .sidebar .icon-button {
+    padding: 0.2rem;
+    margin-top: 1.5rem;
   }
 }
