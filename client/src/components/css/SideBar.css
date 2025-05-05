@@ -98,7 +98,7 @@
 }
 
 .weather-widget h4, .weather-widget p {
-  color: #333;
+  color: #ffffff;
   margin: 5px 0;
   transition: all 0.3s ease;
 }
