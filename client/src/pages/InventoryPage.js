@@ -21,6 +21,8 @@ const InventoryPage = () => {
   const [showOtherDetails, setShowOtherDetails] = useState(false);
   const [breakEvenPrices, setBreakEvenPrices] = useState([]);
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [formData, setFormData] = useState({
     productName: '',
     category: '',
@@ -54,7 +56,7 @@ const InventoryPage = () => {
 
   const fetchInventory = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/inventory', {
+      const response = await axios.get(`${apiUrl}/api/inventory`, {
         headers: { Authorization: `Bearer ${token}` }
       });
   
@@ -167,7 +169,7 @@ const InventoryPage = () => {
   
       payload.quantity = Number(payload.quantity);
   
-      await axios.post('http://localhost:5000/api/inventory', payload, {
+      await axios.post(`${apiUrl}/api/inventory`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
   

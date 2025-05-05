@@ -23,10 +23,12 @@ const BuyArea = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState(""); 
   
+  const apiUrl = process.env.REACT_APP_API_URL;
+
 
   const fetchListings = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/listings', {
+      const response = await axios.get(`${apiUrl}/api/listings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -83,7 +85,7 @@ const BuyArea = () => {
   const handleAddToCart = async () => {
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/cart/add',
+        `${apiUrl}/api/cart/add`,
         {
           productId: selectedProduct._id,
           quantity: cartQuantity,
@@ -185,6 +187,7 @@ const BuyArea = () => {
                     <p>
                       Available Stocks: {listing.quantity} {listing.unit}
                     </p>
+                    <p>Location: {listing.location || listing.userId?.address?.location || 'Not specified'}</p>
                     <div className="seller-info">
 
                       {listing.sellerSuccessCount !== undefined && (
@@ -272,6 +275,8 @@ const BuyArea = () => {
                 <p>
                   <strong>Listed on:</strong> {selectedProduct.listedDate || 'N/A'}
                 </p>
+                <p><strong>Location:</strong> {selectedProduct.location || selectedProduct.userId?.location || 'Not specified'}</p>
+
 
                 {selectedProduct.userId !== userId && (
                   <div className="add-to-cart-container">
@@ -334,4 +339,4 @@ const BuyArea = () => {
   );
 };
 
-export default BuyArea; 
+export default BuyArea;

@@ -11,9 +11,11 @@ const SellerOrdersArea = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const fetchSellerOrders = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/orders/seller-orders', {
+      const response = await fetch(`${apiUrl}/api/orders/seller-orders`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,

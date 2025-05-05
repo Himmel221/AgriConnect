@@ -10,6 +10,8 @@ const RecoverPassword = ({ handleClose }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +21,7 @@ const RecoverPassword = ({ handleClose }) => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+      const response = await axios.post(`${apiUrl}/api/auth/forgot-password`, { email });
 
       if (response.status === 200) {
         setSuccessMessage(response.data.message); 

@@ -7,6 +7,8 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { useNavigate } from 'react-router-dom';
 
+const apiUrl = process.env.REACT_APP_API_URL;
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,7 @@ const AdminDashboard = () => {
       }
 
       try {
-        const response = await axios.get('http://localhost:5000/api/admin/users', {
+        const response = await axios.get(`${apiUrl}/api/admin/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUsers(response.data);
@@ -70,7 +72,7 @@ const AdminDashboard = () => {
 
           {/* Statistics Section */}
           <div className="stats-container">
-            <div className="stat-card">
+            <div className="stat-card" onClick={() => navigate('/manage-users')} style={{cursor: 'pointer'}}>
               <h3>Total Users</h3>
               <p>{totalUsers}</p>
               <div className="small-circular">
@@ -128,7 +130,6 @@ const AdminDashboard = () => {
             <button className="admin-button" onClick={() => navigate('/manage-users-checkouts')}>
               Manage User Checkouts
             </button>
-
           </div>
         </div>
       </div>

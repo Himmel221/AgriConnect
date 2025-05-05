@@ -58,7 +58,7 @@
   transform: translateY(-50%);
   width: 24px;
   height: 60px;
-  background-color: #1877f2;
+  background-color: #078622;
   color: white;
   border: none;
   border-radius: 0 6px 6px 0;
@@ -147,7 +147,7 @@
 }
 
 .sidebar .icon {
-  color: #1877f2;
+  color: #057c40;
   margin-right: 12px;
   font-size: 1.8rem;
   min-width: 1.8rem;

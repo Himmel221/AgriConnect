@@ -16,6 +16,8 @@ const Sidebar = ({ handleOpenSignIn }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
@@ -36,7 +38,7 @@ const Sidebar = ({ handleOpenSignIn }) => {
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/weather-key') 
+    fetch(`${apiUrl}/api/weather-key`) 
       .then(response => response.json())
       .then(data => setApiKey(data.apiKey))
       .catch(error => console.error('Error fetching weather API key:', error));

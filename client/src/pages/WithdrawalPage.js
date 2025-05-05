@@ -17,15 +17,17 @@ const WithdrawalPage = () => {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false); 
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem('authToken'); 
       try {
-        const balanceResponse = await fetch('http://localhost:5000/api/withdraw/balance', {
+        const balanceResponse = await fetch(`${apiUrl}/api/withdraw/balance`, {
           headers: { Authorization: `Bearer ${token}` },
         });
   
-        const historyResponse = await fetch('http://localhost:5000/api/withdraw-history', {
+        const historyResponse = await fetch(`${apiUrl}/api/withdraw-history`, {
           headers: { Authorization: `Bearer ${token}` },
         });
   
@@ -61,7 +63,7 @@ const WithdrawalPage = () => {
   
     const token = localStorage.getItem('authToken');
     try {
-      const response = await fetch('http://localhost:5000/api/withdraw', {
+      const response = await fetch(`${apiUrl}/api/withdraw`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

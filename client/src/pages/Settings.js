@@ -38,6 +38,8 @@ const Settings = () => {
   const [showVerificationDialog, setShowVerificationDialog] = useState(false);
   const [documentStatus, setDocumentStatus] = useState('');
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -64,7 +66,7 @@ const Settings = () => {
     const fetchUserData = async () => {
       if (token) {
         try {
-          const response = await axios.get('http://localhost:5000/api/auth/user', {
+          const response = await axios.get(`${apiUrl}/api/auth/user`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -106,7 +108,7 @@ const Settings = () => {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/auth/change-password',
+        `${apiUrl}/api/auth/change-password`,
         {
           currentPassword: passwordDetails.currentPassword,
           newPassword: passwordDetails.newPassword,
@@ -139,7 +141,7 @@ const Settings = () => {
     if (token && email) {
       try {
         const response = await axios.post(
-          'http://localhost:5000/api/auth/send-verification-email',
+          `${apiUrl}/api/auth/send-verification-email`,
           { email },
           {
             headers: {
@@ -168,7 +170,7 @@ const Settings = () => {
     try {
       console.log('Sending Verification:', { email, token: verificationCode });
 
-      const response = await axios.post('http://localhost:5000/api/auth/verify-email', {
+      const response = await axios.post(`${apiUrl}api/auth/verify-email`, {
         email,
         token: verificationCode,
       });
@@ -245,7 +247,7 @@ const Settings = () => {
     if (window.confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) {
       setIsLoading(true);
       try {
-        await axios.delete('http://localhost:5000/api/auth/delete-account', {
+        await axios.delete(`${apiUrl}/api/auth/delete-account`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

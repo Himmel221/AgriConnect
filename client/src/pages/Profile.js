@@ -39,6 +39,8 @@ const Profile = () => {
   const [barangays, setBarangays] = useState([]);
   const MAX_BIO_LENGTH = 255;
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -51,7 +53,7 @@ const Profile = () => {
 
         console.log('Token being used:', token);
 
-        const response = await axios.get('http://localhost:5000/api/auth/user', {
+        const response = await axios.get(`${apiUrl}/api/auth/user`, {
           headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -195,7 +197,7 @@ const Profile = () => {
       console.log('Token:', token); 
       console.log('Formatted Data Sent to Backend:', formattedFormData); 
   
-      const response = await axios.put('http://localhost:5000/api/users/user', formattedFormData, {
+      const response = await axios.put(`${apiUrl}/api/users/user`, formattedFormData, {
         headers: { Authorization: `Bearer ${token}` },
       });
   

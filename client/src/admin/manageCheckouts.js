@@ -16,12 +16,14 @@ const ManageCheckouts = () => {
   const [currentPage, setCurrentPage] = useState(1); 
   const [totalPages, setTotalPages] = useState(1); 
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
     const fetchCheckouts = async () => {
       try {
         const token = localStorage.getItem('authToken'); 
         const response = await axios.get(
-          `http://localhost:5000/api/checkout/all-checkouts?page=1&limit=20`,
+          `${apiUrl}/api/checkout/all-checkouts?page=1&limit=20`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 

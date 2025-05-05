@@ -15,11 +15,14 @@ const CartArea = () => {
   const [expandedItem, setExpandedItem] = useState(null);
   const navigate = useNavigate();
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
+
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.get('http://localhost:5000/api/cart', {
+        const response = await axios.get(`${apiUrl}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -51,7 +54,7 @@ const CartArea = () => {
       setLoading(true);
       const token = localStorage.getItem('authToken');
       const response = await axios.post(
-        'http://localhost:5000/api/cart/remove',
+        `${apiUrl}/remove`,
         { productId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -77,7 +80,7 @@ const CartArea = () => {
     try {
       const token = localStorage.getItem('authToken');
       const response = await axios.post(
-        'http://localhost:5000/api/cart/update',
+        `${apiUrl}/update`,
         { productId, quantity: newQuantity },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -202,9 +205,8 @@ const CartArea = () => {
         formData.append('price', item.productId.price);
   
         try {
-          const API_BASE_URL = "http://localhost:5000";
 
-          const response = await axios.post(`${API_BASE_URL}/api/checkout/submit`, formData, {
+          const response = await axios.post(`${apiUrl}}/api/checkout/submit`, formData, {
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'multipart/form-data',

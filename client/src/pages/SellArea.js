@@ -1,5 +1,3 @@
-// SellArea.js
-
 import React, { useState, useEffect, useCallback } from 'react';
 import TopNavbar from '../components/top_navbar';
 import SideBar from '../components/side_bar';
@@ -27,6 +25,8 @@ const SellArea = () => {
   const [editingListing, setEditingListing] = useState(null);
   const [sellerBalance, setSellerBalance] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
+
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   const locations = [
     'San Antonio Norte, Lupao City, Pangasinan',
@@ -75,7 +75,7 @@ const SellArea = () => {
 
   const fetchListings = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/listings/user-listings', {
+      const response = await fetch(`${apiUrl}/api/listings/user-listings`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -102,7 +102,7 @@ const SellArea = () => {
   useEffect(() => {
     const fetchSellerBalance = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/withdraw/balance`, {
+        const response = await fetch(`${apiUrl}/api/withdraw/balance`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const result = await response.json();
@@ -165,7 +165,7 @@ const SellArea = () => {
       formData.append("image", selectedImage); 
       
   
-      const response = await fetch('http://localhost:5000/api/listings', {
+      const response = await fetch(`${apiUrl}/api/listings`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`, 
@@ -192,7 +192,7 @@ const SellArea = () => {
     try {
       console.log(`Attempting to unlist: /api/listings/${listingIdentifier}/unlist`);
   
-      const response = await fetch(`http://localhost:5000/api/listings/${listingIdentifier}/unlist`, {
+      const response = await fetch(`${apiUrl}/api/listings/${listingIdentifier}/unlist`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -223,7 +223,7 @@ const SellArea = () => {
     try {
       console.log(`Attempting to relist: /api/listings/${listingIdentifier}/relist`);
   
-      const response = await fetch(`http://localhost:5000/api/listings/${listingIdentifier}/relist`, {
+      const response = await fetch(`${apiUrl}/api/listings/${listingIdentifier}/relist`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -257,7 +257,7 @@ const SellArea = () => {
     }
   
     try {
-      const response = await fetch(`http://localhost:5000/api/listings/${editingListing._id}`, {
+      const response = await fetch(`${apiUrl}/api/listings/${editingListing._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -344,7 +344,7 @@ const SellArea = () => {
     console.log("Form Data Before Sending:", [...formData.entries()]); // 🔹 Debugging
   
     try {
-      const response = await fetch(`http://localhost:5000/api/listings/${editingListing._id}`, {
+      const response = await fetch(`${apiUrl}/api/listings/${editingListing._id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -384,7 +384,7 @@ const SellArea = () => {
     if (!deleteId) return; 
   
     try {
-      const response = await fetch(`http://localhost:5000/api/listings/delete/${deleteId}`, {
+      const response = await fetch(`${apiUrl}/api/listings/delete/${deleteId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -618,7 +618,7 @@ const SellArea = () => {
                   />
                 </div>
 
-                <button className="publish-btn" onClick={editingListing ? handleEditPublish : handlePublish}>
+                <button className="sellarea-publish-btn" onClick={editingListing ? handleEditPublish : handlePublish}>
   <Truck className="mr-2" />
   {editingListing ? "Publish Edit" : "Publish"}
 </button>
@@ -639,4 +639,4 @@ const SellArea = () => {
     </>
   ); };
 
-  export default SellArea; 
+  export default SellArea;

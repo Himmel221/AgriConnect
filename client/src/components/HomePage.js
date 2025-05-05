@@ -18,6 +18,7 @@ const HomePage = () => {
   const [scrollLeft, setScrollLeft] = useState(0);
   const sliderRef = useRef(null);
   const navigate = useNavigate();
+  const [showAboutUs, setShowAboutUs] = useState(false);
 
   const isLoggedIn = localStorage.getItem('authToken') !== null;
 
@@ -345,7 +346,7 @@ const HomePage = () => {
             <p>Farmer Earnings</p>
           </div>
         </section>
-
+        
         {}
         <section className="cta-section">
           <div className="cta-content">
@@ -357,9 +358,88 @@ const HomePage = () => {
             </div>
           </div>
         </section>
-      </main>
+        <section className="about-toggle-section">
+  <button 
+    className="about-toggle-button"
+    onClick={() => setShowAboutUs(!showAboutUs)}
+  >
+    {showAboutUs ? 'About AgriConnect' : 'About AgriConnect'}
+    <ArrowRight className={`toggle-icon ${showAboutUs ? 'rotated' : ''}`} />
+  </button>
+</section>
+{showAboutUs && (
+  <section className="about-us-section">
+    <h2 className="section-title">About AgriConnect</h2>
+    <div className="about-content">
+      <div className="about-text">
+        <h3>Our Mission</h3>
+        <p>
+          AgriConnect was founded with a simple goal: to bridge the gap between local farmers and consumers. 
+          We believe in empowering farmers by giving them direct access to markets while providing consumers 
+          with fresh, high-quality produce at fair prices.
+        </p>
+        
+        <h3>What We Do</h3>
+        <p>
+          AgriConnect is an online marketplace that connects farmers directly with buyers, eliminating unnecessary 
+          middlemen. Our platform makes it easy for farmers to showcase their products and for buyers to discover 
+          fresh, locally-grown produce.
+        </p>
+        
+        <h3>Our Values</h3>
+        <ul className="values-list">
+          <li><strong>Sustainability:</strong> Supporting eco-friendly farming practices</li>
+          <li><strong>Transparency:</strong> Fair pricing and honest product information</li>
+          <li><strong>Community:</strong> Building connections between farmers and consumers</li>
+          <li><strong>Quality:</strong> Ensuring only the freshest products reach our customers</li>
+        </ul>
+      </div>
+      
+      <div className="developers-section">
+        <h3>Meet The Team</h3>
+        <div className="developers-grid">
+          <div className="developer-card">
+            <div className="developer-avatar">
+              <img src="https://scontent.fcrk4-2.fna.fbcdn.net/v/t39.30808-6/484147176_1362024438582993_7614207963488889565_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeGyXzQpaBnPLSV3AvPgM-QhnfZUg0Aaoymd9lSDQBqjKXJgkifATbGE3DNZK05OPa2XaYGGu8wQU5Pa3A8wf4u_&_nc_ohc=NmB_577appoQ7kNvwGRjddR&_nc_oc=AdmakhlfnzZ6k-lnS31c-8bJ-FRQLf-FV28kClDW8S4PV5lsYh8A7UfOLHlUnuYmI4U&_nc_zt=23&_nc_ht=scontent.fcrk4-2.fna&_nc_gid=xYng7XHTfRm7XnV4jT1HZA&oh=00_AfGZs_4Fi5xEjkHYx2UZV8rANmbqMWBOMmPqoo6Ab0HQbQ&oe=681D22AA" alt="Developer 1" />
+            </div>
+            <h4>Jeania Radzny Lingat</h4>
+            <p className="developer-role">Programmer/Leader</p>
+            <p className="developer-desc">Backend/Frontend</p>
+          </div>
+          
+          <div className="developer-card">
+            <div className="developer-avatar">
+              <img src="https://scontent.fcrk2-1.fna.fbcdn.net/v/t39.30808-6/494374687_3714787765486273_4692203626369849009_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeGxYKp36nvmbQg_toYOMogHSUZc62q7LdBJRlzrarst0GpecfVBxKz27_Yt75V_60bk-FytxD8c7Yd8tRjZJDbn&_nc_ohc=0-1LO5cQKu0Q7kNvwGX4pr4&_nc_oc=AdlXqPc6e55B4sPeJl2nnlTrUKYu8hr8JS55taIaW6Gcr8DCpug3A5Skvc_WfYbO11A&_nc_zt=23&_nc_ht=scontent.fcrk2-1.fna&_nc_gid=Z3G-FCRzVJqfaXWzR1T7bg&oh=00_AfHK5dpm7YYlwopXrNzmjKLH3QIZOhZyCyKkrtCfjGyZOA&oe=681D0995" alt="Developer 2" />
+            </div>
+            <h4>Ronalie Bazar</h4>
+            <p className="developer-role">Frontend Developer</p>
+            <p className="developer-desc">Documenter</p>
+          </div>
+          
+          <div className="developer-card">
+            <div className="developer-avatar">
+              <img src="https://cdn.prod.website-files.com/62bdc93e9cccfb43e155104c/654f6a9d977790fb676dddfc_Funny%2520PFP%2520for%2520Tiktok%252012.png" alt="Developer 3" />
+            </div>
+            <h4>Dyana Rose Bibat</h4>
+            <p className="developer-role">Frontend Developer</p>
+            <p className="developer-desc">Documenter</p>
+          </div>
 
-     
+          <div className="developer-card">
+            <div className="developer-avatar">
+              <img src="https://scontent.fcrk4-1.fna.fbcdn.net/v/t39.30808-1/460726989_1592648011600823_6584852223229503461_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=106&ccb=1-7&_nc_sid=1d2534&_nc_eui2=AeEr42fzDodlc0eLmbd0AvxLEub1E2C_HjwS5vUTYL8ePBMgefw0N3tqrk0SZaMm-b2BHPTI5JG7FqyHmN8lZrI5&_nc_ohc=5lexmi4RX1oQ7kNvwGCucZz&_nc_oc=AdlLLdWvGzhdmNJ2RrEwEGGPVDdX6D6q541sS5oLtNehe-ASgf6gL3YiONT42bHalI4&_nc_zt=24&_nc_ht=scontent.fcrk4-1.fna&_nc_gid=69r284JunRuVBOkxYn2AiA&oh=00_AfH46gjMo_1j_IAAGr8xV_I6UqIaeSj-sLg1tpFkT1WL0Q&oe=681D138F" alt="Developer 4" />
+            </div>
+            <h4>Al Vincent Bien</h4>
+            <p className="developer-role">Frontend Developer</p>
+            <p className="developer-desc">Documenter</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+)}
+        
+      </main>
       
       <SignIn open={openSignIn} handleClose={handleCloseSignIn} handleOpenSignUp={handleOpenSignUp} />
       <SignUp open={openSignUp} handleClose={handleCloseSignUp} />

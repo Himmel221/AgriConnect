@@ -18,6 +18,8 @@ const Chatbox = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const messagesEndRef = useRef(null);
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("authToken");
@@ -28,7 +30,7 @@ const Chatbox = () => {
       }
   
       try {
-        const response = await axios.get("http://localhost:5000/api/auth/me", {
+        const response = await axios.get(`${apiUrl}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
   
@@ -54,7 +56,7 @@ const Chatbox = () => {
       try {
         const token = localStorage.getItem("authToken");
         const response = await axios.get(
-          `http://localhost:5000/api/messages/${userId}/conversations`,
+          `${apiUrl}/api/messages/${userId}/conversations`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -78,7 +80,7 @@ const Chatbox = () => {
       try {
         const token = localStorage.getItem("authToken");
         const response = await axios.get(
-          `http://localhost:5000/api/messages/${userId}/${activeRecipientId}`,
+          `${apiUrl}/api/messages/${userId}/${activeRecipientId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -125,7 +127,7 @@ const Chatbox = () => {
     };
   
     try {
-      const response = await axios.post("http://localhost:5000/api/messages", messageData, {
+      const response = await axios.post(`${apiUrl}/api/messages`, messageData, {
         headers: { Authorization: `Bearer ${token}` }, 
       });
   
@@ -152,7 +154,7 @@ const Chatbox = () => {
     try {
       const token = localStorage.getItem("authToken");
       const response = await axios.get(
-        `http://localhost:5000/api/users/search/${query}`,
+        `${apiUrl}/api/users/search/${query}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

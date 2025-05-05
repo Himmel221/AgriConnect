@@ -14,6 +14,8 @@ const ManageUsers = () => {
   const usersPerPage = 5;
   const [loading, setLoading] = useState(false); 
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const navigate = useNavigate();
 
   const handleExpiredSession = useCallback(() => {
@@ -31,7 +33,7 @@ const ManageUsers = () => {
 
     const verifyAdmin = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/admin/verify', {
+        const response = await axios.get(`${apiUrl}/api/admin/verify`, {
           headers: { Authorization: `Bearer ${token}` },
         });
     

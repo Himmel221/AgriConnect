@@ -17,6 +17,9 @@ const ViewProfile = () => {
   const [listings, setListings] = useState([]); 
   const [coverColor, setCoverColor] = useState(''); 
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
+
   useEffect(() => {
     const colors = ['#F0A500', '#4CAF50', '#FF4081', '#2196F3', '#9C27B0'];
     setCoverColor(colors[Math.floor(Math.random() * colors.length)]);
@@ -24,7 +27,7 @@ const ViewProfile = () => {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/users/${userId}`,
+          `${apiUrl}/api/users/${userId}`,
           { headers: { Authorization: `Bearer ${token}` } } 
         );
 
@@ -41,7 +44,7 @@ const ViewProfile = () => {
     const fetchUserListings = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/listings/user/${userId}`,
+          `${apiUrl}/api/listings/user/${userId}`,
           { headers: { Authorization: `Bearer ${token}` } } 
         );
 

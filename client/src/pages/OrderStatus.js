@@ -15,6 +15,8 @@ const OrderStatus = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('pending')) {
@@ -31,7 +33,7 @@ const OrderStatus = () => {
       try {
         const token = localStorage.getItem('authToken');
         const response = await axios.get(
-          `http://localhost:5000/api/checkout-status?status=${status}`,
+          `${apiUrl}/api/checkout-status?status=${status}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -69,7 +71,7 @@ const OrderStatus = () => {
     try {
       const token = localStorage.getItem('authToken');
       const response = await axios.post(
-        `http://localhost:5000/api/checkout/received/${id}`,
+        `${apiUrl}/api/checkout/received/${id}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

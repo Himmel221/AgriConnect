@@ -13,6 +13,8 @@ const SignUp = ({ open, handleClose, handleOpenSignIn }) => {
   const [birthDate, setBirthDate] = useState({ day: '', month: '', year: '' }); 
   const [error, setError] = useState('');
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -27,7 +29,7 @@ const SignUp = ({ open, handleClose, handleOpenSignIn }) => {
   const handleSignUp = async () => {
     try {
       const formattedBirthDate = new Date(`${birthDate.year}-${birthDate.month}-${birthDate.day}`);
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
+      const response = await axios.post(`${apiUrl}/api/auth/register`, {
         first_name: firstName,
         middle_name: middleName,
         last_name: lastName,
