@@ -38,13 +38,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: process.env.CLIENT,
     methods: ['GET', 'POST'],
   },
 });
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: process.env.CLIENT,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   optionsSuccessStatus: 204,
