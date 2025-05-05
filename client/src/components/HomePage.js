@@ -358,6 +358,8 @@ const HomePage = () => {
           </div>
         </section>
       </main>
+
+     
       
       <SignIn open={openSignIn} handleClose={handleCloseSignIn} handleOpenSignUp={handleOpenSignUp} />
       <SignUp open={openSignUp} handleClose={handleCloseSignUp} />
