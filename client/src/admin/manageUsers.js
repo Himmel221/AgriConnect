@@ -70,7 +70,7 @@ const ManageUsers = () => {
       setLoading(true); 
 
       try {
-        const response = await axios.get('http://localhost:5000/api/admin/users', {
+        const response = await axios.get(`${apiUrl}/api/admin/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUsers(response.data);
@@ -118,7 +118,7 @@ const ManageUsers = () => {
   const handleApproveSeller = async (userId) => {
     try {
       const response = await axios.patch(
-        `http://localhost:5000/api/users/approve-seller/${userId}`,
+        `${apiUrl}/api/users/approve-seller/${userId}`,
         {
           isSeller: true,
         },
@@ -146,7 +146,7 @@ const ManageUsers = () => {
   const handleRemoveSeller = async (userId) => {
     try {
       const response = await axios.patch(
-        `http://localhost:5000/api/users/remove-seller/${userId}`,
+        `${apiUrl}/api/users/remove-seller/${userId}`,
         {
           isSeller: false,
         },
