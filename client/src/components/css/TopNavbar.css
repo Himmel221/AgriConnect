@@ -184,6 +184,17 @@
 
 /* Responsive Adjustments */
 
+/* For large tablets and small laptops */
+@media (max-width: 1024px) {
+  .top-navbar {
+    padding: 1rem;
+    left: 120px;
+    width: calc(100% - 120px);
+  }
+}
+
+/* Responsive Adjustments */
+
 /* Large tablets and small laptops (1024px and below) */
 @media (max-width: 1024px) { 
   .top-navbar {
@@ -265,7 +276,6 @@
     padding: 0.4rem 0.7rem;
     font-size: 0.85rem;
   }
-  
   .search-input:focus {
     width: 170px;
   }
@@ -309,25 +319,18 @@
   }
   
   .navbar-title {
-    font-size: 15px;
-    margin-left: 40px;
+    font-size: 13px;
+    margin-left: 10px;
   }
   
   .search-input {
-    width: 150px;
+    width: 80px;
     padding: 0.4rem 0.6rem;
     margin-left: 5px;
-    margin-right:3px;
   }
   
   .search-input:focus {
-    width: 10px;
-  }
-  
-  .user-options {
-    margin: auto;
-    grid-area: user-options;
-    display: flex;
+    width: 100px;
   }
 }
 
@@ -341,31 +344,17 @@
   left: 0;
   width: 100%;
 }
-
-@media screen and (max-width: 360px) {
-  .top-navbar {
-    padding: 0.6rem;
-    left: 0;
-    width: 100%;
-  }
-  
+/* Folded state (cover screen) */
+@media (max-width: 320px) {
   .navbar-title {
-    font-size: 1.2rem;
-    margin-left: 20px;
+    display: none;
   }
   
   .navbar-search {
-    gap: 0.5rem;
+    flex: 0 0 auto;
   }
   
   .search-input {
-    width: 150px;
-    padding: 0.4rem 0.6rem;
-    margin-left: 5px;
-    margin-right:3px;
+    width: 120px;
   }
-  
-  .search-input:focus {
-    width: 170px;
-  }  
 }

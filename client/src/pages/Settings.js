@@ -7,6 +7,14 @@ import axios from 'axios';
 import './css/Settings.css';
 import { useAuth } from '../components/AuthProvider';
 import { Home, ShoppingCart, DollarSign, MessagesSquare } from 'lucide-react';
+import {
+  Lock,
+  Mail,
+  Eye,
+  Shield,
+  Activity
+} from "lucide-react"; // sample icons
+
 
 const Settings = () => {
   const { token, isAuthenticated, logout } = useAuth();
@@ -170,7 +178,7 @@ const Settings = () => {
     try {
       console.log('Sending Verification:', { email, token: verificationCode });
 
-      const response = await axios.post(`${apiUrl}api/auth/verify-email`, {
+      const response = await axios.post(`${apiUrl}/api/auth/verify-email`, {
         email,
         token: verificationCode,
       });
@@ -696,16 +704,20 @@ const Settings = () => {
   </div>
           <div className="nav-right"> 
   <Link to="/" className="nav-link">
-    <Home className="icon" /> Home
+    <Home className="icon" /> 
+    <span className="nav-link-label">Home</span>
   </Link>
   <Link to="/buying" className="nav-link">
-    <ShoppingCart className="icon" /> Buying
+    <ShoppingCart className="icon" /> 
+    <span className="nav-link-label">Buying</span>
   </Link>
   <Link to="/selling" className="nav-link">
-    <DollarSign className="icon" /> Selling
+    <DollarSign className="icon" /> 
+    <span className="nav-link-label">Selling</span>
   </Link>
   <Link to="/chats" className="nav-link">
-    <MessagesSquare className="icon" /> Chats
+    <MessagesSquare className="icon" /> 
+    <span className="nav-link-label">Chats</span>
   </Link>
   <button>
               <i className="fas fa-shopping-cart"></i>
@@ -722,48 +734,58 @@ const Settings = () => {
           <aside className="settings-sidebar">
             <h2>Settings</h2>
             <ul>
-<li>
+            <li>
   <button
     onClick={() => setCurrentView('password-security')}
     className={`settings-link ${currentView === 'password-security' ? 'active' : ''}`}
   >
-    Password and Security
+    <Lock className="icon" />
+    <span className="link-label">Password and Security</span>
   </button>
 </li>
+
 {!isVerified && (
   <li>
     <button
       onClick={() => setCurrentView('verifyEmail')}
       className={`verify-email-btn ${currentView === 'verifyEmail' ? 'active' : ''}`}
     >
-      Verify Email
+      <Mail className="icon" />
+      <span className="link-label">Verify Email</span>
     </button>
   </li>
 )}
+
 <li>
   <button
     onClick={() => setCurrentView('accessibility')}
     className={`settings-link ${currentView === 'accessibility' ? 'active' : ''}`}
   >
-    Accessibility
+    <Eye className="icon" />
+    <span className="link-label">Accessibility</span>
   </button>
 </li>
+
 <li>
   <button
     onClick={() => setCurrentView('privacy')}
     className={`settings-link ${currentView === 'privacy' ? 'active' : ''}`}
   >
-    Privacy
+    <Shield className="icon" />
+    <span className="link-label">Privacy</span>
   </button>
 </li>
+
 <li>
   <button
     onClick={() => setCurrentView('activity-log')}
     className={`settings-link ${currentView === 'activity-log' ? 'active' : ''}`}
   >
-    Activity Log
+    <Activity className="icon" />
+    <span className="link-label">Activity Log</span>
   </button>
 </li>
+
             </ul>
           </aside>
           <main className="settings-main-content">
