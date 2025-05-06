@@ -35,13 +35,13 @@ const CheckoutSubmissionSchema = new mongoose.Schema({
   },
   status: { 
     type: String,
-    enum: ['Pending', 'Approved', 'Rejected', 'Success'],
+    enum: ['Pending', 'Ongoing', 'Success', 'Rejected'],
     default: 'Pending',
     required: true,
   },
   BuyerStatus: { 
     type: String,
-    enum: ['NotYetReceived', 'Received'],
+    enum: ['NotYetReceived', 'Received', 'Cancelled'],
     default: 'NotYetReceived',
     required: true,
   },

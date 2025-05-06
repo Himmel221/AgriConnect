@@ -8,33 +8,30 @@ import './css/CartArea.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Clock, Package, CheckCircle, Trash2, Plus, Minus, CreditCard } from 'lucide-react';
 
+
 const CartArea = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedItems, setSelectedItems] = useState([]);
   const [expandedItem, setExpandedItem] = useState(null);
+  const [openPaymentModal, setOpenPaymentModal] = useState(false);
+  const [bank, setBank] = useState('');
+  const [refNo, setRefNo] = useState('');
+  const [uploadedImage, setUploadedImage] = useState(null);
   const navigate = useNavigate();
 
   const apiUrl = process.env.REACT_APP_API_URL;
-
 
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.get(`${apiUrl}`, {
+        const response = await axios.get(`${apiUrl}/api/cart`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.status === 200 && Array.isArray(response.data.cartItems)) {
           setCartItems(response.data.cartItems);
-          console.log('Fetched cart items:', response.data.cartItems.map(item => ({
-            id: item.productId?._id,
-            name: item.productId?.productName,
-            quantity: item.quantity,
-            price: item.productId?.price,
-            isValid: item.quantity > 0 && item.productId?.price > 0
-          })));
         } else {
           setCartItems([]);
         }
@@ -54,7 +51,7 @@ const CartArea = () => {
       setLoading(true);
       const token = localStorage.getItem('authToken');
       const response = await axios.post(
-        `${apiUrl}/remove`,
+        `${apiUrl}/api/cart/remove`,
         { productId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -80,7 +77,7 @@ const CartArea = () => {
     try {
       const token = localStorage.getItem('authToken');
       const response = await axios.post(
-        `${apiUrl}/update`,
+        `${apiUrl}/api/cart/update`,
         { productId, quantity: newQuantity },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -104,6 +101,29 @@ const CartArea = () => {
       );
     }
   };
+
+/*  const handleCheckout = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+  
+      // ✅ Send checkout request to backend
+      const response = await axios.post(`${apiUrl}/api/checkout/submit`, {
+        cartItems,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+  
+      if (response.status === 200) {
+        alert("Checkout successful!");
+  
+        // ✅ Remove purchased items from cart
+        setCartItems(prevItems => prevItems.filter(item => !response.data.purchasedItems.includes(item.productId?._id)));
+      } else {
+        alert("Failed to checkout.");
+      }
+    } catch (error) {
+      console.error("Error during checkout:", error.message);
+      alert("Checkout error!");
+    }
+  };*/
 
   const handleCheckboxChange = (productId) => {
     setSelectedItems((prevSelected) => {
@@ -135,11 +155,6 @@ const CartArea = () => {
     }, 0);
   };
 
-  const [openPaymentModal, setOpenPaymentModal] = useState(false);
-  const [bank, setBank] = useState('');
-  const [refNo, setRefNo] = useState('');
-  const [uploadedImage, setUploadedImage] = useState(null);
-
   const handleOpenPaymentModal = () => {
     setOpenPaymentModal(true);
   };
@@ -151,62 +166,44 @@ const CartArea = () => {
     setUploadedImage(null);
   };
   
+  const [checkoutResultModal, setCheckoutResultModal] = useState({ open: false, success: null });
+
   const handleSavePayment = async () => {
     try {
       const token = localStorage.getItem('authToken');
   
       if (selectedItems.length === 0) {
-        alert('Please select at least one item to proceed with payment');
+        handleClosePaymentModal(); 
+        setCheckoutResultModal({ open: true, success: false });
         return;
       }
   
       if (!uploadedImage) {
-        alert('Please upload a proof of payment image');
+        handleClosePaymentModal(); 
+        setCheckoutResultModal({ open: true, success: false });
         return;
       }
   
       let successCount = 0;
       let failCount = 0;
+      const purchasedItems = [];
   
       for (const listingId of selectedItems) {
-        const item = cartItems.find((cartItem) => cartItem.productId?._id === listingId);
-        
-        if (!item) {
-          console.error(`Item not found in cart: ${listingId}`);
+        const item = cartItems.find(cartItem => cartItem.productId?._id === listingId);
+        if (!item || item.quantity <= 0 || item.productId?.price <= 0) {
           failCount++;
           continue;
         }
-
-        if (!item.quantity || item.quantity <= 0) {
-          console.error(`Invalid quantity for item ${listingId}:`, item.quantity);
-          failCount++;
-          continue;
-        }
-
-        if (!item.productId?.price || item.productId.price <= 0) {
-          console.error(`Invalid price for item ${listingId}:`, item.productId?.price);
-          failCount++;
-          continue;
-        }
-
-        console.log('Submitting checkout:', {
-          listingId,
-          quantity: item.quantity,
-          price: item.productId.price,
-          totalPrice: item.productId.price * 1.01 * item.quantity
-        });
-
+  
         const formData = new FormData();
         formData.append('bank', bank);
         formData.append('referenceNumber', refNo);
         formData.append('listingId', listingId);
         formData.append('proofImage', uploadedImage);
         formData.append('quantity', item.quantity);
-        formData.append('price', item.productId.price);
   
         try {
-
-          const response = await axios.post(`${apiUrl}}/api/checkout/submit`, formData, {
+          const response = await axios.post(`${apiUrl}/api/checkout/submit`, formData, {
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'multipart/form-data',
@@ -215,29 +212,33 @@ const CartArea = () => {
   
           if (response.status === 201) {
             successCount++;
+            purchasedItems.push(listingId);
           }
         } catch (error) {
-          console.error(`Error processing checkout for item ${listingId}:`, error);
           failCount++;
         }
       }
   
       if (successCount > 0) {
-        alert(`Successfully submitted ${successCount} checkout(s). Failed: ${failCount}`);
-        for (const listingId of selectedItems) {
-          await handleRemoveItem(listingId);
-        }
+        setCartItems(prev => prev.filter(item => !purchasedItems.includes(item.productId?._id)));
         setSelectedItems([]);
-        handleClosePaymentModal();
-        navigate('/pending');
+        handleClosePaymentModal(); 
+        setCheckoutResultModal({ open: true, success: true });
+  
+        setTimeout(() => {
+          navigate('/pending'); 
+        }, 2000);
       } else {
-        alert('Failed to submit any checkouts. Please try again.');
+        handleClosePaymentModal(); 
+        setCheckoutResultModal({ open: true, success: false });
       }
     } catch (error) {
-      console.error('Error in payment submission:', error.message);
-      alert('Failed to process payment. Please try again.');
+      handleClosePaymentModal(); 
+      setCheckoutResultModal({ open: true, success: false });
     }
   };
+  
+  
   
   return (
     <>
@@ -398,6 +399,28 @@ const CartArea = () => {
             )}
           </div>
         </div>
+        {checkoutResultModal.open && (
+  <div className="checkout-result-modal-overlay">
+    <div className="checkout-result-modal-content">
+      {checkoutResultModal.success ? (
+        <>
+          <div className="success-animation">✔️</div>
+          <h2>Checkout Successful!</h2>
+          <p>Your order has been placed successfully.</p>
+        </>
+      ) : (
+        <>
+          <div className="error-animation">❌</div>
+          <h2>Checkout Failed</h2>
+          <p>Something went wrong. Please try again.</p>
+        </>
+      )}
+      <button className="checkout-result-modal-close-btn" onClick={() => setCheckoutResultModal({ open: false })}>
+        Close
+      </button>
+    </div>
+  </div>
+)}
       </main>
 
       {}

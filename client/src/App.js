@@ -9,16 +9,16 @@ import CartArea from './pages/CartArea';
 import Profile from './pages/Profile';
 import ViewProfile from './pages/ViewProfile';
 import InventoryPage from './pages/InventoryPage';
-import Chatbox from './components/Chatbox'; 
+import Chatbox from './components/Chatbox';
 import './App.css';
 import { AuthProvider } from './components/AuthProvider';
 import AdminRoutes from './routes/adminRoutes';
 import AdminDashboard from './admin/adminDashboard';
 import ManageUsers from './admin/manageUsers';
-import ManageCheckouts from './admin/manageCheckouts';
-import OrderStatus from './pages/OrderStatus'; 
+
+import OrderStatus from './pages/OrderStatus';
 import SellerOrders from './pages/SellerOrdersArea';
-import WithdrawalPage from './pages/WithdrawalPage'; 
+import WithdrawalPage from './pages/WithdrawalPage';
 import ResetPassword from './pages/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword';
 import axios from 'axios';
@@ -26,7 +26,6 @@ import axios from 'axios';
 const App = () => {
   const loggedInUserId = localStorage.getItem('userId') || 'default-user-id';
 
-  // ✅ API Route for Inventory
   const fetchInventory = async () => {
     try {
       const response = await axios.get('http://localhost:3000/api/inventory', {
@@ -43,8 +42,8 @@ const App = () => {
       <Router>
         <div>
           <Routes>
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<HomePage />} />
             <Route
               path="/sell-area"
@@ -112,14 +111,6 @@ const App = () => {
               }
             />
             <Route
-              path="/manage-users-checkouts"
-              element={
-                <AdminRoutes>
-                  <ManageCheckouts />
-                </AdminRoutes>
-              }
-            />
-            <Route
               path="/pending"
               element={
                 <ProtectedRoute>
@@ -137,6 +128,14 @@ const App = () => {
             />
             <Route
               path="/successful"
+              element={
+                <ProtectedRoute>
+                  <OrderStatus />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cancelled" 
               element={
                 <ProtectedRoute>
                   <OrderStatus />

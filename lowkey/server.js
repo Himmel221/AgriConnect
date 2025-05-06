@@ -31,6 +31,7 @@ import checkoutRoutes from './routes/checkoutRoutes.js';
 import checkoutStatusRoutes from './routes/checkoutStatus.js';
 import sellerOrdersRoutes from './routes/sellerOrdersRoutes.js';
 import withdrawalRoutes from './routes/withdrawalRoutes.js';
+import buyerOrdersRoutes from './routes/buyerOrdersRoutes.js';
 
 
 dotenv.config();
@@ -38,13 +39,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT,
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST'],
   },
 });
 
 const corsOptions = {
-  origin: process.env.CLIENT,
+  origin: 'http://localhost:3000',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   optionsSuccessStatus: 204,
@@ -82,7 +83,11 @@ app.use('/api/checkout', checkoutRoutes);
 app.use('/api/withdraw', withdrawalRoutes);
 app.use('/api/checkout-status', checkoutStatusRoutes);
 app.use('/api/orders/seller-orders', sellerOrdersRoutes);
+app.use('/api/orders', sellerOrdersRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/orders/buyer-orders', buyerOrdersRoutes);
+
+
 
 app.get('/api/weather-key', (req, res) => {
   res.json({ apiKey: process.env.OpenWeatherApp_API_KEY });

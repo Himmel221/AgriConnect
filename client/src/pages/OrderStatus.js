@@ -4,11 +4,11 @@ import TopNavbar from '../components/top_navbar';
 import SideBar from '../components/side_bar';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './css/OrderStatus.css';
-import { ShoppingCart, Clock, Package, CheckCircle, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, Clock, Package, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 
 const OrderStatus = () => {
   const [orders, setOrders] = useState([]);
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('Pending');
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -22,9 +22,11 @@ const OrderStatus = () => {
     if (path.includes('pending')) {
       setStatus('Pending');
     } else if (path.includes('orders')) {
-      setStatus('Approved');
+      setStatus('Ongoing');  
     } else if (path.includes('successful')) {
       setStatus('Success');
+    } else if (path.includes('cancelled')) {
+      setStatus('Cancelled');
     }
   }, [location]);
 
@@ -32,25 +34,20 @@ const OrderStatus = () => {
     const fetchOrdersByStatus = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.get(
-          `${apiUrl}/api/checkout-status?status=${status}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        console.log(`🚀 Fetching buyer orders with status: ${status}`);
 
-        if (response.status === 200 && response.data.checkouts) {
-          setOrders(
-            response.data.checkouts.filter((order) => {
-              if (status === 'Success') {
-                return order.status === 'Success' && order.BuyerStatus === 'Received';
-              }
-              return order.status === status;
-            })
-          );
+        const response = await axios.get(`${apiUrl}/api/orders/buyer-orders?status=${status}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.status === 200 && response.data.orders) {
+          setOrders(response.data.orders);
         } else {
+          console.log("❌ No orders found in API response.");
           setOrders([]);
         }
       } catch (error) {
-        console.error('Error fetching orders:', error.message);
+        console.error('Error fetching buyer orders:', error.message);
         setOrders([]);
       } finally {
         setLoading(false);
@@ -63,21 +60,16 @@ const OrderStatus = () => {
   }, [status]);
 
   const handleReceivedOrder = async (id) => {
-    if (!id) {
-      alert('No order selected.');
-      return;
-    }
-  
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.post(
-        `${apiUrl}/api/checkout/received/${id}`,
+      const response = await axios.patch(
+        `${apiUrl}/api/orders/buyer-orders/received/${id}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
       if (response.status === 200) {
-        alert('Order marked as received and balance updated!');
+        alert('Order marked as received!');
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
             order._id === id
@@ -97,10 +89,12 @@ const OrderStatus = () => {
     switch (status) {
       case 'Pending':
         return <Clock size={24} />;
-      case 'Approved':
+      case 'Ongoing':
         return <Package size={24} />;
       case 'Success':
         return <CheckCircle size={24} />;
+      case 'Cancelled':
+        return <XCircle size={24} />;
       default:
         return null;
     }
@@ -121,42 +115,27 @@ const OrderStatus = () => {
           </div>
 
           <div className="orderstats-navigation">
-            <button
-              onClick={() => navigate('/cart')}
-              className={location.pathname === '/cart' ? 'active' : ''}
-            >
+            <button onClick={() => navigate('/cart')} className={location.pathname === '/cart' ? 'active' : ''}>
               <ShoppingCart size={18} />
               <span>My Cart</span>
             </button>
-            <button
-              onClick={() => navigate('/pending')}
-              className={status === 'Pending' ? 'active' : ''}
-            >
+            <button onClick={() => navigate('/pending')} className={status === 'Pending' ? 'active' : ''}>
               <Clock size={18} />
               <span>Pending</span>
             </button>
-            <button
-              onClick={() => navigate('/orders')}
-              className={status === 'Approved' ? 'active' : ''}
-            >
+            <button onClick={() => navigate('/orders')} className={status === 'Ongoing' ? 'active' : ''}>
               <Package size={18} />
               <span>Orders</span>
             </button>
-            <button
-              onClick={() => navigate('/successful')}
-              className={status === 'Success' ? 'active' : ''}
-            >
+            <button onClick={() => navigate('/successful')} className={status === 'Success' ? 'active' : ''}>
               <CheckCircle size={18} />
               <span>Successful Orders</span>
             </button>
+            <button onClick={() => navigate('/cancelled')} className={status === 'Cancelled' ? 'active' : ''}>
+              <XCircle size={18} />
+              <span>Cancelled Orders</span>
+            </button>
           </div>
-
-          {status === 'Approved' && (
-            <div className="orderstats-info">
-              <Package size={20} />
-              <p>The seller has been notified about these orders.</p>
-            </div>
-          )}
 
           <div className="orderstats-container">
             {loading ? (
@@ -177,12 +156,12 @@ const OrderStatus = () => {
                         <span className="orderstats-item-status">{order.status}</span>
                       </div>
                     </div>
-                    
+
                     <div className="orderstats-item-details">
                       <div className="orderstats-detail-row">
-                        <span className="orderstats-detail-label">Buyer:</span>
+                        <span className="orderstats-detail-label">Seller:</span>
                         <span className="orderstats-detail-value">
-                          {`${order.userId.first_name} ${order.userId.last_name}`}
+                          {order.listingId?.userId || 'Unknown'}
                         </span>
                       </div>
                       <div className="orderstats-detail-row">
@@ -192,16 +171,10 @@ const OrderStatus = () => {
                         </span>
                       </div>
                     </div>
-                    
-                    {status === 'Approved' && order.BuyerStatus !== 'Received' && (
+
+                    {status === 'Ongoing' && order.BuyerStatus !== 'Received' && (
                       <div className="orderstats-item-actions">
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order._id);
-                            setShowModal(true);
-                          }}
-                          className="orderstats-received-btn"
-                        >
+                        <button onClick={() => handleReceivedOrder(order._id)} className="orderstats-received-btn">
                           Mark as Received
                         </button>
                       </div>
@@ -218,27 +191,6 @@ const OrderStatus = () => {
           </div>
         </div>
       </div>
-
-      {}
-      {showModal && (
-        <div className="orderstats-modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="orderstats-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Confirm Receipt</h3>
-            <p>This will release the payment to the seller. Do you want to proceed?</p>
-            <div className="orderstats-modal-buttons">
-              <button
-                onClick={() => handleReceivedOrder(selectedOrder)}
-                className="orderstats-confirm-btn"
-              >
-                Confirm
-              </button>
-              <button onClick={() => setShowModal(false)} className="orderstats-cancel-btn">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

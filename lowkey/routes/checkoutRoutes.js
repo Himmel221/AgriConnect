@@ -1,106 +1,64 @@
 //checkoutRoutes.js
 
 import express from 'express';
-import { submitCheckout, getAllCheckouts, updateCheckoutStatus, receivedCheckout, markAsDone } from '../controllers/checkoutController.js';
 import auth from '../middleware/auth.js';
-import adminMiddleware from '../middleware/adminMiddleware.js';
-import upload from '../middleware/upload.js'; 
+import { checkoutCart } from '../controllers/cartController.js'; 
+import { submitCheckout } from '../controllers/submitCheckout.js'; 
 import CheckoutSubmission from '../models/CheckoutSubmission.js';
-import UserBalance from '../models/UserBalance.js';
-import authMiddleware from '../middleware/auth.js';
+import Listing from '../models/Listing.js';
+import upload from '../middleware/upload.js'; 
 
 const router = express.Router();
 
 router.post('/submit', auth, upload.single('proofImage'), submitCheckout);
 
-router.get('/all-checkouts', auth, adminMiddleware, getAllCheckouts);
+router.post('/checkout', auth, checkoutCart);
 
-router.patch('/:id', auth, adminMiddleware, updateCheckoutStatus);
-
-router.post('/received/:id', authMiddleware, async (req, res) => {
+router.patch('/approve/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
-
-    const checkout = await CheckoutSubmission.findById(id)
-      .populate('listingId', 'userId'); 
+    const checkout = await CheckoutSubmission.findById(id);
 
     if (!checkout) {
-      console.error('Checkout not found for ID:', id);
       return res.status(404).json({ message: 'Checkout not found.' });
     }
 
-    console.log('Checkout found:', checkout);
-    console.log('Listing owner (userId):', checkout.listingId.userId);
-
-    const sellerBalance = await UserBalance.findOne({ userId: checkout.listingId.userId });
-
-    if (!sellerBalance) {
-      console.log('Creating new UserBalance for listing owner:', checkout.listingId.userId);
-      await new UserBalance({
-        userId: checkout.listingId.userId,
-        sellerBalance: checkout.totalPrice,
-        transactions: [
-          { amount: checkout.totalPrice, type: 'credit', referenceId: checkout._id },
-        ],
-      }).save();
-    } else {
-      console.log('Updating balance for listing owner:', checkout.listingId.userId);
-      sellerBalance.sellerBalance += checkout.totalPrice;
-      sellerBalance.transactions.push({
-        amount: checkout.totalPrice,
-        type: 'credit',
-        referenceId: checkout._id,
-      });
-      await sellerBalance.save();
+    const listing = await Listing.findById(checkout.listingId);
+    if (!listing || listing.userId.toString() !== req.userId) {
+      return res.status(403).json({ message: 'You are not authorized to approve this order.' });
     }
 
-    checkout.BuyerStatus = 'Received';
-    checkout.status = 'Success'
+    checkout.status = 'Accepted'; // Update status to Accepted
     await checkout.save();
 
-    res.status(200).json({ message: 'Order marked as Received successfully.', checkout });
+    res.status(200).json({ message: 'Order approved successfully.', checkout });
   } catch (error) {
-    console.error('Error marking order as Received:', error.message);
-    res.status(500).json({ message: 'Failed to mark order as Received.' });
+    console.error('Error approving order:', error.message);
+    res.status(500).json({ message: 'Failed to approve order.', error: error.message });
   }
 });
 
-router.patch('/mark-as-done/:id', auth, markAsDone);
-
-router.patch('/mark-success/:id', authMiddleware, async (req, res) => {
+router.patch('/reject/:id', auth, async (req, res) => {
   try {
-    console.log('Request Params:', req.params); 
-    console.log('Request Body:', req.body); 
-
     const { id } = req.params;
-    const { status } = req.body;
-
-    const statusToApply = status || 'Success'; 
-
-    if (statusToApply !== 'Success') {
-      console.error('Invalid status provided.');
-      return res.status(400).json({ message: 'Status is required and must be "Success".' });
-    }
-
     const checkout = await CheckoutSubmission.findById(id);
+
     if (!checkout) {
-      console.error('Checkout not found for ID:', id);
       return res.status(404).json({ message: 'Checkout not found.' });
     }
 
-    if (checkout.status !== 'Approved') {
-      return res.status(400).json({ message: 'Checkout must be "Approved" before it can be marked as "Success".' });
+    const listing = await Listing.findById(checkout.listingId);
+    if (!listing || listing.userId.toString() !== req.userId) {
+      return res.status(403).json({ message: 'You are not authorized to reject this order.' });
     }
 
-    checkout.status = 'Success';
-    checkout.BuyerStatus = 'Received';
+    checkout.status = 'rejected';
     await checkout.save();
 
-    console.log('Checkout updated successfully:', checkout);
-    res.status(200).json({ message: 'Checkout marked as Success.', checkout });
+    res.status(200).json({ message: 'Order rejected successfully.', checkout });
   } catch (error) {
-    console.error('Error updating checkout:', error.message);
-    res.status(500).json({ message: 'Failed to mark checkout as Success.', error: error.message });
+    console.error('Error rejecting order:', error.message);
+    res.status(500).json({ message: 'Failed to reject order.', error: error.message });
   }
 });
 
