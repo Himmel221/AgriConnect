@@ -43,9 +43,9 @@ const BuyArea = () => {
         // eto naman if need makita yung nilist ni seller sa buy are
         /*allListings = response.data?.listings
 
-        console.log(allListings)
+        console.log(allListings)*/
 
-        setListings(allListings);*/
+        setListings(allListings);
       } else {
         console.error('Failed to fetch listings:', response.data.message);
       }
