@@ -23,11 +23,10 @@ const BuyArea = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState(""); 
   
-  const apiUrl = process.env.REACT_APP_API_URL;
 
   const fetchListings = useCallback(async () => {
     try {
-      const response = await axios.get(`${apiUrl}/api/listings`, {
+      const response = await axios.get('http://localhost:5000/api/listings', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -35,17 +34,17 @@ const BuyArea = () => {
         let allListings
 
         // eto if di dapat makita yung nilist ni seller
-        /* allListings = response.data.listings.filter((listing) => {
+         allListings = response.data.listings.filter((listing) => {
           return listing.userId !== userId; 
         });
-        */
+        
 
         // eto naman if need makita yung nilist ni seller sa buy are
-        allListings = response.data?.listings
+        /*allListings = response.data?.listings
 
         console.log(allListings)
 
-        setListings(allListings);
+        setListings(allListings);*/
       } else {
         console.error('Failed to fetch listings:', response.data.message);
       }
@@ -81,10 +80,12 @@ const BuyArea = () => {
     setSearchTerm(searchValue);
   };
 
+  const [cartResultModal, setCartResultModal] = useState({ open: false, success: null });
+
   const handleAddToCart = async () => {
     try {
       const response = await axios.post(
-        `${apiUrl}/api/cart/add`,
+        'http://localhost:5000/api/cart/add',
         {
           productId: selectedProduct._id,
           quantity: cartQuantity,
@@ -93,16 +94,19 @@ const BuyArea = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
+  
       if (response.status === 200) {
-        alert('Item added to cart successfully!');
-        handleCloseBuyModal();
+        setCartResultModal({ open: true, success: true });
+  
+        setTimeout(() => {
+          setCartResultModal({ open: false });
+          handleCloseBuyModal(); 
+        }, 2000);
       } else {
-        console.error('Failed to add to cart:', response.data.message);
+        setCartResultModal({ open: true, success: false });
       }
     } catch (error) {
-      console.error('Error adding to cart:', error.message);
-      alert('Failed to add item to cart.');
+      setCartResultModal({ open: true, success: false });
     }
   };
 
@@ -156,6 +160,9 @@ const BuyArea = () => {
     
     return <span className={badgeClass}>{badgeText}</span>;
   };
+
+
+
   return (
     <>
       <TopNavbar onSearch={setSearchTerm} /> {}
@@ -186,7 +193,6 @@ const BuyArea = () => {
                     <p>
                       Available Stocks: {listing.quantity} {listing.unit}
                     </p>
-                    <p>Location: {listing.location || listing.userId?.address?.location || 'Not specified'}</p>
                     <div className="seller-info">
 
                       {listing.sellerSuccessCount !== undefined && (
@@ -274,8 +280,6 @@ const BuyArea = () => {
                 <p>
                   <strong>Listed on:</strong> {selectedProduct.listedDate || 'N/A'}
                 </p>
-                <p><strong>Location:</strong> {selectedProduct.location || selectedProduct.userId?.location || 'Not specified'}</p>
-
 
                 {selectedProduct.userId !== userId && (
                   <div className="add-to-cart-container">
@@ -324,6 +328,28 @@ const BuyArea = () => {
             </div>
           )}
         </div>
+        {cartResultModal.open && (
+  <div className="cart-result-modal-overlay">
+    <div className="cart-result-modal-content">
+      {cartResultModal.success ? (
+        <>
+          <div className="success-animation">✔️</div>
+          <h2>Item Added!</h2>
+          <p>The product has been successfully added to your cart.</p>
+        </>
+      ) : (
+        <>
+          <div className="error-animation">❌</div>
+          <h2>Failed to Add</h2>
+          <p>Something went wrong. Please try again.</p>
+        </>
+      )}
+      <button className="cart-result-modal-close-btn" onClick={() => setCartResultModal({ open: false })}>
+        Close
+      </button>
+    </div>
+  </div>
+)}
       </main>
 
       {showChatbox && (
