@@ -1,117 +1,152 @@
-//cartController.js
+//checkoutController.js
 
+import CheckoutSubmission from '../models/CheckoutSubmission.js';
 import Cart from '../models/Cart.js';
+import UserBalance from '../models/UserBalance.js';
 import Listing from '../models/Listing.js'; 
-import CheckoutSubmission from '../models/CheckoutSubmission.js'; 
 
-export const getCart = async (req, res) => {
+export const submitCheckout = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ userId: req.userId }).populate('items.productId');
-    if (!cart) {
-      return res.status(200).json({ cartItems: [] });
+    const { bank, referenceNumber, listingId, quantity } = req.body;
+    const proofImage = req.file?.path; 
+
+    if (!proofImage) {
+      return res.status(400).json({ message: 'Proof image is required.' });
     }
 
-    const cartItems = cart.items.map(item => {
-      if (!item.productId) {
-        return {
-          ...item.toObject(),
-          productId: null,
-          productName: 'Deleted Product', 
-        };
-      }
-      return {
-        ...item.toObject(),
-        productName: item.productId.productName, 
-      };
-    });
+    if (!listingId) {
+      return res.status(400).json({ message: 'Listing ID is required.' });
+    }
 
-    res.status(200).json({ cartItems });
-  } catch (error) {
-    console.error('Error fetching cart items:', error.message);
-    res.status(500).json({ message: 'Error fetching cart items.' });
-  }
-};
+    if (!quantity || quantity <= 0) {
+      return res.status(400).json({ message: 'Valid quantity is required.' });
+    }
 
-export const addToCart = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { productId, quantity } = req.body;
-
-    const listing = await Listing.findById(productId); 
+    const listing = await Listing.findById(listingId);
     if (!listing) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: 'Listing not found.' });
     }
+    const sellerId = listing.userId; 
 
-    let cart = await Cart.findOne({ userId });
-    if (!cart) {
-      cart = new Cart({ userId, items: [] });
-    }
 
-    const existingItem = cart.items.find((item) => item.productId.equals(productId));
-    if (existingItem) {
-      existingItem.quantity += quantity;
-    } else {
-      cart.items.push({ productId, quantity });
-    }
-
-    await cart.save();
-    res.status(200).json({ message: 'Item added to cart', cartItems: cart.items });
-  } catch (error) {
-    console.error('Error adding to cart:', error.message);
-    res.status(500).json({ message: 'Error adding to cart', error: error.message });
-  }
-};
-
-export const removeFromCart = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { productId } = req.body;
-
-    const cart = await Cart.findOne({ userId });
-    if (!cart) {
-      return res.status(404).json({ message: 'Cart not found' });
-    }
-
-    cart.items = cart.items.filter((item) => !item.productId || item.productId.equals(productId));
-    await cart.save();
-
-    res.status(200).json({ message: 'Item removed from cart', cartItems: cart.items });
-  } catch (error) {
-    console.error('Error removing from cart:', error.message);
-    res.status(500).json({ message: 'Error removing from cart', error: error.message });
-  }
-};
-
-export const checkoutCart = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const cart = await Cart.findOne({ userId }).populate('items.productId');
-
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ message: 'Cart is empty.' });
-    }
-
-    const checkoutItems = cart.items.map(item => ({
-      productId: item.productId._id,
-      quantity: item.quantity,
-      totalPrice: item.productId.price * item.quantity,
-    }));
+    const totalPrice = (quantity * listing.price) * 1.01;
 
     const newCheckout = new CheckoutSubmission({
-      userId,
-      items: checkoutItems,
+      userId: req.userId,
+      listingId,
+      sellerId, 
+      bank,
+      referenceNumber,
+      proofImage,
+      quantity,
+      totalPrice,
       status: 'Pending', 
       BuyerStatus: 'NotYetReceived', 
     });
 
     await newCheckout.save();
 
-    cart.items = [];
-    await cart.save();
-
-    res.status(201).json({ message: 'Checkout successful', checkout: newCheckout });
+    res.status(201).json({
+      message: 'Payment details submitted successfully',
+      checkout: newCheckout,
+    });
   } catch (error) {
-    console.error('Error during checkout:', error.message);
-    res.status(500).json({ message: 'Error during checkout', error: error.message });
+    console.error('Error submitting payment:', error.message);
+    res.status(500).json({ message: 'Failed to submit payment details.' });
+  }
+};
+
+
+export const updateCheckoutStatus = async (req, res) => {
+  try {
+    const { status, approvalNote } = req.body;
+
+    const checkout = await CheckoutSubmission.findById(req.params.id).populate('listingId');
+
+    if (!checkout) {
+      return res.status(404).json({ message: 'Checkout not found.' });
+    }
+    if (!status) {
+      return res.status(400).json({ message: 'Status is required.' });
+    }
+
+    checkout.status = status;
+    if (approvalNote) {
+      checkout.approvalNote = approvalNote;
+    }
+
+    if (status === 'Success') {
+      checkout.BuyerStatus = 'Received';
+
+      const sellerId = checkout.listingId.userId; 
+      const sellerBalance = await UserBalance.findOne({ userId: sellerId });
+
+      if (!sellerBalance) {
+        await new UserBalance({
+          userId: sellerId,
+          sellerBalance: checkout.totalPrice,
+          transactions: [
+            { amount: checkout.totalPrice, type: 'credit', referenceId: checkout._id },
+          ],
+        }).save();
+      } else {
+        sellerBalance.sellerBalance += checkout.totalPrice;
+        sellerBalance.transactions.push({
+          amount: checkout.totalPrice,
+          type: 'credit',
+          referenceId: checkout._id,
+        });
+        await sellerBalance.save();
+      }
+    }
+
+    await checkout.save();
+    res.status(200).json({ message: 'Checkout status updated successfully.', checkout });
+  } catch (error) {
+    console.error('Error updating checkout:', error.message); 
+    res.status(500).json({ message: 'Failed to update checkout status.', error: error.message });
+  }
+};
+
+export const receivedCheckout = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const checkout = await CheckoutSubmission.findById(id).populate('listingId');
+    if (!checkout) {
+      return res.status(404).json({ message: 'Checkout not found.' });
+    }
+
+    if (checkout.BuyerStatus === 'Received') {
+      return res.status(400).json({ message: 'Order already marked as Received.' });
+    }
+
+    checkout.BuyerStatus = 'Received';
+    checkout.status = 'Success';
+    await checkout.save();
+
+    const sellerId = checkout.listingId.userId;
+    const sellerBalance = await UserBalance.findOne({ userId: sellerId });
+
+    if (!sellerBalance) {
+      await new UserBalance({
+        userId: sellerId,
+        sellerBalance: checkout.totalPrice,
+        transactions: [{ amount: checkout.totalPrice, type: 'credit', referenceId: checkout._id }],
+      }).save();
+    } else {
+      sellerBalance.sellerBalance += checkout.totalPrice;
+      sellerBalance.transactions.push({
+        amount: checkout.totalPrice,
+        type: 'credit',
+        referenceId: checkout._id,
+      });
+      await sellerBalance.save();
+    }
+
+    res.status(200).json({ message: 'Order marked as Received successfully.', checkout });
+  } catch (error) {
+    console.error('Error marking order as Received:', error.message);
+    res.status(500).json({ message: 'Failed to mark order as Received.', error: error.message });
   }
 };
