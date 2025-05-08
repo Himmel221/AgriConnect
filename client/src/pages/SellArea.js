@@ -550,7 +550,7 @@ const SellArea = () => {
                   >
                     <option value="sack">Pack</option>
                     <option value="kilograms">Listing</option>
-                    <option value="cavan">Bundle</option>
+                    <option value="bundle">Bundle</option>
                   </select>
                 </div>
 
