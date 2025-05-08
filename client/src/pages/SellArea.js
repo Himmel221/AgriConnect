@@ -33,7 +33,6 @@ const SellArea = () => {
     'San Antonio Este, Lupao City, Nueva Ecija',
     'San Antonio Weste, Lupao City, Nueva Ecija',
     'San Antonio South, Lupao City, Nueva Ecija',
-    'Poblacion, Urdaneta City, Nueva Ecija',
   ];
 
   const categories = {
