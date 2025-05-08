@@ -27,7 +27,7 @@ const BuyArea = () => {
 
   const fetchListings = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/listings', {
+      const response = await axios.get(`${apiUrl}/api/listings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
