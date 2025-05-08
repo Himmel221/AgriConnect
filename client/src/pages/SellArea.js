@@ -29,11 +29,11 @@ const SellArea = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
 
   const locations = [
-    'San Antonio Norte, Lupao City, Pangasinan',
-    'San Antonio Este, Lupao City, Pangasinan',
-    'San Antonio Weste, Lupao City, Pangasinan',
-    'San Antonio South, Lupao City, Pangasinan',
-    'Poblacion, Urdaneta City, Pangasinan',
+    'San Antonio Norte, Lupao City, Nueva Ecija',
+    'San Antonio Este, Lupao City, Nueva Ecija',
+    'San Antonio Weste, Lupao City, Nueva Ecija',
+    'San Antonio South, Lupao City, Nueva Ecija',
+    'Poblacion, Urdaneta City, Nueva Ecija',
   ];
 
   const categories = {
