@@ -1,7 +1,4 @@
-//SignIn.js
-
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography, Modal, Backdrop, Fade, IconButton, InputAdornment, Divider } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EmailIcon from '@mui/icons-material/Email';
@@ -15,7 +12,6 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate()
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -25,8 +21,6 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
         email,
         password,
       });
-  
-      console.log('Login API response:', response.data);
   
       const { userId, token, isAdmin, isVerified, userType } = response.data;
   
@@ -43,14 +37,11 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
       };
   
       login(token, userData);
-      
-      alert('Login successful');
       setEmail('');
       setPassword('');
       setError('');
       handleClose();
     } catch (error) {
-      console.error('Error in handleSignIn:', error);
       setError(error.response?.data?.message || 'An error occurred');
     }
   };
@@ -78,23 +69,26 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
         <Box
           sx={{
             display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
             width: { xs: '90%', sm: '800px' },
+            maxWidth: '95vw',
             height: { xs: 'auto', sm: '500px' },
+            maxHeight: { xs: '90vh', sm: 'none' },
             backgroundColor: '#ffffff',
             borderRadius: '20px',
-            overflow: 'hidden',
+            overflow: 'auto',
             position: 'absolute',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-            zIndex: 1300,
           }}
         >
-          {}
+          {/* Left side - Welcome */}
           <Box
             sx={{
               width: { xs: '100%', sm: '40%' },
+              minHeight: { xs: '180px', sm: 'auto' },
               backgroundColor: '#4D7C2E',
               color: '#FFF',
               display: 'flex',
@@ -102,7 +96,7 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
               justifyContent: 'center',
               alignItems: 'center',
               position: 'relative',
-              padding: '2rem',
+              padding: { xs: '1rem', sm: '2rem' },
               backgroundImage: 'linear-gradient(135deg, #4D7C2E 0%, #2E5C1A 100%)',
             }}
           >
@@ -110,8 +104,8 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
               onClick={handleClose} 
               sx={{ 
                 position: 'absolute', 
-                top: 16, 
-                left: 16, 
+                top: 8, 
+                left: 8, 
                 color: '#FFF',
                 '&:hover': {
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -121,31 +115,29 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
               <ArrowBackIcon />
             </IconButton>
             <Box 
-                component="img" 
-                src="https://cdn-icons-png.flaticon.com/512/3135/3135755.png" 
-                alt="AgriConnect Logo" 
-                sx={{ 
-                  width: '80px', 
-                  height: '80px',
-                  mb: 2,
-                  filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
-                }} 
-              />
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
+              component="img" 
+              src="https://i.pinimg.com/originals/85/8e/31/858e31ac1a2f642fb3ab0015d3f1acfa.png" 
+              alt="Logo" 
+              sx={{ 
+                width: { xs: '60px', sm: '80px' }, 
+                height: { xs: '60px', sm: '80px' },
+                mb: { xs: 1, sm: 2 },
+              }} 
+            />
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                 Welcome Back
               </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9, mb: 4 }}>
-                Sign in to continue to AgriConnect
+              <Typography variant="body1" sx={{ mb: { xs: 1, sm: 2 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                Sign In to continue to Agriconnect
               </Typography>
-              
 
-              
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+	      <Typography variant="body2" sx={{ opacity: 0.8 }}>
                 Your trusted agricultural marketplace
               </Typography>
             </Box>
           </Box>
+
           
           {/* Right side - Form */}
           <Box
@@ -154,15 +146,10 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
-              alignItems: 'center',
-              padding: { xs: '2rem', sm: '3rem' },
-              backgroundColor: '#ffffff',
+              padding: { xs: '1.5rem', sm: '2rem' },
+              overflowY: 'auto',
             }}
-          >
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, display: { xs: 'block', sm: 'none' } }}>
-              Sign in to AgriConnect
-            </Typography>
-            
+          >            
             {error && (
               <Typography 
                 variant="body2" 
@@ -170,10 +157,10 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
                   mb: 2, 
                   color: '#d32f2f',
                   backgroundColor: 'rgba(211, 47, 47, 0.1)',
-                  padding: '10px',
+                  padding: '8px',
                   borderRadius: '4px',
-                  width: '100%',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  fontSize: '0.875rem'
                 }}
               >
                 {error}
@@ -185,6 +172,7 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
               margin="normal"
               label="Email / Phone Number"
               variant="outlined"
+              size="small"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               InputProps={{
@@ -194,16 +182,7 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '&:hover fieldset': {
-                    borderColor: '#4D7C2E',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#4D7C2E',
-                  },
-                },
-              }}
+              sx={{ mb: 1.5 }}
             />
             
             <TextField
@@ -212,6 +191,7 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
               label="Password"
               type="password"
               variant="outlined"
+              size="small"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               InputProps={{
@@ -221,30 +201,21 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '&:hover fieldset': {
-                    borderColor: '#4D7C2E',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#4D7C2E',
-                  },
-                },
-              }}
+              sx={{ mb: 1 }}
             />
             
-            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
               <Typography
                 variant="body2"
                 sx={{ 
-                  cursor: 'pointer', 
                   color: '#4D7C2E',
                   fontWeight: 500,
+                  fontSize: '0.875rem',
                   '&:hover': {
                     textDecoration: 'underline',
+                    cursor: 'pointer'
                   }
                 }}
-                onClick={() => navigate('/forgot-password')}
               >
                 Forgot Password?
               </Typography>
@@ -254,29 +225,25 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
               fullWidth
               variant="contained"
               onClick={handleSignIn}
+              size="medium"
               sx={{ 
-                mt: 2, 
                 mb: 2,
                 backgroundColor: '#4D7C2E',
                 color: 'white',
-                py: 1.5,
+                py: 1,
                 borderRadius: '8px',
                 fontWeight: 600,
-                textTransform: 'none',
-                fontSize: '1rem',
-                boxShadow: '0 4px 8px rgba(77, 124, 46, 0.3)',
                 '&:hover': {
                   backgroundColor: '#3d6a25',
-                  boxShadow: '0 6px 12px rgba(77, 124, 46, 0.4)',
                 }
               }}
             >
               Sign In
             </Button>
             
-            <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Divider sx={{ flexGrow: 1 }} />
-              <Typography variant="body2" sx={{ px: 2, color: 'text.secondary' }}>
+              <Typography variant="body2" sx={{ px: 1, fontSize: '0.875rem' }}>
                 OR
               </Typography>
               <Divider sx={{ flexGrow: 1 }} />
@@ -285,38 +252,32 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
             <Button
               fullWidth
               variant="outlined"
-              onClick={() => alert('Sign in with Google')}
+              startIcon={<GoogleIcon />}
+              size="medium"
               sx={{ 
-                mb: 3,
+                mb: 2,
                 borderColor: '#ddd',
                 color: '#333',
-                py: 1.5,
+                py: 1,
                 borderRadius: '8px',
                 fontWeight: 500,
-                textTransform: 'none',
-                fontSize: '1rem',
                 '&:hover': {
                   borderColor: '#4D7C2E',
-                  backgroundColor: 'rgba(77, 124, 46, 0.05)',
                 }
               }}
-              startIcon={<GoogleIcon />}
             >
               Sign in with Google
             </Button>
             
-            <Typography variant="body2" sx={{ textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ textAlign: 'center', fontSize: '0.875rem' }}>
               Don't have an account?{' '}
               <span 
-                onClick={handleSignUpClick} 
                 style={{ 
                   color: '#4D7C2E', 
-                  cursor: 'pointer',
                   fontWeight: 600,
-                  '&:hover': {
-                    textDecoration: 'underline',
-                  }
+                  cursor: 'pointer'
                 }}
+                onClick={handleSignUpClick}
               >
                 Sign Up
               </span>
