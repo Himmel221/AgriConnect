@@ -23,6 +23,7 @@ const BuyArea = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState(""); 
   
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   const fetchListings = useCallback(async () => {
     try {
@@ -83,7 +84,7 @@ const BuyArea = () => {
   const handleAddToCart = async () => {
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/cart/add',
+        `${apiUrl}/api/cart/add`,
         {
           productId: selectedProduct._id,
           quantity: cartQuantity,
