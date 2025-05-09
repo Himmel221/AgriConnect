@@ -18,18 +18,17 @@ const Sidebar = ({ handleOpenSignIn }) => {
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
-  // Handle window resize
+
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
-      // Auto-collapse sidebar when window width is below threshold
+
       if (window.innerWidth <= 768) {
         setIsCollapsed(true);
       }
     };
 
     window.addEventListener('resize', handleResize);
-    // Initial check on component mount
     handleResize();
     
     return () => {
@@ -66,7 +65,28 @@ const Sidebar = ({ handleOpenSignIn }) => {
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
+    if (!isCollapsed) {
+      document.body.classList.add('sidebar-collapsed');
+      document.body.classList.remove('sidebar-expanded');
+    } else {
+      document.body.classList.remove('sidebar-collapsed');
+      document.body.classList.add('sidebar-expanded');
+    }
   };
+
+  useEffect(() => {
+    if (isCollapsed) {
+      document.body.classList.add('sidebar-collapsed');
+      document.body.classList.remove('sidebar-expanded');
+    } else {
+      document.body.classList.remove('sidebar-collapsed');
+      document.body.classList.add('sidebar-expanded');
+    }
+
+    return () => {
+      document.body.classList.remove('sidebar-collapsed', 'sidebar-expanded');
+    };
+  }, []);
 
   return (
     <div className="sidebar-wrapper">

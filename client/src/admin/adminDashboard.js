@@ -127,9 +127,7 @@ const AdminDashboard = () => {
               Manage Users
             </button>
 
-            <button className="admin-button" onClick={() => navigate('/manage-users-checkouts')}>
-              Manage User Checkouts
-            </button>
+            
           </div>
         </div>
       </div>

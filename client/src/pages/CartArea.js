@@ -7,9 +7,10 @@ import SideBar from '../components/side_bar';
 import './css/CartArea.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Clock, Package, CheckCircle, Trash2, Plus, Minus, CreditCard } from 'lucide-react';
-
+import { useAuth } from '../components/AuthProvider';
 
 const CartArea = () => {
+  const { token } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -19,6 +20,8 @@ const CartArea = () => {
   const [refNo, setRefNo] = useState('');
   const [uploadedImage, setUploadedImage] = useState(null);
   const navigate = useNavigate();
+  const [sellerPaymentMethods, setSellerPaymentMethods] = useState([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -155,7 +158,35 @@ const CartArea = () => {
     }, 0);
   };
 
-  const handleOpenPaymentModal = () => {
+  const fetchSellerPaymentMethods = async () => {
+    try {
+      const selectedItem = cartItems.find(item => selectedItems.includes(item.productId?._id));
+      if (!selectedItem) {
+        console.error("No selected item found");
+        return;
+      }
+
+      const listingOwnerId = selectedItem.productId?.userId?._id || selectedItem.productId?.userId;
+      
+      const response = await axios.get(`${apiUrl}/api/payment-methods/${listingOwnerId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      console.log("Fetched Payment Methods:", response.data.paymentMethods);
+  
+      if (response.status === 200) {
+        setSellerPaymentMethods(response.data.paymentMethods);
+      } else {
+        setSellerPaymentMethods([]);
+      }
+    } catch (error) {
+      console.error("Error fetching seller's payment methods:", error.response?.data || error.message);
+      setSellerPaymentMethods([]);
+    }
+  };
+
+  const handleOpenPaymentModal = (sellerId) => {
+    fetchSellerPaymentMethods(sellerId); 
     setOpenPaymentModal(true);
   };
   
@@ -164,6 +195,7 @@ const CartArea = () => {
     setBank('');
     setRefNo('');
     setUploadedImage(null);
+    setSelectedPaymentMethod(null);
   };
   
   const [checkoutResultModal, setCheckoutResultModal] = useState({ open: false, success: null });
@@ -237,8 +269,6 @@ const CartArea = () => {
       setCheckoutResultModal({ open: true, success: false });
     }
   };
-  
-  
   
   return (
     <>
@@ -388,13 +418,18 @@ const CartArea = () => {
                   </div>
                 </div>
                 <button
-                  className="cartarea-checkout-btn"
-                  disabled={selectedItems.length === 0}
-                  onClick={handleOpenPaymentModal}
-                >
-                  <CreditCard size={20} />
-                  <span>Proceed to Payment</span>
-                </button>
+  className="cartarea-checkout-btn"
+  disabled={selectedItems.length === 0}
+  onClick={() => {
+    const firstSelectedItem = cartItems.find(item => selectedItems.includes(item.productId?._id));
+    if (firstSelectedItem) {
+      handleOpenPaymentModal(firstSelectedItem.productId.userId); 
+    }
+  }}
+>
+  <CreditCard size={20} />
+  <span>Proceed to Payment</span>
+</button>
               </div>
             )}
           </div>
@@ -423,52 +458,105 @@ const CartArea = () => {
 )}
       </main>
 
-      {}
-      {openPaymentModal && (
-        <div className="cartarea-payment-modal-overlay">
-          <div className="cartarea-payment-modal-content">
-            <button className="cartarea-payment-modal-close-btn" onClick={handleClosePaymentModal}>
-              &times;
-            </button>
-            <h2 className="cartarea-payment-modal-title">Enter Proof of Payment</h2>
-            <img
-              src="/payment_qrcode.png"
-              alt="Payment QR Code"
-              className="cartarea-payment-modal-image"
-            />
-            <div className="cartarea-payment-modal-inputs">
-              <input
-                type="text"
-                placeholder="BANK"
-                value={bank}
-                onChange={(e) => setBank(e.target.value)}
-                className="cartarea-payment-modal-bank-input"
-              />
-              <input
-                type="text"
-                placeholder="REFERENCE NO."
-                value={refNo}
-                onChange={(e) => setRefNo(e.target.value)}
-                className="cartarea-payment-modal-ref-input"
-              />
+    {openPaymentModal && (
+      <div className="cartarea-payment-modal-overlay">
+        <div className="cartarea-payment-modal-content">
+          <button className="cartarea-payment-modal-close-btn" onClick={handleClosePaymentModal}>
+            ✖
+          </button>
+          <h2>Seller's Payment Details</h2>
+
+          {sellerPaymentMethods.length > 0 ? (
+            <div className="cartarea-banking-container">
+              <div className="cartarea-bank-select-wrapper">
+                <select 
+                  className="cartarea-bank-select"
+                  onChange={(e) => {
+                    const selectedMethod = sellerPaymentMethods.find(
+                      method => method._id === e.target.value
+                    );
+                    if (selectedMethod) {
+                      setSelectedPaymentMethod(selectedMethod);
+                    }
+                  }}
+                >
+                  <option value="">Select a bank account</option>
+                  {sellerPaymentMethods.map((method) => (
+                    <option key={method._id} value={method._id}>
+                      {method.bankName} - {method.accountName}
+                    </option>
+                  ))}
+                </select>
+                <div className="cartarea-select-arrow"></div>
+              </div>
+
+              {selectedPaymentMethod && (
+                <div className="cartarea-bank-details">
+                  <div className="cartarea-account-info">
+                    <h3>Account Name</h3>
+                    <p>{selectedPaymentMethod.accountName}</p>
+                  </div>
+                  <div className="cartarea-account-info">
+                    <h3>Account Number</h3>
+                    <p>{selectedPaymentMethod.accountNumber}</p>
+                  </div>
+                  {selectedPaymentMethod.proofImage && (
+                    <div className="cartarea-proof-container">
+                      <h3>Proof of Account</h3>
+                      <img 
+                        src={selectedPaymentMethod.proofImage} 
+                        alt="Bank Proof" 
+                        className="cartarea-proof-image"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            <div className="cartarea-payment-modal-upload">
-              <label htmlFor="cartarea-payment-modal-file-upload" className="cartarea-payment-modal-upload-label">
-                Upload the receipt / bank history
-              </label>
-              <input
-                type="file"
-                id="cartarea-payment-modal-file-upload"
-                className="cartarea-payment-modal-file-upload"
-                onChange={(e) => setUploadedImage(e.target.files[0])}
-              />
+          ) : (
+            <p className="cartarea-no-payment-methods">No payment methods found for this seller.</p>
+          )}
+
+          <div className="cartarea-payment-submission">
+            <h2>Submit Your Payment</h2>
+            <div className="cartarea-payment-form">
+              <div className="cartarea-form-group">
+                <label>Bank Name</label>
+                <input 
+                  type="text" 
+                  placeholder="Enter bank name" 
+                  value={bank} 
+                  onChange={(e) => setBank(e.target.value)} 
+                />
+              </div>
+              <div className="cartarea-form-group">
+                <label>Reference Number</label>
+                <input 
+                  type="text" 
+                  placeholder="Enter reference number" 
+                  value={refNo} 
+                  onChange={(e) => setRefNo(e.target.value)} 
+                />
+              </div>
+              <div className="cartarea-form-group">
+                <label>Payment Proof</label>
+                <input 
+                  type="file" 
+                  onChange={(e) => setUploadedImage(e.target.files[0])} 
+                  accept="image/*"
+                />
+              </div>
+              <button 
+                className="cartarea-submit-payment-btn"
+                onClick={handleSavePayment}
+              >
+                Submit Payment
+              </button>
             </div>
-            <button className="cartarea-payment-modal-save-btn" onClick={handleSavePayment}>
-              Save
-            </button>
           </div>
         </div>
-      )}
+      </div>
+    )}
     </>
   );
 };

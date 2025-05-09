@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import TopNavbar from '../components/top_navbar';
 import SideBar from '../components/side_bar';
-import { Tag, Package, Edit2, Truck } from 'lucide-react';
+import { Tag, Package, Edit2, Truck, PlusCircle, CreditCard } from 'lucide-react';
 import { useAuth } from '../components/AuthProvider';
 import './css/SellArea.css';
 import { useNavigate } from 'react-router-dom';
+import axios from "axios";
 
 const SellArea = () => {
-  const { isAuthenticated, token, userId } = useAuth();
+  const { user, isAuthenticated, token, userId } = useAuth();
   const navigate = useNavigate();
   const [openSellModal, setOpenSellModal] = useState(false);
   const [productName, setProductName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState('sack');
   const [category, setCategory] = useState('');
-  const [condition, setCondition] = useState('');
   const [details, setDetails] = useState('');
   const [location, setLocation] = useState('');
   const [price, setPrice] = useState('');
@@ -25,14 +25,87 @@ const SellArea = () => {
   const [editingListing, setEditingListing] = useState(null);
   const [sellerBalance, setSellerBalance] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showBankModal, setShowBankModal] = useState(false);
+  const [isSeller, setIsSeller] = useState(false); 
+  const [showSellerExclusiveModal, setShowSellerExclusiveModal] = useState(false);
+  const [showBankingPopup, setShowBankingPopup] = useState(false); 
+const [showAddBanking, setShowAddBanking] = useState(false);      
+const [sellerPaymentMethods, setSellerPaymentMethods] = useState([]); 
+const [bankName, setBankName] = useState("");  
+const [accountNumber, setAccountNumber] = useState("");  
+const [accountName, setAccountName] = useState("");
+const [proofImage, setProofImage] = useState(null);  
+const [selectedBankMethod, setSelectedBankMethod] = useState(null);
+
+
+  console.log("Checking useAuth():", user);
+  console.log("SellArea.js -> Extracted isAuthenticated from useAuth():", isAuthenticated);
+  
+  useEffect(() => {
+    if (!user) {
+      console.log("User is still loading...");
+      return; 
+    }
+    console.log("User object before setting:", user);
+  },   [user]); 
+
+
+
+useEffect(() => {
+  console.log("SELLAREA Checking isSeller before modal display:", isSeller);
+
+  if (isSeller === null) return; 
+
+  if (!isSeller) {
+    console.warn("Access denied: User is not a seller!");
+    setShowSellerExclusiveModal(true); 
+  } else {
+    setShowSellerExclusiveModal(false); 
+  }
+
+  console.log("SELLAREA Modal state AFTER update:", showSellerExclusiveModal);
+}, [isSeller]);
+
+  const fetchSellerStatus = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/api/auth/seller-status`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      const data = await response.json();
+  
+      console.log("SELLAREA API RESPONSE:", data); 
+  
+      if (response.ok) {
+        console.log("SELLAREA Extracted isSeller from API:", data.isSeller); 
+        setIsSeller(data.isSeller ?? false);
+        console.log("SELLAREA State AFTER update:", data.isSeller ?? false); 
+      } else {
+        console.error("Error fetching seller status:", data.message);
+      }
+    } catch (error) {
+      console.error("Failed to fetch seller status:", error);
+    }
+  };
+
+
+
+  useEffect(() => {
+    if (token) {
+      console.log("SELLAREA Fetching seller status...");
+      fetchSellerStatus(); 
+    }
+  }, [token]);
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
   const locations = [
-    'San Antonio Norte, Lupao City, Nueva Ecija',
-    'San Antonio Este, Lupao City, Nueva Ecija',
-    'San Antonio Weste, Lupao City, Nueva Ecija',
-    'San Antonio South, Lupao City, Nueva Ecija',
+    'San Antonio Norte, Lupao City, Pangasinan',
+    'San Antonio Este, Lupao City, Pangasinan',
+    'San Antonio Weste, Lupao City, Pangasinan',
+    'San Antonio South, Lupao City, Pangasinan',
+    'Poblacion, Urdaneta City, Pangasinan',
   ];
 
   const categories = {
@@ -60,7 +133,6 @@ const SellArea = () => {
     quantity,
     unit,
     category,
-    condition,
     details,
     location,
     price,
@@ -83,6 +155,7 @@ const SellArea = () => {
   
       const result = await response.json();
       if (response.ok) {
+        console.log("Fetched listings:", result.listings);
         setListings(result.listings);
       } else {
         console.error('Failed to fetch listings:', result);
@@ -154,7 +227,6 @@ const SellArea = () => {
       formData.append("quantity", quantity);
       formData.append("unit", unit);
       formData.append("category", category);
-      formData.append("condition", condition);
       formData.append("details", details);
       formData.append("location", location);
       formData.append("price", price);
@@ -187,18 +259,23 @@ const SellArea = () => {
     }
   };
   
-  const handleUnlist = async (listingIdentifier) => {
+  const handleUnlist = async (listingId) => {
     try {
-      console.log(`Attempting to unlist: /api/listings/${listingIdentifier}/unlist`);
+      if (!listingId) {
+        console.error("No ID provided for unlisting");
+        return;
+      }
+
+      console.log(`Attempting to unlist: /api/listings/${listingId}/unlist`);
   
-      const response = await fetch(`${apiUrl}/api/listings/${listingIdentifier}/unlist`, {
+      const response = await fetch(`${apiUrl}/api/listings/${listingId}/unlist`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
         },
       });
   
-      console.log("Identifier Passed to Unlist:", listingIdentifier);
+      console.log("ID Passed to Unlist:", listingId);
   
       if (!response.ok) {
         const errorData = await response.json();
@@ -210,7 +287,7 @@ const SellArea = () => {
   
       setListings((prevListings) =>
         prevListings.map((listing) =>
-          listing.identifier === listingIdentifier ? { ...listing, status: false } : listing
+          listing._id === listingId ? { ...listing, status: false } : listing
         )
       );
     } catch (error) {
@@ -218,18 +295,23 @@ const SellArea = () => {
     }
   };
   
-  const handleRelist = async (listingIdentifier) => {
+  const handleRelist = async (listingId) => {
     try {
-      console.log(`Attempting to relist: /api/listings/${listingIdentifier}/relist`);
+      if (!listingId) {
+        console.error("No ID provided for relisting");
+        return;
+      }
+
+      console.log(`Attempting to relist: /api/listings/${listingId}/relist`);
   
-      const response = await fetch(`${apiUrl}/api/listings/${listingIdentifier}/relist`, {
+      const response = await fetch(`${apiUrl}/api/listings/${listingId}/relist`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
         },
       });
   
-      console.log("Identifier Passed to Relist:", listingIdentifier);
+      console.log("ID Passed to Relist:", listingId);
   
       if (!response.ok) {
         const errorData = await response.json();
@@ -241,7 +323,7 @@ const SellArea = () => {
   
       setListings((prevListings) =>
         prevListings.map((listing) =>
-          listing.identifier === listingIdentifier ? { ...listing, status: true } : listing
+          listing._id === listingId ? { ...listing, status: true } : listing
         )
       );
     } catch (error) {
@@ -267,7 +349,6 @@ const SellArea = () => {
           quantity,
           unit,
           category,
-          condition,
           details,
           location,
           price,
@@ -300,17 +381,16 @@ const SellArea = () => {
     setQuantity(listing.quantity);
     setUnit(listing.unit);
     setCategory(listing.category);
-    setCondition(listing.condition);
     setDetails(listing.details);
     setLocation(listing.location);
     setPrice(listing.price);
     setColor(listing.color);
     setMinimumOrder(listing.minimumOrder);
     setProductsSold(listing.productsSold);
-    setSelectedImage(listing.imageUrl); // 🔹 Make sure the existing image is set
+    setSelectedImage(listing.imageUrl); 
     setOpenSellModal(true);
   
-    console.log("Existing Image:", listing.imageUrl); // 🔹 Debugging image display
+    console.log("Existing Image:", listing.imageUrl); 
   };
 
   const handleEditPublish = async () => {
@@ -324,7 +404,6 @@ const SellArea = () => {
     formData.append("quantity", quantity);
     formData.append("unit", unit);
     formData.append("category", category);
-    formData.append("condition", condition);
     formData.append("details", details);
     formData.append("location", location);
     formData.append("price", price);
@@ -333,14 +412,13 @@ const SellArea = () => {
     formData.append("productsSold", productsSold);
     formData.append("userId", userId);
   
-    // 🔹 Correctly set image depending on whether a new one is uploaded
     if (selectedImage instanceof File) {
-      formData.append("image", selectedImage); // 🔹 Send new image if selected
+      formData.append("image", selectedImage); 
     } else if (editingListing.imageUrl && !selectedImage) {
-      formData.append("existingImageUrl", editingListing.imageUrl); // 🔹 Preserve previous image if no new one
+      formData.append("existingImageUrl", editingListing.imageUrl); 
     }
   
-    console.log("Form Data Before Sending:", [...formData.entries()]); // 🔹 Debugging
+    console.log("Form Data Before Sending:", [...formData.entries()]); 
   
     try {
       const response = await fetch(`${apiUrl}/api/listings/${editingListing._id}`, {
@@ -356,8 +434,8 @@ const SellArea = () => {
   
       if (response.ok) {
         alert("Listing updated successfully!");
-        setEditingListing(null); // 🔹 Close edit mode
-        fetchListings(); // 🔹 Refresh listings
+        setEditingListing(null); 
+        fetchListings(); 
       } else {
         console.error("Failed to update listing:", result.message);
       }
@@ -407,8 +485,85 @@ const SellArea = () => {
     }
   };
 
+  const fetchSellerPaymentMethods = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/payment-methods`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      console.log("Fetched Payment Methods:", response.data.paymentMethods); 
+  
+      if (response.status === 200) {
+        setSellerPaymentMethods(response.data.paymentMethods);
+      } else {
+        setSellerPaymentMethods([]);
+      }
+    } catch (error) {
+      console.error("Error fetching seller's payment methods:", error);
+      setSellerPaymentMethods([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchSellerPaymentMethods();
+  }, []);
+
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+  
+  const handleAddBankingDetails = async () => {
+    try {
+      const base64Image = proofImage ? await convertToBase64(proofImage) : null;
+  
+      const response = await fetch(`${apiUrl}/api/payment-methods`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ bankName, accountNumber, accountName, proofImage: base64Image }),
+      });
+  
+      if (!response.ok) throw new Error("Failed to add banking details.");
+  
+      alert("Banking details added successfully!");
+    } catch (error) {
+      console.error("Error adding banking details:", error);
+      alert(error.message);
+    }
+  };
+
+  if (showSellerExclusiveModal) {
+    return (
+      <div className="sellarea-sellerExcluModal-overlay">
+        <div className="sellarea-SellerExcluModal-content">
+          <h2>Seller-Exclusive Access 🚫</h2>
+          <p>You are not a verified seller of this platform.</p>
+          <button onClick={() => navigate("/")}>Go Back</button> {}
+        </div>
+      </div>
+    );
+  }
+
+
+
   return (
     <>
+        {showSellerExclusiveModal && (
+      <div className="sellarea-sellerExcluModal-overlay">
+        <div className="sellarea-sellerExcluModal-content">
+          <h2>Seller-Exclusive Access 🚫</h2>
+          <p>You are not a verified seller of this platform.</p>
+          <button onClick={() => navigate("/")}>Go Back</button>
+        </div>
+      </div>
+    )}
       <TopNavbar />
       <main className="sellarea-main">
         <SideBar />
@@ -422,21 +577,151 @@ const SellArea = () => {
               Withdraw
             </button>
           </div>
-
-          {}
-          {isAuthenticated && (
-            <button className="sellarea-start-selling-btn" onClick={handleOpenSellModal}>
-              Start Selling!
+          <div className="sellarea-action-buttons">
+            {isAuthenticated && (
+              <button className="sellarea-start-selling-btn" onClick={handleOpenSellModal}>
+                <PlusCircle size={20} />
+                Start Selling!
+              </button>
+            )}
+            <button className="sellarea-check-orders-btn" onClick={handleCheckOrders}>
+              <Package size={20} />
+              Check Orders
             </button>
+            <button className="sellarea-banking-details-btn" onClick={() => setShowBankingPopup(true)}>
+              <CreditCard size={20} />
+              Banking Details
+            </button>
+          </div>
+          {showBankingPopup && (
+            <div className="sellarea-banking-popup-overlay">
+              <div className="sellarea-banking-popup-content">
+                <button className="sellarea-banking-popup-close-btn" onClick={() => setShowBankingPopup(false)}>
+                  ✖
+                </button>
+
+                {!showAddBanking ? (
+                  <>
+                    <h2>Seller Banking Details</h2>
+                    {sellerPaymentMethods.length > 0 ? (
+                      <div className="sellarea-banking-container">
+                        <div className="sellarea-bank-select-wrapper">
+                          <select 
+                            className="sellarea-bank-select"
+                            onChange={(e) => {
+                              const selectedMethod = sellerPaymentMethods.find(
+                                method => method._id === e.target.value
+                              );
+                              if (selectedMethod) {
+                                setSelectedBankMethod(selectedMethod);
+                              }
+                            }}
+                          >
+                            <option value="">Select a bank account</option>
+                            {sellerPaymentMethods.map((method) => (
+                              <option key={method._id} value={method._id}>
+                                {method.bankName} - {method.accountName}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="sellarea-select-arrow"></div>
+                        </div>
+
+                        {selectedBankMethod && (
+                          <div className="sellarea-bank-details">
+                            <div className="sellarea-account-info">
+                              <h3>Account Name</h3>
+                              <p>{selectedBankMethod.accountName}</p>
+                            </div>
+                            <div className="sellarea-account-info">
+                              <h3>Account Number</h3>
+                              <p>{selectedBankMethod.accountNumber}</p>
+                            </div>
+                            {selectedBankMethod.proofImage && (
+                              <div className="sellarea-proof-container has-image">
+                                <h3>Proof of Account</h3>
+                                <img 
+                                  src={selectedBankMethod.proofImage} 
+                                  alt="Bank Proof" 
+                                  className="sellarea-proof-image"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <button 
+                          className="sellarea-add-bank-btn" 
+                          onClick={() => setShowAddBanking(true)}
+                        >
+                          <span className="sellarea-add-icon">+</span>
+                          Add New Banking Details
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="sellarea-no-payment-method">
+                        <p>No banking details added yet.</p>
+                        <button 
+                          className="sellarea-add-bank-btn" 
+                          onClick={() => setShowAddBanking(true)}
+                        >
+                          Add Banking Details
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="sellarea-banking-header">
+                      <h2>Add Banking Details</h2>
+                    </div>
+                    <div className="sellarea-add-banking-form">
+                      <input 
+                        type="text" 
+                        placeholder="Bank Name" 
+                        value={bankName} 
+                        onChange={(e) => setBankName(e.target.value)} 
+                        className="sellarea-bank-input"
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Account Name" 
+                        value={accountName} 
+                        onChange={(e) => setAccountName(e.target.value)} 
+                        className="sellarea-bank-input"
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Account Number" 
+                        value={accountNumber} 
+                        onChange={(e) => setAccountNumber(e.target.value)} 
+                        className="sellarea-account-input"
+                      />
+                      <input 
+                        type="file" 
+                        onChange={(e) => setProofImage(e.target.files[0])} 
+                        className="sellarea-upload-proof"
+                        accept="image/*"
+                      />
+                      <div className="sellarea-banking-buttons">
+                        <button className="sellarea-cancel-bank-btn" onClick={() => setShowAddBanking(false)}>
+                          Cancel
+                        </button>
+                        <button className="sellarea-save-bank-btn" onClick={handleAddBankingDetails}>
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           )}
-          <button className="sellarea-check-orders-btn" onClick={handleCheckOrders}>
-            Check Orders
-          </button>
 
           <div className="sellarea-item-container">
             {listings.length > 0 ? (
               listings.map((listing) => (
-                <div key={listing.identifier} className="sellarea-item-cards">
+                <div key={listing._id} className="sellarea-item-cards">
                   <img
                     src={listing.imageUrl || 'default-image.jpg'}
                     alt={listing.productName}
@@ -449,15 +734,16 @@ const SellArea = () => {
                   <p>Details: {listing.details}</p>
                   <p>Stocks Availability: {listing.quantity} {listing.unit}</p>
                   <p>Minimum Order: {listing.minimumOrder}</p>
-                  <p>Condition: {listing.condition}</p>
                   <p>Location: {listing.location}</p>
-                  <p>This listing is {listing.status ? "active" : "inactive"}.</p>
+                  <p className={`sellarea-listing-status ${listing.status ? 'active' : 'inactive'}`}>
+                    This listing is {listing.status ? "active" : "inactive"}.
+                  </p>
 
                   <button
                     onClick={() =>
                       listing.status
-                        ? handleUnlist(listing.identifier)
-                        : handleRelist(listing.identifier)
+                        ? handleUnlist(listing._id)
+                        : handleRelist(listing._id)
                     }
                     className={listing.status ? "sellarea-unlist-btn" : "sellarea-list-btn"}
                   >
@@ -466,11 +752,6 @@ const SellArea = () => {
 
                   <button onClick={() => handleEdit(listing)} className="sellarea-edit-btn">
                     <Edit2 className="sellarea-icon" />
-                  </button>
-
-                  {}
-                  <button onClick={() => handleDeleteClick(listing._id)} className="delete-btn">
-                    Delete
                   </button>
                 </div>
               ))
@@ -523,16 +804,17 @@ const SellArea = () => {
                     ))}
                   </select>
                 </div>
+
                 <div className="input-group">
-  <input
-    type="number"
-    placeholder="Price"
-    value={price}
-    onChange={(e) => setPrice(e.target.value)}
-    className="input-field"
-    required
-  />
-</div>
+                  <input
+                    type="number"
+                    placeholder="Price"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="input-field"
+                    required
+                  />
+                </div>
 
                 <div className="input-group">
                   <input
@@ -549,7 +831,7 @@ const SellArea = () => {
                   >
                     <option value="sack">Pack</option>
                     <option value="kilograms">Listing</option>
-                    <option value="bundle">Bundle</option>
+                    <option value="cavan">Bundle</option>
                   </select>
                 </div>
 
@@ -563,15 +845,7 @@ const SellArea = () => {
                   />
                 </div>
 
-                <div className="input-group">
-                  <input
-                    type="text"
-                    placeholder="Condition"
-                    value={condition}
-                    onChange={(e) => setCondition(e.target.value)}
-                    className="input-field"
-                  />
-                </div>
+
 
                 <div className="input-group">
                   <textarea
@@ -617,15 +891,21 @@ const SellArea = () => {
                   />
                 </div>
 
-                <button className="sellarea-publish-btn" onClick={editingListing ? handleEditPublish : handlePublish}>
-  <Truck className="mr-2" />
-  {editingListing ? "Publish Edit" : "Publish"}
-</button>
+                <div className="sellarea-modal-buttons">
+                  <button className="sellarea-publish-btn" onClick={editingListing ? handleEditPublish : handlePublish}>
+                    <Truck className="mr-2" />
+                    {editingListing ? "Publish Edit" : "Publish"}
+                  </button>
+                  {editingListing && (
+                    <button onClick={() => handleDeleteClick(editingListing._id)} className="sellarea-delete-btn">
+                      Delete
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
-          {}
           {showConfirmation && (
             <div className="confirmation-popup">
               <p>Are you sure you want to delete this listing?</p>
@@ -634,8 +914,10 @@ const SellArea = () => {
             </div>
           )}
         </div>
+
       </main>
     </>
-  ); };
+  );
+};
 
-  export default SellArea;
+export default SellArea;

@@ -5,6 +5,7 @@ import { login, registerUser, verifyEmail, forgotPassword, resetPassword, resend
 import auth from '../middleware/auth.js';
 import AdminRoutes from './Admin.js';
 import User from '../models/User.js';
+import { getSellerStatus } from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.post('/reset-password', resetPassword);
 router.post('/resend-verification-code', resendVerificationCode);
 router.post('/send-verification-email', auth, sendVerificationEmail);
 router.get('/user', auth, getUser);
+router.get("/seller-status", auth, getSellerStatus);
 
 router.use('/admin', AdminRoutes);
 

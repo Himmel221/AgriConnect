@@ -12,43 +12,67 @@ import {
   Mail,
   Eye,
   Shield,
-  Activity
-} from "lucide-react"; // sample icons
-
+  Activity,
+  User,
+  Bell,
+  LogOut
+} from "lucide-react"; 
+import TopNavbar from '../components/top_navbar';
 
 const Settings = () => {
   const { token, isAuthenticated, logout } = useAuth();
-  const [currentView, setCurrentView] = useState('default');
-  const [isVerified, setIsVerified] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const [activeSection, setActiveSection] = useState('personal');
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showVerificationDialog, setShowVerificationDialog] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
-  const [verificationStatus, setVerificationStatus] = useState('');
+  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [fontSize, setFontSize] = useState('medium');
+  const [highContrast, setHighContrast] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [screenReader, setScreenReader] = useState(false);
+  const [notifications, setNotifications] = useState({
+    email: true,
+    push: true,
+    marketing: false
+  });
+  const [privacySettings, setPrivacySettings] = useState({
+    profileVisibility: 'public',
+    showEmail: false,
+    showPhone: false,
+    allowMessaging: true
+  });
+  const [activityLog, setActivityLog] = useState([]);
+  const [showAllActivity, setShowAllActivity] = useState(false);
+  const [activityFilters, setActivityFilters] = useState({
+    type: 'all',
+    date: 'all'
+  });
+
+  const [isVerified, setIsVerified] = useState(false);
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [language, setLanguage] = useState('english');
+  const [accessibilityStatus, setAccessibilityStatus] = useState('');
+  const [privacyStatus, setPrivacyStatus] = useState('');
+  const [showDocuments, setShowDocuments] = useState(false);
+  const [documentStatus, setDocumentStatus] = useState('');
+  const [loginAlerts, setLoginAlerts] = useState(true);
   const [passwordDetails, setPasswordDetails] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
-  const [loginAlerts, setLoginAlerts] = useState(true);
   const [passwordChangeStatus, setPasswordChangeStatus] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState('english');
-  const [accessibilityStatus, setAccessibilityStatus] = useState('');
-  const [privacySettings, setPrivacySettings] = useState({
-    profileVisibility: 'public',
-    activityStatus: true,
-    emailNotifications: true,
-    pushNotifications: true,
-  });
-  const [privacyStatus, setPrivacyStatus] = useState('');
-  const [showDocuments, setShowDocuments] = useState(false);
-  const [showVerificationDialog, setShowVerificationDialog] = useState(false);
-  const [documentStatus, setDocumentStatus] = useState('');
-
-  const apiUrl = process.env.REACT_APP_API_URL;
 
   const navigate = useNavigate();
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -56,7 +80,7 @@ const Settings = () => {
     }
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
-      setDarkMode(true);
+      setIsDarkMode(true);
       document.documentElement.classList.add('dark-mode');
     }
     const savedLanguage = localStorage.getItem('language') || 'english';
@@ -82,6 +106,7 @@ const Settings = () => {
 
           console.log('User data response:', response.data);
 
+          setUser(response.data);
           setIsVerified(response.data.isVerified);
           setEmail(response.data.email);
         } catch (error) {
@@ -97,7 +122,6 @@ const Settings = () => {
     
     fetchUserData();
   }, [token, logout, navigate]);
-
 
   const handlePasswordDetailsChange = (e) => {
     const { name, value } = e.target;
@@ -137,7 +161,7 @@ const Settings = () => {
     } catch (error) {
       console.error('Error changing password:', error);
       setPasswordChangeStatus(
-        error.response?.data?.message || 'Failed to change password'
+        error.response?.data?.message || 'This part is still under development'
       );
     }
     setIsLoading(false);
@@ -206,8 +230,8 @@ const Settings = () => {
   };
 
   const toggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
     if (newDarkMode) {
       document.documentElement.classList.add('dark-mode');
       localStorage.setItem('theme', 'dark');
@@ -284,186 +308,112 @@ const Settings = () => {
   };
 
   const renderContent = () => {
-    switch (currentView) {
-      case 'verifyEmail':
+    switch (activeSection) {
+      case 'personal':
         return (
-          <div className="verify-email-content">
-            <h2>Verify Your Email Address</h2>
-            
-            <button
-              onClick={handleSendVerificationEmail}
-              className="verify-btn"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Sending...' : 'Send Verification Email'}
-            </button>
-            {emailSent && <div className="status-message">{verificationStatus}</div>}
-            <input
-              type="text"
-              placeholder="Enter verification code"
-              value={verificationCode}
-              onChange={(e) => {
-                setVerificationCode(e.target.value);
-              }}
-              className="verify-input"
-            />
-            <button
-              onClick={handleVerifyCode}
-              className="verify-btn"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Submitting...' : 'Confirm Verification Code'}
-            </button>
-            {verificationStatus && <div className="status-message">{verificationStatus}</div>}
+          <div className="personal-details-content">
+            <div className="section">
+              <h2>Personal Details</h2>
+              <p className="info-text" style={{ color: '#666', fontStyle: 'italic' }}>
+                Settings is still under development. More features coming soon!
+              </p>
+            </div>
           </div>
         );
-        case 'password-security':
-          return (
-            <div className="password-security-content">
-              <h1>Password and Security</h1>
-        
-              <div className="section">
-                <h2>Change Password</h2>
-        
-                <div className="form-group">
-                  <label>Current Password</label>
-                  <input
-                    type="password"
-                    name="currentPassword"
-                    value={passwordDetails.currentPassword}
-                    onChange={handlePasswordDetailsChange}
-                    className="form-input"
-                  />
-                </div>
-        
-                <div className="form-group">
-                  <label>New Password</label>
-                  <input
-                    type="password"
-                    name="newPassword"
-                    value={passwordDetails.newPassword}
-                    onChange={handlePasswordDetailsChange}
-                    className="form-input"
-                  />
-                </div>
-        
-                <div className="form-group">
-                  <label>Confirm New Password</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={passwordDetails.confirmPassword}
-                    onChange={handlePasswordDetailsChange}
-                    className="form-input"
-                  />
-                </div>
-        
-                {passwordChangeStatus && (
-                  <div className={`status-message ${passwordChangeStatus.includes('success') ? 'success' : 'error'}`}>
-                    {passwordChangeStatus}
-                  </div>
-                )}
-        
-                <button 
-                  onClick={handleChangePassword} 
-                  className="save-btn"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Updating...' : 'Change Password'}
-                </button>
-              </div>
-        
-              <div className="divider"></div>
-        
-              <div className="section">
-                <h2>Password Requirements</h2>
-                <ul className="requirements-list">
-                  <li>Minimum 8 characters</li>
-                  <li>At least one uppercase letter</li>
-                  <li>At least one lowercase letter</li>
-                  <li>At least one number</li>
-                  <li>At least one special character</li>
-                </ul>
-              </div>
-        
-              <div className="divider"></div>
-        
-              <div className="section">
-                <h2>Login Alerts</h2>
-                <div className="toggle-group">
-                  <label>Receive alerts for unrecognized logins</label>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={loginAlerts}
-                      onChange={toggleLoginAlerts}
-                    />
-                    <span className="slider round"></span>
-                  </label>
-                </div>
-                <p className="info-text">
-                  Get notified when your account is accessed from a new device or browser.
-                </p>
-              </div>
-            </div>
-          );        
-      case 'accessibility':
+      case 'security':
         return (
-          <div className="accessibility-content">
-            <h1>Accessibility Settings</h1>
-
+          <div className="password-security-content">
+            <h1>Password and Security</h1>
+        
             <div className="section">
-              <h2>Appearance</h2>
-
+              <h2>Change Password</h2>
+        
+              <div className="form-group">
+                <label>Current Password</label>
+                <input
+                  type="password"
+                  name="currentPassword"
+                  value={passwordDetails.currentPassword}
+                  onChange={handlePasswordDetailsChange}
+                  className="form-input"
+                />
+              </div>
+        
+              <div className="form-group">
+                <label>New Password</label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={passwordDetails.newPassword}
+                  onChange={handlePasswordDetailsChange}
+                  className="form-input"
+                />
+              </div>
+        
+              <div className="form-group">
+                <label>Confirm New Password</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={passwordDetails.confirmPassword}
+                  onChange={handlePasswordDetailsChange}
+                  className="form-input"
+                />
+              </div>
+        
+              {passwordChangeStatus && (
+                <div className={`status-message ${passwordChangeStatus.includes('success') ? 'success' : 'error'}`}>
+                  {passwordChangeStatus}
+                </div>
+              )}
+        
+              <button 
+                onClick={handleChangePassword} 
+                className="save-btn"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Updating...' : 'Change Password'}
+              </button>
+            </div>
+        
+            <div className="divider"></div>
+        
+            <div className="section">
+              <h2>Password Requirements</h2>
+              <ul className="requirements-list">
+                <li>Minimum 8 characters</li>
+                <li>At least one uppercase letter</li>
+                <li>At least one lowercase letter</li>
+                <li>At least one number</li>
+                <li>At least one special character</li>
+              </ul>
+            </div>
+        
+            <div className="divider"></div>
+        
+            <div className="section">
+              <h2>Login Alerts</h2>
               <div className="toggle-group">
-                <label>Dark Mode</label>
+                <label>Receive alerts for unrecognized logins</label>
                 <label className="toggle-switch">
                   <input
                     type="checkbox"
-                    checked={darkMode}
-                    onChange={toggleDarkMode}
+                    checked={loginAlerts}
+                    onChange={toggleLoginAlerts}
                   />
                   <span className="slider round"></span>
                 </label>
               </div>
               <p className="info-text">
-                Switch between light and dark theme for better visibility.
+                Get notified when your account is accessed from a new device or browser.
               </p>
             </div>
-
-            <div className="divider"></div>
-
-            <div className="section">
-              <h2>Language Preferences</h2>
-
-              <div className="form-group">
-                <label>Select Language</label>
-                <select
-                  value={language}
-                  onChange={handleLanguageChange}
-                  className="form-input"
-                >
-                  <option value="english">English</option>
-                  <option value="filipino">Filipino</option>
-                </select>
-              </div>
-              <p className="info-text">
-                Choose your preferred language.
-              </p>
-            </div>
-
-            {accessibilityStatus && (
-              <div className={`status-message success`}>
-                {accessibilityStatus}
-              </div>
-            )}
-
-            <button 
-              onClick={saveAccessibilitySettings} 
-              className="save-btn"
-            >
-              Save Preferences
-            </button>
+          </div>
+        );        
+      case 'notifications':
+        return (
+          <div className="notifications-content">
+            {/* Keep existing notifications content */}
           </div>
         );
       case 'privacy':
@@ -552,127 +502,217 @@ const Settings = () => {
             </button>
           </div>
         );
-        case 'activity-log':
-          return (
-            <div className="activity-log-content">
-              <div className="section">
-                <h2>Recent Activities</h2>
-                <p className="info-text">
-                  View your account's recent activities and access history.
-                </p>
-                
-                <div className="activity-filters">
-                  <div className="form-group">
-                    <label>Filter by activity type</label>
-                    <select className="form-input">
-                      <option value="all">All Activities</option>
-                      <option value="login">Logins</option>
-                      <option value="password">Password Changes</option>
-                      <option value="profile">Profile Updates</option>
-                      <option value="purchase">Purchases</option>
-                      <option value="security">Security Events</option>
-                    </select>
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Time period</label>
-                    <select className="form-input">
-                      <option value="7days">Last 7 days</option>
-                      <option value="30days">Last 30 days</option>
-                      <option value="90days">Last 90 days</option>
-                      <option value="all">All time</option>
-                    </select>
-                  </div>
+      case 'activity':
+        return (
+          <div className="activity-log-content">
+            <div className="section">
+              <h2>Recent Activities</h2>
+              <p className="info-text">
+                View your account's recent activities and access history.
+              </p>
+              
+              <div className="activity-filters">
+                <div className="form-group">
+                  <label>Filter by activity type</label>
+                  <select className="form-input">
+                    <option value="all">All Activities</option>
+                    <option value="login">Logins</option>
+                    <option value="password">Password Changes</option>
+                    <option value="profile">Profile Updates</option>
+                    <option value="purchase">Purchases</option>
+                    <option value="security">Security Events</option>
+                  </select>
                 </div>
                 
-                <div className="activity-list">
-                  {}
-                  <div className="activity-item">
-                    <div className="activity-icon">
-                      <i className="fas fa-sign-in-alt"></i>
-                    </div>
-                    <div className="activity-details">
-                      <h3>Successful login</h3>
-                      <p className="activity-description">
-                        Logged in from Chrome on Windows 10
-                      </p>
-                      <p className="activity-meta">
-                        <span className="activity-time">Today, 10:30 AM</span>
-                        <span className="activity-location">Manila, Philippines</span>
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="activity-item">
-                    <div className="activity-icon">
-                      <i className="fas fa-lock"></i>
-                    </div>
-                    <div className="activity-details">
-                      <h3>Password changed</h3>
-                      <p className="activity-description">
-                        Your password was successfully updated
-                      </p>
-                      <p className="activity-meta">
-                        <span className="activity-time">Yesterday, 2:15 PM</span>
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="activity-item">
-                    <div className="activity-icon">
-                      <i className="fas fa-user-edit"></i>
-                    </div>
-                    <div className="activity-details">
-                      <h3>Profile updated</h3>
-                      <p className="activity-description">
-                        Changed profile picture and phone number
-                      </p>
-                      <p className="activity-meta">
-                        <span className="activity-time">March 15, 3:45 PM</span>
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="activity-item">
-                    <div className="activity-icon">
-                      <i className="fas fa-shopping-bag"></i>
-                    </div>
-                    <div className="activity-details">
-                      <h3>New purchase</h3>
-                      <p className="activity-description">
-                        Order #12345 for 10kg of rice
-                      </p>
-                      <p className="activity-meta">
-                        <span className="activity-time">March 10, 9:20 AM</span>
-                        <span className="activity-amount">₱1,250.00</span>
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="activity-item">
-                    <div className="activity-icon">
-                      <i className="fas fa-shield-alt"></i>
-                    </div>
-                    <div className="activity-details">
-                      <h3>Security alert</h3>
-                      <p className="activity-description">
-                        Unusual login attempt from New York, USA
-                      </p>
-                      <p className="activity-meta">
-                        <span className="activity-time">March 5, 11:30 PM</span>
-                        <span className="activity-status denied">Blocked</span>
-                      </p>
-                    </div>
-                  </div>
+                <div className="form-group">
+                  <label>Time period</label>
+                  <select className="form-input">
+                    <option value="7days">Last 7 days</option>
+                    <option value="30days">Last 30 days</option>
+                    <option value="90days">Last 90 days</option>
+                    <option value="all">All time</option>
+                  </select>
                 </div>
-                
-                <button className="load-more-btn">
-                  Load More Activities
-                </button>
               </div>
+              
+              <div className="activity-list">
+                {}
+                <div className="activity-item">
+                  <div className="activity-icon">
+                    <i className="fas fa-sign-in-alt"></i>
+                  </div>
+                  <div className="activity-details">
+                    <h3>Successful login</h3>
+                    <p className="activity-description">
+                      Logged in from Chrome on Windows 10
+                    </p>
+                    <p className="activity-meta">
+                      <span className="activity-time">Today, 10:30 AM</span>
+                      <span className="activity-location">Manila, Philippines</span>
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="activity-item">
+                  <div className="activity-icon">
+                    <i className="fas fa-lock"></i>
+                  </div>
+                  <div className="activity-details">
+                    <h3>Password changed</h3>
+                    <p className="activity-description">
+                      Your password was successfully updated
+                    </p>
+                    <p className="activity-meta">
+                      <span className="activity-time">Yesterday, 2:15 PM</span>
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="activity-item">
+                  <div className="activity-icon">
+                    <i className="fas fa-user-edit"></i>
+                  </div>
+                  <div className="activity-details">
+                    <h3>Profile updated</h3>
+                    <p className="activity-description">
+                      Changed profile picture and phone number
+                    </p>
+                    <p className="activity-meta">
+                      <span className="activity-time">March 15, 3:45 PM</span>
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="activity-item">
+                  <div className="activity-icon">
+                    <i className="fas fa-shopping-bag"></i>
+                  </div>
+                  <div className="activity-details">
+                    <h3>New purchase</h3>
+                    <p className="activity-description">
+                      Order #12345 for 10kg of rice
+                    </p>
+                    <p className="activity-meta">
+                      <span className="activity-time">March 10, 9:20 AM</span>
+                      <span className="activity-amount">₱1,250.00</span>
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="activity-item">
+                  <div className="activity-icon">
+                    <i className="fas fa-shield-alt"></i>
+                  </div>
+                  <div className="activity-details">
+                    <h3>Security alert</h3>
+                    <p className="activity-description">
+                      Unusual login attempt from New York, USA
+                    </p>
+                    <p className="activity-meta">
+                      <span className="activity-time">March 5, 11:30 PM</span>
+                      <span className="activity-status denied">Blocked</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <button className="load-more-btn">
+                Load More Activities
+              </button>
             </div>
-          );
+          </div>
+        );
+      case 'accessibility':
+        return (
+          <div className="accessibility-content">
+            <h1>Accessibility Settings</h1>
 
+            <div className="section">
+              <h2>Appearance</h2>
+
+              <div className="toggle-group">
+                <label>Dark Mode</label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={isDarkMode}
+                    onChange={toggleDarkMode}
+                  />
+                  <span className="slider round"></span>
+                </label>
+              </div>
+              <p className="info-text">
+                Switch between light and dark theme for better visibility.
+              </p>
+            </div>
+
+            <div className="divider"></div>
+
+            <div className="section">
+              <h2>Language Preferences</h2>
+
+              <div className="form-group">
+                <label>Select Language</label>
+                <select
+                  value={language}
+                  onChange={handleLanguageChange}
+                  className="form-input"
+                >
+                  <option value="english">English</option>
+                  <option value="filipino">Filipino</option>
+                </select>
+              </div>
+              <p className="info-text">
+                Choose your preferred language.
+              </p>
+            </div>
+
+            {accessibilityStatus && (
+              <div className={`status-message success`}>
+                {accessibilityStatus}
+              </div>
+            )}
+
+            <button 
+              onClick={saveAccessibilitySettings} 
+              className="save-btn"
+            >
+              Save Preferences
+            </button>
+          </div>
+        );
+      case 'verify-email':
+        return (
+          <div className="verify-email-content">
+            <h2>Verify Your Email Address</h2>
+            
+            <button
+              onClick={handleSendVerificationEmail}
+              className="verify-btn"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Sending...' : 'Send Verification Email'}
+            </button>
+            {emailSent && <div className="status-message">{verificationStatus}</div>}
+            <input
+              type="text"
+              placeholder="Enter verification code"
+              value={verificationCode}
+              onChange={(e) => {
+                setVerificationCode(e.target.value);
+              }}
+              className="verify-input"
+            />
+            <button
+              onClick={handleVerifyCode}
+              className="verify-btn"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Submitting...' : 'Confirm Verification Code'}
+            </button>
+            {verificationStatus && <div className="status-message">{verificationStatus}</div>}
+          </div>
+        );
       default:
         return (
           <div className="default-content">
@@ -683,147 +723,115 @@ const Settings = () => {
   };
 
   return (
-    <div className="settings">
-      <div className="settings-page">
-<nav className="settings-nav">
-  <div className="nav-left">
-    <i className="icons fas fa-home"></i>
-    <Link to="/" className="nav-logo">
-      AgriConnect
-    </Link>
-  </div>
-  <div className="nav-right">
-    <div className="nav-search">
-      <i className="fas fa-search"></i>
-      <input
-        type="text"
-        placeholder="Search in AgriConnect..."
-        className="search-input"
-      />
-    </div>
-  </div>
-          <div className="nav-right"> 
-  <Link to="/" className="nav-link">
-    <Home className="icon" /> 
-    <span className="nav-link-label">Home</span>
-  </Link>
-  <Link to="/buying" className="nav-link">
-    <ShoppingCart className="icon" /> 
-    <span className="nav-link-label">Buying</span>
-  </Link>
-  <Link to="/selling" className="nav-link">
-    <DollarSign className="icon" /> 
-    <span className="nav-link-label">Selling</span>
-  </Link>
-  <Link to="/chats" className="nav-link">
-    <MessagesSquare className="icon" /> 
-    <span className="nav-link-label">Chats</span>
-  </Link>
-  <button>
-              <i className="fas fa-shopping-cart"></i>
-            </button>
-            <button>
-              <i className="fas fa-bell"></i>
-            </button>
-            <button>
-              <i className="fas fa-bars"></i>
-            </button>
-          </div>
-        </nav>
-        <div className="settings-content">
-          <aside className="settings-sidebar">
-            <h2>Settings</h2>
-            <ul>
+    <div className="settings-page">
+      <TopNavbar />
+      
+      <div className="settings-main-content">
+        <div className="settings-sidebar">
+          <h2>Settings</h2>
+          <ul>
             <li>
-  <button
-    onClick={() => setCurrentView('password-security')}
-    className={`settings-link ${currentView === 'password-security' ? 'active' : ''}`}
-  >
-    <Lock className="icon" />
-    <span className="link-label">Password and Security</span>
-  </button>
-</li>
+              <button 
+                className={`settings-link ${activeSection === 'personal' ? 'active' : ''}`}
+                onClick={() => setActiveSection('personal')}
+              >
+                <User className="icon" />
+                <span className="link-label">Personal Details</span>
+              </button>
+            </li>
+            <li>
+              <button 
+                className={`settings-link ${activeSection === 'security' ? 'active' : ''}`}
+                onClick={() => setActiveSection('security')}
+              >
+                <Lock className="icon" />
+                <span className="link-label">Password & Security</span>
+              </button>
+            </li>
+            <li>
+              <button 
+                className={`settings-link ${activeSection === 'notifications' ? 'active' : ''}`}
+                onClick={() => setActiveSection('notifications')}
+              >
+                <Bell className="icon" />
+                <span className="link-label">Notifications</span>
+              </button>
+            </li>
+            <li>
+              <button 
+                className={`settings-link ${activeSection === 'privacy' ? 'active' : ''}`}
+                onClick={() => setActiveSection('privacy')}
+              >
+                <Shield className="icon" />
+                <span className="link-label">Privacy</span>
+              </button>
+            </li>
+            <li>
+              <button 
+                className={`settings-link ${activeSection === 'activity' ? 'active' : ''}`}
+                onClick={() => setActiveSection('activity')}
+              >
+                <Activity className="icon" />
+                <span className="link-label">Activity Log</span>
+              </button>
+            </li>
+            <li>
+              <button 
+                className={`settings-link ${activeSection === 'accessibility' ? 'active' : ''}`}
+                onClick={() => setActiveSection('accessibility')}
+              >
+                <Eye className="icon" />
+                <span className="link-label">Accessibility</span>
+              </button>
+            </li>
+            {!isVerified && (
+              <li>
+                <button 
+                  className={`settings-link ${activeSection === 'verify-email' ? 'active' : ''}`}
+                  onClick={() => setActiveSection('verify-email')}
+                >
+                  <Mail className="icon" />
+                  <span className="link-label">Verify Email</span>
+                </button>
+              </li>
+            )}
+          </ul>
+        </div>
 
-{!isVerified && (
-  <li>
-    <button
-      onClick={() => setCurrentView('verifyEmail')}
-      className={`verify-email-btn ${currentView === 'verifyEmail' ? 'active' : ''}`}
-    >
-      <Mail className="icon" />
-      <span className="link-label">Verify Email</span>
-    </button>
-  </li>
-)}
-
-<li>
-  <button
-    onClick={() => setCurrentView('accessibility')}
-    className={`settings-link ${currentView === 'accessibility' ? 'active' : ''}`}
-  >
-    <Eye className="icon" />
-    <span className="link-label">Accessibility</span>
-  </button>
-</li>
-
-<li>
-  <button
-    onClick={() => setCurrentView('privacy')}
-    className={`settings-link ${currentView === 'privacy' ? 'active' : ''}`}
-  >
-    <Shield className="icon" />
-    <span className="link-label">Privacy</span>
-  </button>
-</li>
-
-<li>
-  <button
-    onClick={() => setCurrentView('activity-log')}
-    className={`settings-link ${currentView === 'activity-log' ? 'active' : ''}`}
-  >
-    <Activity className="icon" />
-    <span className="link-label">Activity Log</span>
-  </button>
-</li>
-
-            </ul>
-          </aside>
-          <main className="settings-main-content">
-            {renderContent()}
-            
-            {}
-            {showVerificationDialog && (
-              <div className="verification-dialog-overlay">
-                <div className="verification-dialog">
-                  <h3>Document Verification</h3>
-                  <p>
-                    Due to the Data Privacy Act, the seller's documents are hidden. 
-                    Would you like to request approval to verify their legitimacy?
-                  </p>
-                  <div className="verification-buttons">
-                    <button 
-                      className="verify-btn yes-btn"
-                      onClick={() => handleVerificationResponse(true)}
-                    >
-                      YES
-                    </button>
-                    <button 
-                      className="verify-btn no-btn"
-                      onClick={() => handleVerificationResponse(false)}
-                    >
-                      NO
-                    </button>
-                  </div>
+        <div className="settings-content">
+          {renderContent()}
+          
+          {showVerificationDialog && (
+            <div className="verification-dialog-overlay">
+              <div className="verification-dialog">
+                <h3>Document Verification</h3>
+                <p>
+                  Due to the Data Privacy Act, the seller's documents are hidden. 
+                  Would you like to request approval to verify their legitimacy?
+                </p>
+                <div className="verification-buttons">
+                  <button 
+                    className="verify-btn yes-btn"
+                    onClick={() => handleVerificationResponse(true)}
+                  >
+                    YES
+                  </button>
+                  <button 
+                    className="verify-btn no-btn"
+                    onClick={() => handleVerificationResponse(false)}
+                  >
+                    NO
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {documentStatus && (
-              <div className="status-message success">
-                {documentStatus}
-              </div>
-            )}
-          </main>
+          {documentStatus && (
+            <div className="status-message success">
+              {documentStatus}
+            </div>
+          )}
         </div>
       </div>
     </div>

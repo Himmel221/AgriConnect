@@ -14,14 +14,14 @@
   background: #0a9758;
   color: white;
   border: none;
-  padding: 1rem 1rem;
+  padding: 1.2rem 2rem;
   border-radius: 50px;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1rem;
   box-shadow: 0 4px 15px rgba(77, 124, 46, 0.3);
   transition: all 0.3s ease;
 }
@@ -29,6 +29,7 @@
 .about-toggle-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(77, 124, 46, 0.4);
+  background: #087a47;
 }
 
 .toggle-icon {
@@ -41,8 +42,8 @@
 
 /* About Us Section */
 .about-us-section {
-  padding: 1rem; 
-  margin: 1rem;
+  padding: 2rem;
+  margin: 2rem auto;
   max-width: 1200px;
   animation: fadeIn 0.5s ease-out;
 }
@@ -55,32 +56,33 @@
 .about-content {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 4rem;
 }
 
 .about-text {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  line-height: 1.7;
-}
-h3 {
-  text-align: left;
-  font-weight: 900px;
+  gap: 2rem;
+  line-height: 1.8;
+  padding: 2rem;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
 }
 
 .about-text p {
-  font-size: 1.1rem;
-  color: black;
+  font-size: 1.15rem;
+  color: #333;
+  text-align: justify;
 }
-
 
 .about-text h3 {
   color: #4D7C2E;
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
   position: relative;
-  padding-left: 1.5rem;
+  padding-left: 2rem;
+  font-weight: 800;
 }
 
 .about-text h3::before {
@@ -89,102 +91,166 @@ h3 {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   background-color: #4D7C2E;
   border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(77, 124, 46, 0.2);
 }
 
 .values-list {
   list-style-type: none;
-  padding-left: 0;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1.2rem;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
 }
 
 .values-list li {
-  padding-left: 1.8rem;
+  padding: 1rem 1.5rem 1rem 3rem;
   position: relative;
-  font-size: 1.1rem;
-  color: black;
+  font-size: 1.15rem;
+  color: #333;
   line-height: 1.6;
+  background: #f8f9fa;
+  border-radius: 10px;
+  transition: all 0.3s ease;
 }
 
+.values-list li:hover {
+  transform: translateX(10px);
+  background: #f0f7f4;
+}
 
 .values-list li::before {
   content: '✓';
   color: #4D7C2E;
-  font-size: 1rem;
+  font-size: 1.2rem;
   position: absolute;
-  left: 0;
-  top: 0.1rem;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
 }
 
 .developers-section {
-  margin-top: 2rem;
+  margin-top: 3rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
 }
 
 .developers-section h3 {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
   color: #4D7C2E;
-  font-size: 1.8rem;
-  font-weight: 600;
+  font-size: 2rem;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.developers-section h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: #4D7C2E;
+  border-radius: 2px;
 }
 
 .developers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2.5rem;
+  padding: 1rem;
 }
 
 .developer-card {
   background: white;
-  padding: 1rem 1rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  border-radius: 20px;
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.4s ease;
+  border: 1px solid rgba(77, 124, 46, 0.1);
 }
 
 .developer-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(77, 124, 46, 0.1);
+  border-color: #4D7C2E;
 }
 
 .developer-avatar {
-  width: 120px;
-  height: 120px;
-  margin: 0 auto 1.5rem;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 2rem;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid #4D7C2E;
+  border: 4px solid #4D7C2E;
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+.developer-avatar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(77, 124, 46, 0.1);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+.developer-card:hover .developer-avatar {
+  transform: scale(1.05);
+  border-color: #0a9758;
+}
+
+.developer-card:hover .developer-avatar::before {
+  opacity: 1;
 }
 
 .developer-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.developer-card:hover .developer-avatar img {
+  transform: scale(1.1);
 }
 
 .developer-card h4 {
-  margin: 0.5rem 0;
-  color: black;
-  font-size: 1.2rem;
-  font-weight: 600;
+  margin: 0.8rem 0;
+  color: #333;
+  font-size: 1.4rem;
+  font-weight: 700;
 }
 
 .developer-role {
   color: #4D7C2E;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
 }
 
 .developer-desc {
   color: #666;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.6;
+  padding: 0 1rem;
 }
 
 @media (max-width: 768px) {
@@ -418,7 +484,7 @@ h3 {
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-  gap: 20px; 
+  gap: 20px;
 }
 
 .category-card {
@@ -785,7 +851,7 @@ h3 {
 
   .hero-content h1 {
     font-size: 2.5rem;
-    margin-left: 10px;
+    margin-left: px;
     margin-right: 90px;
   }
 
@@ -891,8 +957,8 @@ h3 {
     line-height: 1.2;
     word-wrap: break-word;
     text-align: center;
-    margin-left: auto;
-    margin-right: 30px;
+    margin-left: 0px;
+    margin-right: 40px;
   }
 
   .hero-content p {
@@ -1015,6 +1081,7 @@ h3 {
     margin-bottom: 30px;
     width: 100%;
     box-sizing: border-box;
+  
   }
   .categories .section-title {
     margin-top: -50px;
@@ -1022,10 +1089,10 @@ h3 {
     margin-bottom: 20px;
     text-align: center;
     width: 100%;
-    margin-left: 20px;
+    margin-left: 22px;
   }
   .categories-grid {
-    margin-left: 15px;
+    margin-left: 34px;
   }
   .featured-products .section-title {
     margin-left: 5px;
@@ -1158,7 +1225,7 @@ h3 {
     
     .hero-section {
       height: 250px;
-      margin-left: 1%;
+      margin-left: 19px;
       margin-right: 19px;
     }
     
@@ -1182,8 +1249,8 @@ h3 {
     
     .featured-slider {
       width: 100%;
-      margin-left: 1%;
-      margin-right: 65px;
+      margin-left: 35px;
+      margin-right: 55px;
     }
 
     .categories {
@@ -1202,84 +1269,166 @@ h3 {
     }
   }
 
-.developers-section {
-  margin-top: 2rem;
-}
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .about-us-section {
+    padding: 1.5rem;
+    margin: 1.5rem auto;
+  }
 
-.developers-section h3 {
-  text-align: center;
-  margin-bottom: 2rem;
-  color: #4D7C2E;
-  font-size: 1.8rem;
-  font-weight: 600;
-}
+  .about-text {
+    padding: 1.5rem;
+  }
 
-.developers-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-}
+  .about-text h3 {
+    font-size: 2rem;
+  }
 
-.developer-card {
-  background: white;
-  padding: 1rem 1rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+  .values-list {
+    padding: 1.5rem;
+  }
 
-.developer-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-.developer-avatar {
-  width: 120px;
-  height: 120px;
-  margin: 0 auto 1.5rem;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 3px solid #4D7C2E;
-}
-
-.developer-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.developer-card h4 {
-  margin: 0.5rem 0;
-  color: black;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.developer-role {
-  color: #4D7C2E;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.developer-desc {
-  color: #666;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  .developers-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+  }
 }
 
 @media (max-width: 768px) {
-  .about-content {
-    flex-direction: column;
+  .about-us-section {
+    padding: 1rem;
+    margin: 1rem auto;
   }
-  
+
+  .about-content {
+    gap: 2.5rem;
+  }
+
+  .about-text {
+    padding: 1.2rem;
+    gap: 1.5rem;
+  }
+
+  .about-text h3 {
+    font-size: 1.8rem;
+    padding-left: 1.5rem;
+  }
+
+  .about-text p {
+    font-size: 1.1rem;
+  }
+
+  .values-list {
+    padding: 1.2rem;
+    gap: 1rem;
+  }
+
+  .values-list li {
+    padding: 0.8rem 1.2rem 0.8rem 2.5rem;
+    font-size: 1.1rem;
+  }
+
+  .developers-section {
+    padding: 1.5rem;
+    margin-top: 2rem;
+  }
+
   .developers-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .developer-card {
+    padding: 1.5rem;
+  }
+
+  .developer-avatar {
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 1.5rem;
+  }
+
+  .developer-card h4 {
+    font-size: 1.2rem;
+  }
+
+  .developer-role {
+    font-size: 1rem;
+  }
+
+  .developer-desc {
+    font-size: 0.95rem;
   }
 }
 
 @media (max-width: 480px) {
+  .about-us-section {
+    padding: 0.8rem;
+    margin: 0.8rem auto;
+  }
+
+  .about-content {
+    gap: 2rem;
+  }
+
+  .about-text {
+    padding: 1rem;
+    gap: 1.2rem;
+  }
+
+  .about-text h3 {
+    font-size: 1.6rem;
+    padding-left: 1.2rem;
+  }
+
+  .about-text p {
+    font-size: 1rem;
+    text-align: left;
+  }
+
+  .values-list {
+    padding: 1rem;
+    gap: 0.8rem;
+  }
+
+  .values-list li {
+    padding: 0.7rem 1rem 0.7rem 2.2rem;
+    font-size: 1rem;
+  }
+
+  .developers-section {
+    padding: 1rem;
+    margin-top: 1.5rem;
+  }
+
   .developers-grid {
     grid-template-columns: 1fr;
+    gap: 1.2rem;
+    padding: 0.5rem;
+  }
+
+  .developer-card {
+    padding: 1.2rem;
+  }
+
+  .developer-avatar {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1.2rem;
+  }
+
+  .developer-card h4 {
+    font-size: 1.1rem;
+    margin: 0.6rem 0;
+  }
+
+  .developer-role {
+    font-size: 0.95rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .developer-desc {
+    font-size: 0.9rem;
+    padding: 0 0.5rem;
   }
 }

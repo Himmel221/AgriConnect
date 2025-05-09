@@ -1,3 +1,4 @@
+//sellerOrdersRoutes.js
 import express from 'express';
 import auth from '../middleware/auth.js';
 import CheckoutSubmission from '../models/CheckoutSubmission.js';

@@ -29,8 +29,7 @@ export async function loginUser(req, res) {
       message: 'Login successful',
       token,
       userType: user.userType,
-      skills: user.skills || [],
-      health_conditions: user.health_conditions || []
+
     });
   } catch (error) {
     console.error('Error logging in user:', error);
@@ -167,5 +166,21 @@ export async function searchUsers(req, res) {
   } catch (error) {
     console.error("Error searching users:", error.message);
     res.status(500).json({ error: "Failed to search users" });
+  }
+}
+
+export async function getUserSellerStatus(req, res) {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).select('isSeller');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ isSeller: user.isSeller });
+  } catch (error) {
+    console.error('Error fetching user seller status:', error.message);
+    res.status(500).json({ message: 'Error fetching seller status', error: error.message });
   }
 }

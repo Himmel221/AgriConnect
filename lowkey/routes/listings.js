@@ -6,14 +6,13 @@ import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
-// Get listings for a specific user
 router.get('/user/:userId', auth, async (req, res) => {
   try {
     const { userId } = req.params; 
     console.log(`Fetching listings for User ID: ${userId}`);
 
     const listings = await Listing.find({ userId, status: true })
-      .select('productName category price quantity unit details color listedDate status location minimumOrder imageUrl condition');
+      .select('productName category price quantity unit details color listedDate status location minimumOrder imageUrl');
 
     if (listings.length === 0) {
       console.log(`No active listings found for User ID: ${userId}`);
@@ -27,7 +26,6 @@ router.get('/user/:userId', auth, async (req, res) => {
   }
 });
 
-// Get listings for the currently logged-in user
 router.get('/user-listings', auth, async (req, res) => {
   try {
     const userId = req.user._id;
@@ -35,7 +33,7 @@ router.get('/user-listings', auth, async (req, res) => {
     console.log('Fetching user listings for logged-in User ID:', userId);
 
     const listings = await Listing.find({ userId })
-      .select('productName category price quantity unit details color listedDate status location minimumOrder imageUrl condition');
+      .select('productName category price quantity unit details color listedDate status location minimumOrder imageUrl');
 
     if (listings.length === 0) {
       console.log('No listings found for logged-in User ID:', userId);
@@ -61,7 +59,7 @@ router.get('/', auth, async (req, res) => {
       quantity: { $gt: 0 },
     })
       .populate('userId', 'first_name last_name location')
-      .select('productName category price quantity unit details userId imageUrl listedDate status location minimumOrder condition');
+      .select('productName category price quantity unit details userId imageUrl listedDate status location minimumOrder');
 
     if (!listings || listings.length === 0) {
       console.log('No available listings found.');
@@ -74,7 +72,7 @@ router.get('/', auth, async (req, res) => {
       description: listing.details,
       imageUrl: listing.imageUrl || 'default-image.jpg',
       location: listing.location || (listing.userId.address ? listing.userId.address.location : 'Not specified'),
-      condition: listing.condition // Ensure condition is included
+
     }));
 
     console.log('Updated Listings with Seller Information:', updatedListings);
@@ -86,14 +84,13 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Create a new listing
 router.post('/', auth, addIdentifier, upload.single('image'), async (req, res) => {
   try {
     console.log('Incoming POST request to create a listing');
     console.log('Request Body:', req.body); 
     console.log('Uploaded File:', req.file); 
 
-    const { identifier, productName, quantity, unit, category, condition, details, location, price, minimumOrder } = req.body;
+    const { identifier, productName, quantity, unit, category, details, location, price, minimumOrder } = req.body;
     const userId = req.user._id;
     
     if (!req.file || !req.file.path) {
@@ -113,7 +110,6 @@ router.post('/', auth, addIdentifier, upload.single('image'), async (req, res) =
       quantity,
       unit,
       category,
-      condition,
       details,
       location,
       price,
@@ -161,13 +157,12 @@ router.patch('/mark-as-sold/:id', auth, async (req, res) => {
   }
 });
 
-// Update a listing
 router.put('/:id', auth, upload.single('image'), async (req, res) => {
   try {
     console.log('Incoming PUT request to update a listing. Listing ID:', req.params.id);
     console.log('Incoming Payload:', req.body);
 
-    const { productName, quantity, unit, category, condition, details, location, price, color, minimumOrder } = req.body;
+    const { productName, quantity, unit, category, details, location, price, color, minimumOrder } = req.body;
     const { id } = req.params;
 
     const existingListing = await Listing.findById(id);
@@ -185,7 +180,6 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
         quantity,
         unit,
         category,
-        condition,
         details,
         location,
         price,
@@ -205,14 +199,13 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Unlist a product
-router.put("/:identifier/unlist", auth, async (req, res) => {
+router.put("/:id/unlist", auth, async (req, res) => {
   try {
-    const { identifier } = req.params; 
-    console.log("Unlisting Product Identifier:", identifier);
+    const { id } = req.params; 
+    console.log("Unlisting Product ID:", id);
 
-    const updatedListing = await Listing.findOneAndUpdate(
-      { identifier }, 
+    const updatedListing = await Listing.findByIdAndUpdate(
+      id, 
       { status: false }, 
       { new: true } 
     );
@@ -229,14 +222,13 @@ router.put("/:identifier/unlist", auth, async (req, res) => {
   }
 });
 
-// Relist a product
-router.put("/:identifier/relist", auth, async (req, res) => {
+router.put("/:id/relist", auth, async (req, res) => {
   try {
-    const { identifier } = req.params; 
-    console.log("Relisting Product Identifier:", identifier);
+    const { id } = req.params; 
+    console.log("Relisting Product ID:", id);
 
-    const updatedListing = await Listing.findOneAndUpdate(
-      { identifier }, 
+    const updatedListing = await Listing.findByIdAndUpdate(
+      id, 
       { status: true }, 
       { new: true } 
     );
@@ -253,7 +245,6 @@ router.put("/:identifier/relist", auth, async (req, res) => {
   }
 });
 
-// Delete a listing
 router.delete('/delete/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;

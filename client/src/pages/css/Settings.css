@@ -3,106 +3,137 @@
 .settings-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   color: black;
   font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: #f8f9fa;
 }
 
-.settings-nav {
+.settings-main-content {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  background-color: #0a9758; 
+  margin-top: 60px;
   width: 100%;
-  box-sizing: border-box;
-  flex-wrap: nowrap;
-
-  position: fixed;
-  top: 0;
-  margin-left: 10px;
-}
-
-.settings-nav .nav-left {
-  display: flex;
-  align-items: center;
-}
-
-.settings-nav .nav-logo {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: white;
-  margin-left: 150px;
-  text-decoration: none;
-}
-
-.settings-nav .nav-search {
-  display: flex;
-  align-items: center;
-  background: white;
-  border-radius: 999px; 
-  padding: 0.3rem 1rem;
-  margin-left: 50px;
-  width: 150px;
-}
-
-.settings-nav .nav-search input[type="text"] {
-  border: none;
-  outline: none;
-  font-size: 0.95rem;
-  color: #555;
-  background: transparent;
-  width: 300px;
-}
-.settings-nav .nav-search i {
-  color: black;
-  font-size: 1rem;
-}
-.settings-nav .nav-right {
-  display: flex;
-  align-items: center;
-  margin-right: 10px;
-  padding-right: 1rem;
-  gap: 16px;
-}
-
-.settings-nav .nav-link {
-  color: white;
-  font-size: 15px;
-  margin-left: 20px; 
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.nav-link .icon {
-  color: white;
-  font-size: 1.1rem;
-}
-
-.settings-nav button {
-  background: none;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 1.25rem;
-}
-
-.settings-content {
-  margin-top: 100px;
-  margin-left: 13%; 
-  width: 85%;
+  transition: all 0.3s ease;
 }
 
 .settings-sidebar {
-  width: 150px;
-  min-height: 100vh;
-  background-color: white;
-  box-sizing: border-box;
+  width: 170px;
+  height: 100vh;
+  background: white;
   position: fixed;
   top: 0;
   left: 0;
-  padding-top: 70px; 
+  padding: 2rem 1rem;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  z-index: 99;
+}
+
+.settings-sidebar h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-top: 60px;
+  margin-bottom: 2rem;
+  padding-left: 1rem;
+  text-align: left;
+}
+
+.settings-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-sidebar li {
+  margin-bottom: 0.5rem;
+}
+
+.settings-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  color: #4a5568;
+  font-size: 0.95rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.settings-link:hover {
+  background: #f7fafc;
+  color: #0a9758;
+}
+
+.settings-link.active {
+  background: #0a9758;
+  color: white;
+}
+
+.settings-link .icon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+
+.settings-content {
+  flex: 1;
+  padding: 2rem;
+  margin-left: 170px;
+  transition: all 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .settings-sidebar {
+    width: 60px;
+    padding: 2rem 0.5rem;
+  }
+
+  .settings-sidebar h2 {
+    display: none;
+  }
+
+  .settings-link {
+    justify-content: center;
+    padding: 0.75rem;
+  }
+
+  .link-label {
+    display: none;
+  }
+
+  .settings-content {
+    margin-left: 60px;
+    padding: 1.5rem;
+  }
+
+  .settings-page .top-navbar {
+    padding-left: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .settings-sidebar.active {
+    transform: translateX(0);
+  }
+
+  .settings-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .settings-page .top-navbar {
+    padding-left: 0;
+  }
 }
 
 .settings-sidebar h2 {
@@ -1371,5 +1402,27 @@
   .nav-link .icon {
     font-size: 1rem;
     margin-right: 8px;
+  }
+}
+
+/* Add styles for TopNavbar logo adjustment when in settings page */
+.settings-page .top-navbar {
+  padding-left: 170px;
+  transition: padding-left 0.3s ease;
+}
+
+.settings-page .top-navbar .nav-left {
+  margin-left: 0;
+}
+
+@media (max-width: 1024px) {
+  .settings-page .top-navbar {
+    padding-left: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-page .top-navbar {
+    padding-left: 0;
   }
 }

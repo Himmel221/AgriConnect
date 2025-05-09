@@ -24,10 +24,6 @@ const listingSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  condition: {
-    type: String,
-    required: true,
-  },
   details: {
     type: String,
     required: true,

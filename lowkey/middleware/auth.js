@@ -32,8 +32,10 @@ const auth = async (req, res, next) => {
     req.user = { 
       _id: user._id, 
       email: user.email, 
-      isAdmin: user.isAdmin 
+      isAdmin: user.isAdmin,
     };
+    console.log("User from DB:", user);
+    console.log("Final Auth Middleware User:", req.user);
     next();
   } catch (error) {
     console.error('Authentication Error:', error.message || error);

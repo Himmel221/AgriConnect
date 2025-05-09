@@ -25,7 +25,7 @@ const UserSchema = new mongoose.Schema({
   province: { type: String },
   cityOrTown: { type: String },
   barangay: { type: String },
-  bio: { type: String }, 
+  bio: { type: String },
   otp: { type: String },
   otpExpires: { type: Date },
   verificationCode: { type: String },

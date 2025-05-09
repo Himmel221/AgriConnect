@@ -1,6 +1,4 @@
-/* AuthProvider.js */
-
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from "react";
 
 const AuthContext = createContext();
 
@@ -18,16 +16,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = (authToken, userData) => {
-    console.log('Login function called with:', { authToken, userData });
-    
+    console.log("Login function called with:", { authToken, userData });
+
     if (!authToken || !userData || !userData._id) {
-      console.error('Invalid login data:', { authToken, userData });
+      console.error("Invalid login data:", { authToken, userData });
       return;
     }
 
-    localStorage.setItem('authToken', authToken);
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('isAdmin', userData.isAdmin);
+    localStorage.setItem("authToken", authToken);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("isAdmin", userData.isAdmin);
+
+
 
     setToken(authToken);
     setUserId(userData._id);
@@ -36,8 +36,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
     setToken(null);
     setUserId(null);
     setUser(null);
@@ -46,34 +46,34 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const storedToken = localStorage.getItem('authToken');
-      const storedUserStr = localStorage.getItem('user');
-      
-      console.log('Retrieved from localStorage:', { token: storedToken, userStr: storedUserStr });
-      
+      const storedToken = localStorage.getItem("authToken");
+      const storedUserStr = localStorage.getItem("user");
+
+      console.log("Retrieved from localStorage:", { token: storedToken, userStr: storedUserStr });
+
       if (storedToken && storedUserStr) {
         try {
           const userData = JSON.parse(storedUserStr);
           const isValid = await validateToken(storedToken);
-          
+
           if (isValid && userData && userData._id) {
             setToken(storedToken);
             setUserId(userData._id);
             setUser(userData);
             setIsAuthenticated(true);
           } else {
-            console.log('Token validation failed or invalid user data');
-            logout(); 
+            console.log("Token validation failed or invalid user data");
+            logout();
           }
         } catch (error) {
-          console.error('Error parsing user data:', error);
-          logout(); 
+          console.error("Error parsing user data:", error);
+          logout();
         }
       } else {
-        console.log('No authentication data found');
+        console.log("No authentication data found");
         setIsAuthenticated(false);
       }
-      
+
       setIsLoading(false);
     };
 
@@ -81,15 +81,15 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        isAuthenticated, 
-        token, 
-        userId, 
-        user, 
-        login, 
-        logout, 
-        isLoading 
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        token,
+        userId,
+        user,
+        login,
+        logout,
+        isLoading,
       }}
     >
       {children}

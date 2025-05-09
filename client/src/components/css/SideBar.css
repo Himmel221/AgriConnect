@@ -48,7 +48,7 @@
 
 .sidebar.collapsed {
   width: 60px;
-  transform: translateX(0);
+  padding: 0.6rem 0.4rem;
 }
 
 .sidebar-toggle {
@@ -72,7 +72,7 @@
 }
 
 .sidebar.collapsed + .sidebar-toggle {
-  left: 60px; /* Aligns with collapsed sidebar width */
+  left: 60px; 
 }
 
 .sidebar-toggle:hover {
@@ -81,24 +81,39 @@
 
 
 .weather-widget {
-  background-color: #cecb0dbd; 
+  background-color: #d3a910; 
   padding: 10px;
   border-radius: 8px;
   text-align: center;
   box-shadow: 0 2px 5px rgba(247, 246, 246, 0.2);
   font-weight: bold;
-  transition: transform 0.3s ease-in-out, padding 0.3s ease; 
+  transition: all 0.3s ease;
   align-self: center;
   width: 90%;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
-.weather-widget.mini-weather {
+.sidebar.collapsed .weather-widget {
   padding: 5px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .weather-widget h4,
+.sidebar.collapsed .weather-widget p {
+  display: none;
+}
+
+.sidebar.collapsed .weather-widget img {
+  margin: 0;
 }
 
 .weather-widget h4, .weather-widget p {
-  color: #000000;
+  color: #ffffff;
   margin: 5px 0;
   transition: all 0.3s ease;
 }
@@ -144,6 +159,7 @@
 .sidebar.collapsed .icon-button {
   justify-content: center;
   padding: 0.8rem;
+  margin: 10px 0;
 }
 
 .sidebar .icon {
@@ -151,6 +167,7 @@
   margin-right: 12px;
   font-size: 1.8rem;
   min-width: 1.8rem;
+  transition: all 0.3s ease;
 }
 
 .sidebar.collapsed .icon {
@@ -170,16 +187,14 @@
   color: #1c1e21;
   font-weight: 500;
   opacity: 1;
-  animation: fadeIn 0.3s ease-in-out;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.sidebar.collapsed .text-sm {
+  opacity: 0;
+  transform: translateX(-20px);
+  width: 0;
+  margin: 0;
 }
 
 .sidebar .text-sm:hover {
@@ -231,7 +246,6 @@
   
   .sidebar.collapsed + .sidebar-toggle {
     left: 0;
-    border-radius: 0 6px 6px 0;
   }
   
   .sidebar.expanded + .sidebar-toggle {

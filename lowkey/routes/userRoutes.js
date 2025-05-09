@@ -4,7 +4,7 @@ import express from 'express';
 import auth from '../middleware/auth.js';
 import User from '../models/User.js';
 import adminMiddleware from '../middleware/adminMiddleware.js'; 
-import { searchUsers } from '../controllers/userController.js';
+import { searchUsers, getUserSellerStatus } from '../controllers/userController.js';
 
 const router = express.Router();
 
@@ -22,10 +22,11 @@ router.get('/:userId', auth, async (req, res) => {
 
     res.status(200).json({ user });
   } catch (error) {
-    console.error('Error fetching user data:', error.message);
+    console.error('Error fetching user data in userroutesget:', error.message);
     res.status(500).json({ message: 'Error fetching user data', error: error.message });
   }
 });
+
 
 router.get('/admin/users', auth, adminMiddleware, async (req, res) => {
   try {
@@ -118,6 +119,8 @@ router.put('/user', auth, async (req, res) => {
     res.status(500).json({ message: 'Error updating user', error: error.message });
   }
 });
+
+router.get('/seller-status/:userId', auth, getUserSellerStatus);
 
 router.get('/search/:query', auth, searchUsers);
 
