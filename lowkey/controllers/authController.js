@@ -60,15 +60,128 @@ const registerUser = async (req, res) => {
         await newUser.save();
         console.log(`Saved user: ${newUser}`);
 
-        await sendEmail(email, 'Email Verification', `Please use the following code to verify your email: ${verificationCode}`);
+        // Create HTML content for the confirmation email
+        const htmlContent = `
+        <html>
+        <head>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333333;
+                    margin: 0;
+                    padding: 0;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background-color: #ffffff;
+                }
+                .header {
+                    background-color: #2E7D32;
+                    color: white;
+                    padding: 20px;
+                    text-align: center;
+                    border-radius: 8px 8px 0 0;
+                }
+                .content {
+                    padding: 30px;
+                    background-color: #f9f9f9;
+                    border-radius: 0 0 8px 8px;
+                }
+                .welcome-text {
+                    font-size: 24px;
+                    color: #2E7D32;
+                    margin-bottom: 20px;
+                }
+                .verification-code {
+                    background-color: #e8f5e9;
+                    padding: 15px;
+                    border-radius: 5px;
+                    margin: 20px 0;
+                    text-align: center;
+                    font-size: 18px;
+                    color: #1b5e20;
+                }
+                .footer {
+                    text-align: center;
+                    margin-top: 30px;
+                    padding-top: 20px;
+                    border-top: 1px solid #eeeeee;
+                    color: #666666;
+                    font-size: 12px;
+                }
+                .button {
+                    display: inline-block;
+                    padding: 12px 24px;
+                    background-color: #2E7D32;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    margin: 20px 0;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Welcome to AgriConnect!</h1>
+                </div>
+                <div class="content">
+                    <div class="welcome-text">Hello ${first_name} ${last_name},</div>
+                    <p>Thank you for registering with AgriConnect! We're excited to have you join our community of farmers and agricultural enthusiasts.</p>
+                    <p>To complete your registration, please use the following verification code:</p>
+                    <div class="verification-code">
+                        ${verificationCode}
+                    </div>
+                    <p>This code will help us verify your email address and ensure the security of your account.</p>
+                    <p>If you didn't create this account, please ignore this email.</p>
+                    <div class="footer">
+                        <p>This is an automated message, please do not reply to this email.</p>
+                        <p>&copy; ${new Date().getFullYear()} AgriConnect. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
 
-        return res.status(200).json({ message: 'User registered successfully. A verification email has been sent.' });
+        const textContent = `
+        Welcome to AgriConnect!
+
+        Hello ${first_name} ${last_name},
+
+        Thank you for registering with AgriConnect! We're excited to have you join our community of farmers and agricultural enthusiasts.
+
+        To complete your registration, please use the following verification code:
+        ${verificationCode}
+
+        This code will help us verify your email address and ensure the security of your account.
+
+        If you didn't create this account, please ignore this email.
+
+        Â© ${new Date().getFullYear()} AgriConnect. All rights reserved.
+        `;
+
+        await sendEmail(
+            email,
+            'Welcome to AgriConnect - Email Verification',
+            textContent,
+            htmlContent
+        );
+
+        return res.status(200).json({ 
+            message: 'User registered successfully. A confirmation email has been sent.',
+            success: true
+        });
 
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
 const login = async (req, res) => {
   console.log('Logging in...');
   const { email, password } = req.body;
@@ -120,49 +233,107 @@ const login = async (req, res) => {
   }
 };
 
+const cooldownStore = new Map();
+
 const sendVerificationEmail = async (req, res) => {
-    try {
-        const { email } = req.body;
+  try {
+    const { email, attemptCount } = req.body;
+    const user = await User.findOne({ email });
 
-        console.log('Request Body:', req.body); 
-        if (!email) {
-            return res.status(400).json({ message: 'Email is required.' });
-        }
-
-        const user = await User.findOne({ email });
-        if (!user) {
-            console.log('User not found for email:', email);
-            return res.status(404).json({ message: 'User not found.' });
-        }
-
-        const code = crypto.randomBytes(16).toString('hex'); 
-        user.verificationCode = code; 
-        await user.save();
-
-        console.log('Generated Verification Code:', code);
-
-        const transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_APP_PASS,
-            },
-        });
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Email Verification',
-            text: `Please use the following code to verify your email: ${code}`,
-        };
-
-        await transporter.sendMail(mailOptions);
-
-        res.json({ message: 'Verification email sent successfully.' });
-    } catch (error) {
-        console.error('Error in sendVerificationEmail:', error);
-        res.status(500).json({ message: 'Error sending verification email.' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'Email is already verified' });
+    }
+
+    const cooldownKey = `verification_${email}`;
+    const cooldownData = cooldownStore.get(cooldownKey);
+    
+    if (cooldownData) {
+      const remainingTime = Math.ceil((cooldownData.expiresAt - Date.now()) / 1000);
+      if (remainingTime > 0) {
+        return res.status(429).json({ 
+          message: 'Please wait before requesting another verification email',
+          remainingTime
+        });
+      }
+    }
+
+    if (attemptCount > 4) {
+      return res.status(429).json({ 
+        message: 'Maximum verification attempts reached. Please try again later.' 
+      });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    await user.save();
+
+    // Set cooldown timer based on attempt count
+    const cooldownDuration = attemptCount <= 3 ? 180 : 900; // 3 minutes or 15 minutes
+    cooldownStore.set(cooldownKey, {
+      expiresAt: Date.now() + (cooldownDuration * 1000),
+      attemptCount
+    });
+
+    // Clean up expired cooldowns periodically
+    setTimeout(() => {
+      cooldownStore.delete(cooldownKey);
+    }, cooldownDuration * 1000);
+
+    // Create HTML content for the verification email
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2E7D32; text-align: center;">Welcome to AgriConnect!</h2>
+        <p style="font-size: 16px; line-height: 1.6; color: #333;">
+          Thank you for registering. To complete your registration and verify your email address, 
+          please use the verification code below:
+        </p>
+        <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;">
+          <h1 style="color: #2E7D32; margin: 0; letter-spacing: 5px;">${verificationToken.substring(0, 6)}</h1>
+        </div>
+        <p style="font-size: 14px; color: #666; text-align: center;">
+          This code will expire in 24 hours.
+        </p>
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+          <p style="font-size: 12px; color: #999;">
+            Â© ${new Date().getFullYear()} AgriConnect. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `;
+
+    const textContent = `
+      Welcome to AgriConnect!
+
+      Thank you for registering. To complete your registration and verify your email address, 
+      please use the verification code below:
+
+      ${verificationToken.substring(0, 6)}
+
+      This code will expire in 24 hours.
+
+      Â© ${new Date().getFullYear()} AgriConnect. All rights reserved.
+    `;
+
+    await sendEmail(
+      email,
+      'Verify Your Email Address',
+      textContent,
+      htmlContent
+    );
+
+    res.json({ 
+      message: 'Verification email sent successfully',
+      attemptCount: attemptCount,
+      cooldownDuration
+    });
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    res.status(500).json({ message: 'Error sending verification email' });
+  }
 };
 
 const verifyEmail = async (req, res) => {
@@ -296,7 +467,7 @@ const forgotPassword = async (req, res) => {
   
   This is an automated message, please do not reply to this email.
   
-  © ${new Date().getFullYear()} AgriConnect. All rights reserved.
+  Â© ${new Date().getFullYear()} AgriConnect. All rights reserved.
       `;
   
       await sendEmail(

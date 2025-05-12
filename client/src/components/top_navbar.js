@@ -17,7 +17,28 @@ const TopNavbar = ({ handleOpenSignIn, onSearch }) => {
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
-  const handleDropdownToggle = () => {
+
+  useEffect(() => {
+    setDropdownOpen(false);
+  }, [isAuthenticated]);
+
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setDropdownOpen(false);
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
+  const handleDropdownToggle = (e) => {
+    e.stopPropagation(); 
     setDropdownOpen(!dropdownOpen);
   };
 
@@ -53,7 +74,6 @@ const TopNavbar = ({ handleOpenSignIn, onSearch }) => {
         
         console.log("Search results:", response.data);
         
-        // Fetch seller status for each user
         const usersWithSellerStatus = await Promise.all(
           response.data.map(async (user) => {
             try {
@@ -116,7 +136,9 @@ const TopNavbar = ({ handleOpenSignIn, onSearch }) => {
   return (
     <header className="navbar-header">
       <div className="navbar-container">
-        <h1 className="navbar-title">AgriConnect</h1>
+        <h1 className="navbar-title" onClick={() => navigate("/")} style={{ cursor: 'pointer' }}>
+          AgriConnect
+        </h1>
         <div className="navbar-search">
           <div className="navbar-search-container">
             <input
@@ -171,24 +193,36 @@ const TopNavbar = ({ handleOpenSignIn, onSearch }) => {
                 <Wallet className="navbar-icon" />
               </button>
               <div className="navbar-dropdown">
-                <button className="navbar-dropdown-toggle" onClick={handleDropdownToggle}>
+                <button 
+                  className="navbar-dropdown-toggle" 
+                  onClick={handleDropdownToggle}
+                >
                   <Menu className="navbar-icon" />
                 </button>
                 {dropdownOpen && (
-                  <div className="navbar-dropdown-menu">
+                  <div className="navbar-dropdown-menu" onClick={(e) => e.stopPropagation()}>
                     <div className="navbar-dropdown-section">
-                      <button className="navbar-dropdown-item" onClick={() => navigate("/profile")}>
+                      <button className="navbar-dropdown-item" onClick={() => {
+                        navigate("/profile");
+                        setDropdownOpen(false);
+                      }}>
                         <User size={16} className="navbar-dropdown-icon" />
                         Profile
                       </button>
-                      <button className="navbar-dropdown-item" onClick={() => navigate("/settings")}>
+                      <button className="navbar-dropdown-item" onClick={() => {
+                        navigate("/settings");
+                        setDropdownOpen(false);
+                      }}>
                         <Settings size={16} className="navbar-dropdown-icon" />
                         Settings
                       </button>
                     </div>
                     <div className="navbar-dropdown-divider"></div>
                     <div className="navbar-dropdown-section">
-                      <button className="navbar-dropdown-item" onClick={handleLogout}>
+                      <button className="navbar-dropdown-item" onClick={() => {
+                        handleLogout();
+                        setDropdownOpen(false);
+                      }}>
                         <LogOut size={16} className="navbar-dropdown-icon" />
                         Log Out
                       </button>

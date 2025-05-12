@@ -1,7 +1,7 @@
 /*Settings.js*/
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './css/Settings.css';
@@ -21,7 +21,7 @@ import TopNavbar from '../components/top_navbar';
 
 const Settings = () => {
   const { token, isAuthenticated, logout } = useAuth();
-  const [activeSection, setActiveSection] = useState('personal');
+  const [activeSection, setActiveSection] = useState('email');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,7 +57,19 @@ const Settings = () => {
   const [isVerified, setIsVerified] = useState(false);
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [verificationAttempts, setVerificationAttempts] = useState(0);
+  const [cooldownTime, setCooldownTime] = useState(() => {
+    const savedCooldown = localStorage.getItem('verificationCooldown');
+    const savedTimestamp = localStorage.getItem('verificationCooldownTimestamp');
+    if (savedCooldown && savedTimestamp) {
+      const remainingTime = Math.max(0, parseInt(savedCooldown) - Math.floor((Date.now() - parseInt(savedTimestamp)) / 1000));
+      return remainingTime;
+    }
+    return 0;
+  });
+  const [cooldownTimer, setCooldownTimer] = useState(null);
   const [language, setLanguage] = useState('english');
   const [accessibilityStatus, setAccessibilityStatus] = useState('');
   const [privacyStatus, setPrivacyStatus] = useState('');
@@ -72,6 +84,7 @@ const Settings = () => {
   const [passwordChangeStatus, setPasswordChangeStatus] = useState('');
 
   const navigate = useNavigate();
+  const location = useLocation();
   const apiUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
@@ -123,6 +136,13 @@ const Settings = () => {
     fetchUserData();
   }, [token, logout, navigate]);
 
+  useEffect(() => {
+    // Check if we came from the chatbox
+    if (location.state?.fromChatbox) {
+      setActiveSection('email');
+    }
+  }, [location]);
+
   const handlePasswordDetailsChange = (e) => {
     const { name, value } = e.target;
     setPasswordDetails((prev) => ({
@@ -170,11 +190,15 @@ const Settings = () => {
   const handleSendVerificationEmail = async () => {
     const token = localStorage.getItem('authToken');
     setIsLoading(true);
+    
     if (token && email) {
       try {
         const response = await axios.post(
           `${apiUrl}/api/auth/send-verification-email`,
-          { email },
+          { 
+            email,
+            attemptCount: verificationAttempts + 1 
+          },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -184,20 +208,56 @@ const Settings = () => {
         console.log('Verification email sent:', response.data);
         setEmailSent(true);
         setVerificationStatus('Verification email sent successfully.');
+        
+        // Update attempts and set cooldown
+        const newAttempts = verificationAttempts + 1;
+        setVerificationAttempts(newAttempts);
+        setCooldownTime(response.data.cooldownDuration);
+        
+        // Start countdown timer
+        const timer = setInterval(() => {
+          setCooldownTime(prev => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        
+        setCooldownTimer(timer);
       } catch (error) {
         console.error('Error sending verification email:', error);
-        setVerificationStatus(
-          `Error: ${error.response?.data?.message || 'Something went wrong'}`
-        );
+        if (error.response?.status === 429) {
+          setCooldownTime(error.response.data.remainingTime);
+          setVerificationStatus(`Please wait ${Math.ceil(error.response.data.remainingTime / 60)} minutes before trying again.`);
+          
+          // Start countdown timer for remaining time
+          const timer = setInterval(() => {
+            setCooldownTime(prev => {
+              if (prev <= 1) {
+                clearInterval(timer);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          
+          setCooldownTimer(timer);
+        } else {
+          setVerificationStatus(
+            `Error: ${error.response?.data?.message || 'Something went wrong'}`
+          );
+        }
       }
     } else {
       setVerificationStatus('Error: Email is missing. Please refresh and try again.');
     }
     setIsLoading(false);
   };
-  
+
   const handleVerifyCode = async () => {
-    setIsLoading(true);
+    setIsVerifying(true);
 
     try {
       console.log('Sending Verification:', { email, token: verificationCode });
@@ -222,8 +282,45 @@ const Settings = () => {
       );
     }
 
-    setIsLoading(false);
+    setIsVerifying(false);
   };
+
+  // Cleanup timer on component unmount
+  useEffect(() => {
+    return () => {
+      if (cooldownTimer) {
+        clearInterval(cooldownTimer);
+      }
+    };
+  }, [cooldownTimer]);
+
+  // Update cooldown timer on page load
+  useEffect(() => {
+    const savedCooldown = localStorage.getItem('verificationCooldown');
+    const savedTimestamp = localStorage.getItem('verificationCooldownTimestamp');
+    
+    if (savedCooldown && savedTimestamp) {
+      const remainingTime = Math.max(0, parseInt(savedCooldown) - Math.floor((Date.now() - parseInt(savedTimestamp)) / 1000));
+      if (remainingTime > 0) {
+        setCooldownTime(remainingTime);
+        const timer = setInterval(() => {
+          setCooldownTime(prev => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              localStorage.removeItem('verificationCooldown');
+              localStorage.removeItem('verificationCooldownTimestamp');
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        setCooldownTimer(timer);
+      } else {
+        localStorage.removeItem('verificationCooldown');
+        localStorage.removeItem('verificationCooldownTimestamp');
+      }
+    }
+  }, []);
 
   const toggleLoginAlerts = () => {
     setLoginAlerts(!loginAlerts);
@@ -305,6 +402,10 @@ const Settings = () => {
       setDocumentStatus('Document verification request sent to admin');
       setTimeout(() => setDocumentStatus(''), 3000);
     }
+  };
+
+  const handleSettingsClick = (section) => {
+    setActiveSection(section);
   };
 
   const renderContent = () => {
@@ -686,31 +787,44 @@ const Settings = () => {
           <div className="verify-email-content">
             <h2>Verify Your Email Address</h2>
             
-            <button
-              onClick={handleSendVerificationEmail}
-              className="verify-btn"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Sending...' : 'Send Verification Email'}
-            </button>
-            {emailSent && <div className="status-message">{verificationStatus}</div>}
-            <input
-              type="text"
-              placeholder="Enter verification code"
-              value={verificationCode}
-              onChange={(e) => {
-                setVerificationCode(e.target.value);
-              }}
-              className="verify-input"
-            />
-            <button
-              onClick={handleVerifyCode}
-              className="verify-btn"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Submitting...' : 'Confirm Verification Code'}
-            </button>
-            {verificationStatus && <div className="status-message">{verificationStatus}</div>}
+            <div className="verification-section">
+              <button
+                onClick={handleSendVerificationEmail}
+                className="verify-btn"
+                disabled={isLoading || cooldownTime > 0}
+              >
+                {emailSent ? 'Re-send Verification Email' : 'Send Verification Email'}
+              </button>
+              {verificationStatus && (
+                <div className={`status-message ${verificationStatus.includes('Error') ? 'error' : 'success'}`}>
+                  {verificationStatus}
+                </div>
+              )}
+              {cooldownTime > 0 && (
+                <div className="cooldown-timer">
+                  Try again in {Math.floor(cooldownTime / 60)}:{(cooldownTime % 60).toString().padStart(2, '0')}
+                </div>
+              )}
+            </div>
+
+            <div className="verification-input-section">
+              <input
+                type="text"
+                placeholder="Enter verification code"
+                value={verificationCode}
+                onChange={(e) => {
+                  setVerificationCode(e.target.value);
+                }}
+                className="verify-input"
+              />
+              <button
+                onClick={handleVerifyCode}
+                className="verify-btn"
+                disabled={isVerifying || !verificationCode}
+              >
+                {isVerifying ? 'Verifying...' : 'Confirm Verification Code'}
+              </button>
+            </div>
           </div>
         );
       default:
@@ -733,7 +847,7 @@ const Settings = () => {
             <li>
               <button 
                 className={`settings-link ${activeSection === 'personal' ? 'active' : ''}`}
-                onClick={() => setActiveSection('personal')}
+                onClick={() => handleSettingsClick('personal')}
               >
                 <User className="icon" />
                 <span className="link-label">Personal Details</span>
@@ -742,7 +856,7 @@ const Settings = () => {
             <li>
               <button 
                 className={`settings-link ${activeSection === 'security' ? 'active' : ''}`}
-                onClick={() => setActiveSection('security')}
+                onClick={() => handleSettingsClick('security')}
               >
                 <Lock className="icon" />
                 <span className="link-label">Password & Security</span>
@@ -751,7 +865,7 @@ const Settings = () => {
             <li>
               <button 
                 className={`settings-link ${activeSection === 'notifications' ? 'active' : ''}`}
-                onClick={() => setActiveSection('notifications')}
+                onClick={() => handleSettingsClick('notifications')}
               >
                 <Bell className="icon" />
                 <span className="link-label">Notifications</span>
@@ -760,7 +874,7 @@ const Settings = () => {
             <li>
               <button 
                 className={`settings-link ${activeSection === 'privacy' ? 'active' : ''}`}
-                onClick={() => setActiveSection('privacy')}
+                onClick={() => handleSettingsClick('privacy')}
               >
                 <Shield className="icon" />
                 <span className="link-label">Privacy</span>
@@ -769,7 +883,7 @@ const Settings = () => {
             <li>
               <button 
                 className={`settings-link ${activeSection === 'activity' ? 'active' : ''}`}
-                onClick={() => setActiveSection('activity')}
+                onClick={() => handleSettingsClick('activity')}
               >
                 <Activity className="icon" />
                 <span className="link-label">Activity Log</span>
@@ -778,7 +892,7 @@ const Settings = () => {
             <li>
               <button 
                 className={`settings-link ${activeSection === 'accessibility' ? 'active' : ''}`}
-                onClick={() => setActiveSection('accessibility')}
+                onClick={() => handleSettingsClick('accessibility')}
               >
                 <Eye className="icon" />
                 <span className="link-label">Accessibility</span>
@@ -788,7 +902,7 @@ const Settings = () => {
               <li>
                 <button 
                   className={`settings-link ${activeSection === 'verify-email' ? 'active' : ''}`}
-                  onClick={() => setActiveSection('verify-email')}
+                  onClick={() => handleSettingsClick('verify-email')}
                 >
                   <Mail className="icon" />
                   <span className="link-label">Verify Email</span>

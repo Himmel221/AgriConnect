@@ -629,88 +629,167 @@
 }
 
 .verify-email-content {
-  
-  max-width: 500px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 30px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .verify-email-content h2 {
-  color: rgb(58, 57, 57); 
-  font-weight: 600;
+  color: #2E7D32;
+  font-size: 1.5rem;
   margin-bottom: 1.5rem;
   text-align: center;
+  font-weight: 600;
 }
 
-.verify-email-content p {
-  color: #555;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
+.verification-section {
+  margin-bottom: 25px;
+  text-align: center;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.cooldown-timer {
+  color: #666;
+  font-size: 14px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.verify-btn {
+  padding: 12px 24px;
+  background-color: #2E7D32;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 300px;
+}
+
+.verify-btn:hover:not(:disabled) {
+  background-color: #1B5E20;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+}
+
+.verify-btn:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+/* Dark mode styles */
+.dark-mode .cooldown-timer {
+  color: #bbb;
+}
+
+.dark-mode .verify-btn:disabled {
+  background-color: #4a4a4a;
+  color: #888;
+}
+
+.verification-input-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
 }
 
 .verify-input {
   width: 100%;
-  padding: 12px 15px;
-  margin: 1rem 0;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  max-width: 300px;
+  padding: 14px;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
   font-size: 16px;
-  transition: border-color 0.3s;
+  text-align: center;
+  transition: all 0.3s ease;
+  background: white;
 }
 
 .verify-input:focus {
-  border-color: #2c7d3f;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(44, 125, 63, 0.2);
+  border-color: #2E7D32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
 }
 
-.verify-btn {
-  width: 100%;
-  padding: 12px;
-  margin: 0.5rem 0;
-  background-color: #2c7d3f;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-}
-
-.verify-btn:hover {
-  background-color: #246b36;
-}
-
-.verify-btn:active {
-  transform: scale(0.98);
-}
-
-.verify-btn:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+.verify-input::placeholder {
+  text-align: center;
+  color: #adb5bd;
 }
 
 .status-message {
-  padding: 10px 15px;
-  margin: 1rem 0;
-  border-radius: 5px;
+  margin-top: 15px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  text-align: center;
   font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .status-message.success {
-  background-color: #e6f7ee;
-  color: #2c7d3f;
-  border-left: 4px solid #2c7d3f;
+  background-color: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
 }
 
 .status-message.error {
-  background-color: #feecec;
-  color: #e74c3c;
-  border-left: 4px solid #e74c3c;
+  background-color: #FFEBEE;
+  color: #C62828;
+  border: 1px solid #FFCDD2;
+}
+
+/* Dark mode styles */
+.dark-mode .verify-email-content {
+  background: #2d2d2d;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .verification-section,
+.dark-mode .verification-input-section {
+  background: #3d3d3d;
+  border-color: #444;
+}
+
+.dark-mode .verify-input {
+  background: #2d2d2d;
+  border-color: #444;
+  color: white;
+}
+
+.dark-mode .verify-input::placeholder {
+  color: #666;
+}
+
+.dark-mode .status-message.success {
+  background-color: #1B5E20;
+  color: #E8F5E9;
+  border-color: #2E7D32;
+}
+
+.dark-mode .status-message.error {
+  background-color: #B71C1C;
+  color: #FFEBEE;
+  border-color: #C62828;
 }
 
 .verification-code-group {
@@ -926,17 +1005,6 @@
   margin-top: 1.5rem;
 }
 
-.verify-btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  min-width: 100px;
-}
-
 .yes-btn {
   background-color: #3498db;
   color: white;
@@ -1096,8 +1164,6 @@
   cursor: pointer;
 }
 
-
-/* Dark mode styles */
 .dark-mode .activity-item {
   border-bottom-color: #444;
 }
@@ -1119,7 +1185,6 @@
   color: #eee;
 }
 
-/* Tablet (768px and below) */
 @media (max-width: 768px) {
   .settings-nav {
     flex-direction: column;
@@ -1133,7 +1198,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
-    margin-left: 0; /* Changed from 50px to 0 for alignment */
+    margin-left: 0; 
     box-sizing: border-box;
   }
 
@@ -1270,13 +1335,13 @@
   }
 
   .settings-sidebar {
-    width: 60px; /* narrower for icon-only */
+    width: 60px; 
     height: 100vh;
     padding-top: 1rem;
     position: fixed;
     top: 0;
     left: 0;
-    background-color: #feffff; /* optional styling */
+    background-color: #feffff; 
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1310,7 +1375,6 @@
     height: auto;
     min-height: fit-content;
     margin-right: 10px;
- /* Added padding for better spacing */
   }
 
   .settings-nav .nav-left {
@@ -1326,7 +1390,7 @@
   }
 
   .settings-nav .nav-search {
-    display: none; /* Hide search on very small screens */
+    display: none;
   }
 
   .settings-nav .nav-right {
@@ -1346,7 +1410,7 @@
   }
 
   .settings-nav .nav-link-label {
-    display: none; /* Hide labels to save space */
+    display: none; 
   }
 
   .nav-link .icon {
@@ -1405,7 +1469,6 @@
   }
 }
 
-/* Add styles for TopNavbar logo adjustment when in settings page */
 .settings-page .top-navbar {
   padding-left: 170px;
   transition: padding-left 0.3s ease;

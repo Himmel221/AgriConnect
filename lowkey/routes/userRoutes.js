@@ -13,14 +13,14 @@ router.get('/:userId', auth, async (req, res) => {
 
   try {
     const user = await User.findById(userId).select(
-      'first_name last_name email birthDate country province cityOrTown barangay bio createdAt'
+      'first_name last_name email birthDate country province cityOrTown barangay bio createdAt isSeller'
     );
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.status(200).json({ user });
+    res.status(200).json(user);
   } catch (error) {
     console.error('Error fetching user data in userroutesget:', error.message);
     res.status(500).json({ message: 'Error fetching user data', error: error.message });

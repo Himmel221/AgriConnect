@@ -1,16 +1,3 @@
-/***const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-require('dotenv').config();
-
-const connectDB = require('./config/db');
-const authRoutes = require('./routes/authRoutes');
-const listingsRoute = require('./routes/listings.js'); 
-
-const app = express();*/
-
-//server.js
-
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -33,6 +20,7 @@ import sellerOrdersRoutes from './routes/sellerOrdersRoutes.js';
 import withdrawalRoutes from './routes/withdrawalRoutes.js';
 import buyerOrdersRoutes from './routes/buyerOrdersRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js'; 
+import User from './models/User.js';
 
 
 dotenv.config();
@@ -79,7 +67,10 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/admin', AdminRoutes);
 app.use('/api/users', auth, userRoutes);
-app.use('/api/messages', auth, messageRoutes);
+app.use('/api/messages', (req, res, next) => {
+  console.log(`Message Route: ${req.method} ${req.url}`);
+  next();
+}, auth, messageRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/withdraw', withdrawalRoutes);
 app.use('/api/checkout-status', checkoutStatusRoutes);
@@ -110,17 +101,29 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on('sendMessage', ({ senderId, recipientId, content }) => {
-    const roomId = [senderId, recipientId].sort().join('-');
-    const messageData = {
-      senderId,
-      recipientId,
-      content,
-      timestamp: new Date(),
-    };
+  socket.on('sendMessage', async ({ senderId, recipientId, content }) => {
+    try {
+      // Check if sender is verified
+      const sender = await User.findById(senderId).select('isVerified');
+      if (!sender || !sender.isVerified) {
+        socket.emit('error', 'Please verify your email address to send messages');
+        return;
+      }
 
-    io.to(roomId).emit('receiveMessage', messageData);
-    console.log('Message sent:', messageData);
+      const roomId = [senderId, recipientId].sort().join('-');
+      const messageData = {
+        senderId,
+        recipientId,
+        content,
+        timestamp: new Date(),
+      };
+
+      io.to(roomId).emit('receiveMessage', messageData);
+      console.log('Message sent:', messageData);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      socket.emit('error', 'Failed to send message');
+    }
   });
 
   socket.on('disconnect', () => {

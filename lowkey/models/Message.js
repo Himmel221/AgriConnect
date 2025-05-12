@@ -17,10 +17,25 @@ const MessageSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  imageUrl: {
+    type: String,
+    required: false,
+  },
   timestamp: {
     type: Date,
     default: Date.now,
   },
+  reactions: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    emoji: {
+      type: String,
+      required: true
+    }
+  }]
 });
 
 const Message = mongoose.model('Message', MessageSchema);

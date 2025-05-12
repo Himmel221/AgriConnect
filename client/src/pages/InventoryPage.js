@@ -20,6 +20,7 @@ const InventoryPage = () => {
   const [selectedProduct, setSelectedProduct] = useState('');
   const [showOtherDetails, setShowOtherDetails] = useState(false);
   const [breakEvenPrices, setBreakEvenPrices] = useState([]);
+  const [salesData, setSalesData] = useState([]);
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -59,16 +60,37 @@ const InventoryPage = () => {
       const response = await axios.get(`${apiUrl}/api/inventory`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-  
-      console.log('Fetched inventory response:', response.data); 
       setInventoryItems(response.data.inventoryItems || []);
     } catch (error) {
       console.error('❌ Error fetching inventory:', error.response ? error.response.data : error.message);
     }
   };
 
+  const fetchSalesData = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/sales`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Ensure sales data is properly formatted and connected to inventory items
+      const formattedSales = response.data.sales.map(sale => {
+        const inventoryItem = inventoryItems.find(item => item.productName === sale.productName);
+        return {
+          ...sale,
+          unitPrice: inventoryItem ? inventoryItem.price : sale.unitPrice
+        };
+      });
+      setSalesData(formattedSales || []);
+    } catch (err) {
+      console.error('❌ Error fetching sales data:', err);
+    }
+  };
+
   useEffect(() => {
-    fetchInventory();
+    const fetchData = async () => {
+      await fetchInventory();
+      await fetchSalesData();
+    };
+    fetchData();
   }, [token]);
 
   const handleInputChange = (e) => {
@@ -115,50 +137,51 @@ const InventoryPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-  if (!formData.productName || !formData.category) {
-    alert('❌ Product Name and Category are required.');
-    return;
-  }
-
-  if (isNaN(formData.price) || formData.price <= 0) {
-    alert('❌ Price must be a positive number.');
-    return;
-  }
-
-  if (isNaN(formData.quantity) || formData.quantity <= 0) {
-    alert('❌ Quantity must be a positive number.');
-    return;
-  }
-
-  if (isNaN(formData.stockThreshold) || formData.stockThreshold < 0) {
-    alert('❌ Stock Threshold must be a non-negative number.');
-    return;
-  }
-
-  if (isNaN(formData.supplyCapacityDaily) || formData.supplyCapacityDaily < 0) {
-    alert('❌ Supply Capacity Daily must be a non-negative number.');
-    return;
-  }
-
-  if (isNaN(formData.supplyCapacityWeekly) || formData.supplyCapacityWeekly < 0) {
-    alert('❌ Supply Capacity Weekly must be a non-negative number.');
-    return;
-  }
-
-  for (const [index, entry] of breakEvenPrices.entries()) {
-    if (!entry.price || isNaN(entry.price) || entry.price <= 0) {
-      alert(`❌ Break-Even Price at row ${index + 1} must be a positive number.`);
+    if (!formData.productName || !formData.category) {
+      alert('❌ Product Name and Category are required.');
       return;
     }
-    if (!entry.startDate || !entry.endDate) {
-      alert(`❌ Start Date and End Date are required for Break-Even Price at row ${index + 1}.`);
+
+    if (isNaN(formData.price) || formData.price <= 0) {
+      alert('❌ Price must be a positive number.');
       return;
     }
-    if (new Date(entry.startDate) > new Date(entry.endDate)) {
-      alert(`❌ Start Date cannot be later than End Date for Break-Even Price at row ${index + 1}.`);
+
+    if (isNaN(formData.quantity) || formData.quantity <= 0) {
+      alert('❌ Quantity must be a positive number.');
       return;
     }
-  }
+
+    if (isNaN(formData.stockThreshold) || formData.stockThreshold < 0) {
+      alert('❌ Stock Threshold must be a non-negative number.');
+      return;
+    }
+
+    if (isNaN(formData.supplyCapacityDaily) || formData.supplyCapacityDaily < 0) {
+      alert('❌ Supply Capacity Daily must be a non-negative number.');
+      return;
+    }
+
+    if (isNaN(formData.supplyCapacityWeekly) || formData.supplyCapacityWeekly < 0) {
+      alert('❌ Supply Capacity Weekly must be a non-negative number.');
+      return;
+    }
+
+    for (const [index, entry] of breakEvenPrices.entries()) {
+      if (!entry.price || isNaN(entry.price) || entry.price <= 0) {
+        alert(`❌ Break-Even Price at row ${index + 1} must be a positive number.`);
+        return;
+      }
+      if (!entry.startDate || !entry.endDate) {
+        alert(`❌ Start Date and End Date are required for Break-Even Price at row ${index + 1}.`);
+        return;
+      }
+      if (new Date(entry.startDate) > new Date(entry.endDate)) {
+        alert(`❌ Start Date cannot be later than End Date for Break-Even Price at row ${index + 1}.`);
+        return;
+      }
+    }
+
     try {
       const payload = {
         ...formData,
@@ -166,17 +189,18 @@ const InventoryPage = () => {
         additionalDetails,
         userId: localStorage.getItem('userId'),
       };
-  
+
       payload.quantity = Number(payload.quantity);
-  
+
       await axios.post(`${apiUrl}/api/inventory`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
-  
+
       alert('✅ Product added successfully!');
       setIsModalOpen(false);
       resetForm();
-      fetchInventory(); 
+      await fetchInventory();
+      await fetchSalesData(); // Refresh sales data after adding new inventory
     } catch (err) {
       console.error('❌ Submission error:', err);
       alert('Failed to add product.');
@@ -218,7 +242,6 @@ const InventoryPage = () => {
     setSelectedProduct('');
     setShowOtherDetails(false);
   };
-  
 
   return (
     <>
@@ -227,8 +250,7 @@ const InventoryPage = () => {
       <div className="inventory-container">
         <h1 className="inventory-title">Inventory Management</h1>
         <button className="inventory-add-product-btn" onClick={() => setIsModalOpen(true)}>Add Product</button>
-  
-        {}
+
         <div className="inventory-table-container" style={{ overflowX: 'auto' }}>
           <table className="inventory-table">
             <thead>
@@ -264,20 +286,55 @@ const InventoryPage = () => {
                     <td>{item.stockAvailability}</td>
                     <td>{item.additionalDetails?.packagingType}</td>
                     <td>{item.additionalDetails?.certificationType}</td>
-                    <td>{item.additionalDetails?.processingMethod}</td>
                     <td>{item.additionalDetails?.packagingSize}</td>
-                    <td>{item.additionalDetails?.batchNumber}</td>
                     <td>{item.additionalDetails?.supplierInfo}</td>
                     <td>{item.additionalDetails?.deliveryOptions}</td>
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="26">No inventory items found.</td></tr>
+                <tr><td colSpan="14">No inventory items found.</td></tr>
               )}
             </tbody>
           </table>
         </div>
-  
+
+        {/* Sales Data Section */}
+        <div className="sales-section">
+          <h2 className="sales-title">Sales Data</h2>
+          <div className="sales-table-container">
+            <table className="sales-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity Sold</th>
+                  <th>Price per Unit</th>
+                  <th>Total Revenue</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {salesData.length > 0 ? (
+                  salesData.map((sale) => {
+                    const inventoryItem = inventoryItems.find(item => item.productName === sale.productName);
+                    const unitPrice = inventoryItem ? inventoryItem.price : sale.unitPrice;
+                    return (
+                      <tr key={sale._id}>
+                        <td>{sale.productName}</td>
+                        <td>{sale.quantity}</td>
+                        <td>{unitPrice}</td>
+                        <td>{(sale.quantity * unitPrice).toFixed(2)}</td>
+                        <td>{new Date(sale.date).toLocaleDateString()}</td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr><td colSpan="5">No sales data found.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         {isModalOpen && (
           <div className="inventory-modal">
             <div className="inventory-modal-overlay" onClick={() => setIsModalOpen(false)}></div>
@@ -291,7 +348,7 @@ const InventoryPage = () => {
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
-  
+
                 {selectedCategory && (
                   <>
                     <label>Product:</label>
@@ -303,7 +360,7 @@ const InventoryPage = () => {
                     </select>
                   </>
                 )}
-  
+
                 {Object.keys(formData).map((field) =>
                   field !== 'category' && field !== 'productName' && (
                     <div key={field}>
@@ -323,9 +380,9 @@ const InventoryPage = () => {
                     </div>
                   )
                 )}
-  
+
                 <button type="button" onClick={handleAddBreakEvenPrice} className="custom-btn green">Add Break-Even Price</button>
-  
+
                 {breakEvenPrices.map((entry, index) => (
                   <div key={index} className="break-even-field">
                     <input type="number" placeholder="Price" value={entry.price} onChange={(e) => handleBreakEvenPriceChange(index, 'price', e.target.value)} />
@@ -333,16 +390,16 @@ const InventoryPage = () => {
                     <input type="date" placeholder="End Date" value={entry.endDate} onChange={(e) => handleBreakEvenPriceChange(index, 'endDate', e.target.value)} />
                   </div>
                 ))}
-  
+
                 <button type="button" onClick={toggleOtherDetails} className="custom-btn blue">Add Additional Details</button>
-  
+
                 {showOtherDetails && Object.keys(additionalDetails).map((field) => (
                   <div key={field}>
                     <label>{field.replace(/([A-Z])/g, ' $1')}</label>
                     <input type="text" name={field} value={additionalDetails[field]} onChange={handleInputChange} />
                   </div>
                 ))}
-  
+
                 <button type="submit" className="inventory-submit-btn">Submit</button>
               </form>
             </div>
@@ -350,6 +407,7 @@ const InventoryPage = () => {
         )}
       </div>
     </>
-  ); };
-  
-  export default InventoryPage;
+  );
+};
+
+export default InventoryPage;

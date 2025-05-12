@@ -395,45 +395,6 @@
   transform: translateY(0);
 }
 
-.chatbox-container {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  z-index: 1100;
-}
-
-.chatbox {
-  width: 350px;
-  height: 400px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.chatbox-header {
-  background-color: #f1f1f1;
-  padding: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #ddd;
-}
-
-.chatbox-header h4 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: bold;
-}
-
-.chatbox-body {
-  flex: 1;
-  padding: 10px;
-  overflow-y: auto; 
-  animation: scroll-in 0.3s ease-out; 
-}
 
 @keyframes scroll-in {
   from {
