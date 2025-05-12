@@ -6,30 +6,29 @@
 .about-toggle-section {
   display: flex;
   justify-content: center;
-  margin: 0;
-  transition: all 0.5s ease;
-}
-
-.about-toggle-section.hidden {
-  opacity: 0;
-  transform: translateY(-20px);
-  pointer-events: none;
+  margin: 3rem 0;
 }
 
 .about-toggle-button {
   background: #0a9758;
   color: white;
   border: none;
-  padding: 1rem 1rem;
+  padding: 1.2rem 2rem;
   border-radius: 50px;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1rem;
   box-shadow: 0 4px 15px rgba(77, 124, 46, 0.3);
   transition: all 0.3s ease;
+}
+
+.about-toggle-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(77, 124, 46, 0.4);
+  background: #087a47;
 }
 
 .about-toggle-button:hover {
@@ -56,14 +55,6 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-
-.about-us-section.visible {
-  opacity: 1;
-  transform: translateY(0);
-  height: auto;
-  margin: 2rem 0;
 }
 
 .about-content {
