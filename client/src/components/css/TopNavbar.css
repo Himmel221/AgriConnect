@@ -431,11 +431,11 @@
   
   .navbar-title {
     font-size: 13px;
-    margin-left: 10px;
+    margin-left: 5px;
   }
   
   .navbar-search-input {
-    width: 150px;
+    width: 120px;
     padding: 0.4rem 0.6rem;
     margin-left: 5px;
   }
@@ -445,7 +445,7 @@
   }
 
   .navbar-search-results {
-    left: 65%;
+    left: 60%;
     width: 40%;
     max-height: 160px;
   }
@@ -454,7 +454,12 @@
     padding: 0.5rem 0.8rem;
     font-size: 0.85rem;
   }
+
+  .navbar-user-options {
+    gap: 0.5rem;
+  }
 }
+
 
 @media (max-width: 320px) {
   .navbar-title {
