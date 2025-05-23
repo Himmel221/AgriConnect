@@ -4,6 +4,10 @@ import TopNavbar from '../components/top_navbar';
 import SideBar from '../components/side_bar';
 import { useAuth } from '../components/AuthProvider';
 import axios from 'axios';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 const categories = {
   'Cereal Crops': ['Barley', 'Black Rice', 'Brown Rice', 'Corn', 'Millet', 'Oats', 'Sorghum', 'Wheat', 'White Rice'],
@@ -21,6 +25,15 @@ const InventoryPage = () => {
   const [showOtherDetails, setShowOtherDetails] = useState(false);
   const [breakEvenPrices, setBreakEvenPrices] = useState([]);
   const [salesData, setSalesData] = useState([]);
+  const [successfulOrders, setSuccessfulOrders] = useState([]);
+  const [chartData, setChartData] = useState({
+    categoryDistribution: null,
+    stockLevels: null,
+    priceComparison: null,
+    salesByStatus: null,
+    salesByDate: null,
+    revenueByProduct: null
+  });
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -68,18 +81,74 @@ const InventoryPage = () => {
 
   const fetchSalesData = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/api/sales`, {
+      const response = await axios.get(`${apiUrl}/api/orders/seller-orders`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Ensure sales data is properly formatted and connected to inventory items
-      const formattedSales = response.data.sales.map(sale => {
-        const inventoryItem = inventoryItems.find(item => item.productName === sale.productName);
-        return {
-          ...sale,
-          unitPrice: inventoryItem ? inventoryItem.price : sale.unitPrice
-        };
-      });
-      setSalesData(formattedSales || []);
+
+      if (response.data.orders) {
+        const orders = response.data.orders;
+        setSalesData(orders);
+        
+        // Calculate successful orders (status === 'Success')
+        const successful = orders.filter(order => order.status === 'Success');
+        setSuccessfulOrders(successful);
+
+        // Update chart data with the new analytics
+        setChartData(prevData => ({
+          ...prevData,
+          salesByStatus: {
+            labels: ['Pending', 'Ongoing', 'Success', 'Rejected'],
+            datasets: [{
+              label: 'Orders by Status',
+              data: [
+                orders.filter(order => order.status === 'Pending').length,
+                orders.filter(order => order.status === 'Ongoing').length,
+                orders.filter(order => order.status === 'Success').length,
+                orders.filter(order => order.status === 'Rejected').length
+              ],
+              backgroundColor: [
+                '#FFC107', // Pending - Yellow
+                '#2196F3', // Ongoing - Blue
+                '#4CAF50', // Success - Green
+                '#F44336'  // Rejected - Red
+              ],
+              borderWidth: 1
+            }]
+          },
+          salesByDate: {
+            labels: [...new Set(orders.map(order => 
+              new Date(order.submittedAt).toLocaleDateString()
+            ))],
+            datasets: [{
+              label: 'Daily Sales',
+              data: [...new Set(orders.map(order => 
+                new Date(order.submittedAt).toLocaleDateString()
+              ))].map(date => 
+                orders
+                  .filter(order => new Date(order.submittedAt).toLocaleDateString() === date)
+                  .reduce((sum, order) => sum + order.totalPrice, 0)
+              ),
+              borderColor: '#4CAF50',
+              backgroundColor: 'rgba(76, 175, 80, 0.1)',
+              fill: true
+            }]
+          },
+          revenueByProduct: {
+            labels: [...new Set(orders.map(order => order.productName))],
+            datasets: [{
+              label: 'Revenue by Product',
+              data: [...new Set(orders.map(order => order.productName))].map(product => 
+                orders
+                  .filter(order => order.productName === product)
+                  .reduce((sum, order) => sum + order.totalPrice, 0)
+              ),
+              backgroundColor: '#2196F3',
+              borderColor: '#1976D2',
+              borderWidth: 1
+            }]
+          }
+        }));
+      }
     } catch (err) {
       console.error('❌ Error fetching sales data:', err);
     }
@@ -89,9 +158,125 @@ const InventoryPage = () => {
     const fetchData = async () => {
       await fetchInventory();
       await fetchSalesData();
+      processChartData();
     };
     fetchData();
   }, [token]);
+
+  const processChartData = () => {
+    // Process category distribution
+    const categoryCount = inventoryItems.reduce((acc, item) => {
+      acc[item.category] = (acc[item.category] || 0) + 1;
+      return acc;
+    }, {});
+
+    const categoryData = {
+      labels: Object.keys(categoryCount),
+      datasets: [{
+        data: Object.values(categoryCount),
+        backgroundColor: [
+          '#4CAF50',
+          '#2196F3',
+          '#FFC107',
+          '#9C27B0',
+          '#FF5722'
+        ],
+        borderWidth: 1
+      }]
+    };
+
+    // Process stock levels
+    const stockData = {
+      labels: inventoryItems.map(item => item.productName),
+      datasets: [{
+        label: 'Current Stock',
+        data: inventoryItems.map(item => item.quantity),
+        backgroundColor: '#4CAF50',
+        borderColor: '#388E3C',
+        borderWidth: 1
+      }]
+    };
+
+    // Process price comparison
+    const priceData = {
+      labels: inventoryItems.map(item => item.productName),
+      datasets: [{
+        label: 'Price per Unit',
+        data: inventoryItems.map(item => item.price),
+        backgroundColor: '#2196F3',
+        borderColor: '#1976D2',
+        borderWidth: 1
+      }]
+    };
+
+    // Process sales by status
+    const salesByStatus = {
+      labels: ['Pending', 'Ongoing', 'Success', 'Rejected'],
+      datasets: [{
+        label: 'Orders by Status',
+        data: [
+          salesData.filter(sale => sale.status === 'Pending').length,
+          salesData.filter(sale => sale.status === 'Ongoing').length,
+          salesData.filter(sale => sale.status === 'Success').length,
+          salesData.filter(sale => sale.status === 'Rejected').length
+        ],
+        backgroundColor: [
+          '#FFC107', // Pending - Yellow
+          '#2196F3', // Ongoing - Blue
+          '#4CAF50', // Success - Green
+          '#F44336'  // Rejected - Red
+        ],
+        borderWidth: 1
+      }]
+    };
+
+    // Process sales by date (last 7 days)
+    const last7Days = Array.from({length: 7}, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      return date.toISOString().split('T')[0];
+    }).reverse();
+
+    const salesByDate = {
+      labels: last7Days.map(date => new Date(date).toLocaleDateString()),
+      datasets: [{
+        label: 'Daily Sales',
+        data: last7Days.map(date => 
+          salesData.filter(sale => 
+            new Date(sale.submittedAt).toISOString().split('T')[0] === date
+          ).reduce((sum, sale) => sum + sale.totalPrice, 0)
+        ),
+        borderColor: '#4CAF50',
+        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+        fill: true
+      }]
+    };
+
+    // Process revenue by product
+    const revenueByProduct = {
+      labels: [...new Set(salesData.map(sale => sale.productName))],
+      datasets: [{
+        label: 'Revenue by Product',
+        data: [...new Set(salesData.map(sale => sale.productName))].map(product => 
+          salesData
+            .filter(sale => sale.productName === product)
+            .reduce((sum, sale) => sum + sale.totalPrice, 0)
+        ),
+        backgroundColor: '#2196F3',
+        borderColor: '#1976D2',
+        borderWidth: 1
+      }]
+    };
+
+    setChartData({
+      categoryDistribution: categoryData,
+      stockLevels: stockData,
+      priceComparison: priceData,
+      salesByStatus,
+      salesByDate,
+      revenueByProduct
+    });
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -248,8 +433,200 @@ const InventoryPage = () => {
       <TopNavbar />
       <SideBar />
       <div className="inventory-container">
-        <h1 className="inventory-title">Inventory Management</h1>
         <button className="inventory-add-product-btn" onClick={() => setIsModalOpen(true)}>Add Product</button>
+
+        {/* Sales Data Section - Moved above graphs */}
+        <div className="sales-section">
+          <h2 className="sales-title">Sales Data</h2>
+          
+          {/* Sales Summary Cards */}
+          <div className="sales-summary-cards">
+            <div className="summary-card">
+              <h3>Total Orders</h3>
+              <p>{salesData.length}</p>
+            </div>
+            <div className="summary-card">
+              <h3>Successful Orders</h3>
+              <p>{successfulOrders.length}</p>
+            </div>
+            <div className="summary-card">
+              <h3>Total Revenue</h3>
+              <p>{new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(
+                salesData.reduce((sum, order) => sum + (order.status === 'Success' ? order.totalPrice : 0), 0)
+              )}</p>
+            </div>
+          </div>
+
+          {/* Successful Orders Table */}
+          <div className="sales-table-container">
+            <h3>Successful Orders</h3>
+            <table className="sales-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Total Price</th>
+                  <th>Date</th>
+                  <th>Buyer Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {successfulOrders.length > 0 ? (
+                  successfulOrders.map((order) => (
+                    <tr key={order._id}>
+                      <td>{order.productName}</td>
+                      <td>{order.quantity} {order.unit}</td>
+                      <td>{new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(order.totalPrice)}</td>
+                      <td>{new Date(order.submittedAt).toLocaleDateString()}</td>
+                      <td>
+                        <span className={`status-badge ${order.buyerStatus?.toLowerCase() || 'notyetreceived'}`}>
+                          {order.buyerStatus || 'NotYetReceived'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr><td colSpan="5">No successful orders found.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <h1 className="inventory-title">Inventory Management</h1>
+
+        {/* Charts Section */}
+        <div className="charts-container">
+          <div className="chart-box">
+            <h3>Category Distribution</h3>
+            {chartData.categoryDistribution && (
+              <Pie 
+                data={chartData.categoryDistribution}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'bottom'
+                    }
+                  }
+                }}
+              />
+            )}
+          </div>
+
+          <div className="chart-box">
+            <h3>Stock Levels</h3>
+            {chartData.stockLevels && (
+              <Bar 
+                data={chartData.stockLevels}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top'
+                    }
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true
+                    }
+                  }
+                }}
+              />
+            )}
+          </div>
+
+          <div className="chart-box">
+            <h3>Price Comparison</h3>
+            {chartData.priceComparison && (
+              <Bar 
+                data={chartData.priceComparison}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top'
+                    }
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true
+                    }
+                  }
+                }}
+              />
+            )}
+          </div>
+
+          <div className="chart-box">
+            <h3>Orders by Status</h3>
+            {chartData.salesByStatus && (
+              <Pie 
+                data={chartData.salesByStatus}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'bottom'
+                    }
+                  }
+                }}
+              />
+            )}
+          </div>
+
+          <div className="chart-box">
+            <h3>Daily Sales Trend</h3>
+            {chartData.salesByDate && (
+              <Bar 
+                data={chartData.salesByDate}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top'
+                    }
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      title: {
+                        display: true,
+                        text: 'Revenue (PHP)'
+                      }
+                    }
+                  }
+                }}
+              />
+            )}
+          </div>
+
+          <div className="chart-box">
+            <h3>Revenue by Product</h3>
+            {chartData.revenueByProduct && (
+              <Bar 
+                data={chartData.revenueByProduct}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top'
+                    }
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      title: {
+                        display: true,
+                        text: 'Revenue (PHP)'
+                      }
+                    }
+                  }
+                }}
+              />
+            )}
+          </div>
+        </div>
 
         <div className="inventory-table-container" style={{ overflowX: 'auto' }}>
           <table className="inventory-table">
@@ -296,43 +673,6 @@ const InventoryPage = () => {
               )}
             </tbody>
           </table>
-        </div>
-
-        {/* Sales Data Section */}
-        <div className="sales-section">
-          <h2 className="sales-title">Sales Data</h2>
-          <div className="sales-table-container">
-            <table className="sales-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Quantity Sold</th>
-                  <th>Price per Unit</th>
-                  <th>Total Revenue</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salesData.length > 0 ? (
-                  salesData.map((sale) => {
-                    const inventoryItem = inventoryItems.find(item => item.productName === sale.productName);
-                    const unitPrice = inventoryItem ? inventoryItem.price : sale.unitPrice;
-                    return (
-                      <tr key={sale._id}>
-                        <td>{sale.productName}</td>
-                        <td>{sale.quantity}</td>
-                        <td>{unitPrice}</td>
-                        <td>{(sale.quantity * unitPrice).toFixed(2)}</td>
-                        <td>{new Date(sale.date).toLocaleDateString()}</td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr><td colSpan="5">No sales data found.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
         </div>
 
         {isModalOpen && (
