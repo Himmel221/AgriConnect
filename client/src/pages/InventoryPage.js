@@ -11,63 +11,70 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 
 const categories = {
   'Cereal Crops': ['Barley', 'Black Rice', 'Brown Rice', 'Corn', 'Millet', 'Oats', 'Sorghum', 'Wheat', 'White Rice'],
-  'Vegetables': ['Asparagus', 'Beets', 'Bell Peppers', 'Broccoli', 'Brussels Sprouts', 'Cabbage', 'Carrots', 'Cauliflower', 'Celery', 'Chard', 'Cucumber', 'Eggplant', 'Garlic', 'Green Beans', 'Kale', 'Leeks', 'Lettuce', 'Mushrooms', 'Okra', 'Onions', 'Parsnips', 'Peas', 'Potatoes', 'Pumpkin', 'Radishes', 'Spinach', 'Squash', 'Sweet Corn', 'Sweet Potatoes', 'Tomatoes', 'Turnips', 'Zucchini'],
   'Fruits': ['Apples', 'Avocado', 'Bananas', 'Blueberries', 'Cherries', 'Dragon Fruit', 'Grapes', 'Kiwi', 'Lemon', 'Lychee', 'Mangoes', 'Melon', 'Oranges', 'Papaya', 'Peach', 'Pear', 'Pineapple', 'Plum', 'Raspberry', 'Strawberries', 'Watermelon'],
   'Legumes': ['Beans', 'Lentils', 'Peas', 'Soybeans'],
+  'Vegetables': ['Asparagus', 'Beets', 'Bell Peppers', 'Broccoli', 'Brussels Sprouts', 'Cabbage', 'Carrots', 'Cauliflower', 'Celery', 'Chard', 'Cucumber', 'Eggplant', 'Garlic', 'Green Beans', 'Kale', 'Leeks', 'Lettuce', 'Mushrooms', 'Okra', 'Onions', 'Parsnips', 'Peas', 'Potatoes', 'Pumpkin', 'Radishes', 'Spinach', 'Squash', 'Sweet Corn', 'Sweet Potatoes', 'Tomatoes', 'Turnips', 'Zucchini'],
 };
 
 const InventoryPage = () => {
   const { token } = useAuth();
-  const [inventoryItems, setInventoryItems] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState('');
-  const [showOtherDetails, setShowOtherDetails] = useState(false);
-  const [breakEvenPrices, setBreakEvenPrices] = useState([]);
-  const [salesData, setSalesData] = useState([]);
-  const [successfulOrders, setSuccessfulOrders] = useState([]);
-  const [chartData, setChartData] = useState({
-    categoryDistribution: null,
-    stockLevels: null,
-    priceComparison: null,
-    salesByStatus: null,
-    salesByDate: null,
-    revenueByProduct: null
+  
+  // State variables in alphabetical order
+  const [additionalDetails, setAdditionalDetails] = useState({
+    batchNumber: '',
+    bestClimate: '',
+    certificationType: '',
+    deliveryOptions: '',
+    humidity: '',
+    packagingSize: '',
+    packagingType: '',
+    preferredSoil: '',
+    processingMethod: '',
+    qrCodeUrl: '',
+    storageTemp: '',
+    supplierInfo: '',
   });
 
-  const apiUrl = process.env.REACT_APP_API_URL;
+  const [breakEvenPrices, setBreakEvenPrices] = useState([]);
+  
+  const [chartData, setChartData] = useState({
+    categoryDistribution: null,
+    priceComparison: null,
+    revenueByProduct: null,
+    salesByDate: null,
+    salesByStatus: null,
+    stockLevels: null
+  });
+
+  const [editingItem, setEditingItem] = useState(null);
 
   const [formData, setFormData] = useState({
-    productName: '',
     category: '',
-    price: '',
-    unit: 'kilograms',
-    quantity: '',
     expirationDate: '',
-    plantingDate: '',
     harvestingDate: '',
-    supplySchedule: 'weekly',
+    plantingDate: '',
+    price: '',
+    productName: '',
+    quantity: '',
+    stockAvailability: '',
     stockThreshold: 10,
     supplyCapacityDaily: '',
     supplyCapacityWeekly: '',
-    stockAvailability: '',
+    supplySchedule: 'weekly',
+    unit: 'kilograms',
   });
 
-  const [additionalDetails, setAdditionalDetails] = useState({
-    storageTemp: '',
-    humidity: '',
-    packagingType: '',
-    certificationType: '',
-    processingMethod: '',
-    packagingSize: '',
-    preferredSoil: '',
-    bestClimate: '',
-    batchNumber: '',
-    qrCodeUrl: '',
-    supplierInfo: '',
-    deliveryOptions: '',
-  });
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [salesData, setSalesData] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [showOtherDetails, setShowOtherDetails] = useState(false);
+  const [successfulOrders, setSuccessfulOrders] = useState([]);
 
+  const apiUrl = process.env.REACT_APP_API_URL;
+
+  // Functions in alphabetical order
   const fetchInventory = async () => {
     try {
       const response = await axios.get(`${apiUrl}/api/inventory`, {
@@ -96,22 +103,17 @@ const InventoryPage = () => {
         // Update chart data with the new analytics
         setChartData(prevData => ({
           ...prevData,
-          salesByStatus: {
-            labels: ['Pending', 'Ongoing', 'Success', 'Rejected'],
+          revenueByProduct: {
+            labels: [...new Set(orders.map(order => order.productName))],
             datasets: [{
-              label: 'Orders by Status',
-              data: [
-                orders.filter(order => order.status === 'Pending').length,
-                orders.filter(order => order.status === 'Ongoing').length,
-                orders.filter(order => order.status === 'Success').length,
-                orders.filter(order => order.status === 'Rejected').length
-              ],
-              backgroundColor: [
-                '#FFC107', // Pending - Yellow
-                '#2196F3', // Ongoing - Blue
-                '#4CAF50', // Success - Green
-                '#F44336'  // Rejected - Red
-              ],
+              label: 'Revenue by Product',
+              data: [...new Set(orders.map(order => order.productName))].map(product => 
+                orders
+                  .filter(order => order.productName === product)
+                  .reduce((sum, order) => sum + order.totalPrice, 0)
+              ),
+              backgroundColor: '#2196F3',
+              borderColor: '#1976D2',
               borderWidth: 1
             }]
           },
@@ -133,17 +135,22 @@ const InventoryPage = () => {
               fill: true
             }]
           },
-          revenueByProduct: {
-            labels: [...new Set(orders.map(order => order.productName))],
+          salesByStatus: {
+            labels: ['Pending', 'Ongoing', 'Success', 'Rejected'],
             datasets: [{
-              label: 'Revenue by Product',
-              data: [...new Set(orders.map(order => order.productName))].map(product => 
-                orders
-                  .filter(order => order.productName === product)
-                  .reduce((sum, order) => sum + order.totalPrice, 0)
-              ),
-              backgroundColor: '#2196F3',
-              borderColor: '#1976D2',
+              label: 'Orders by Status',
+              data: [
+                orders.filter(order => order.status === 'Pending').length,
+                orders.filter(order => order.status === 'Ongoing').length,
+                orders.filter(order => order.status === 'Success').length,
+                orders.filter(order => order.status === 'Rejected').length
+              ],
+              backgroundColor: [
+                '#FFC107', // Pending - Yellow
+                '#2196F3', // Ongoing - Blue
+                '#4CAF50', // Success - Green
+                '#F44336'  // Rejected - Red
+              ],
               borderWidth: 1
             }]
           }
@@ -154,14 +161,179 @@ const InventoryPage = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const handleAddBreakEvenPrice = () => {
+    if (
+      breakEvenPrices.length === 0 ||
+      (breakEvenPrices.at(-1).price && breakEvenPrices.at(-1).startDate && breakEvenPrices.at(-1).endDate)
+    ) {
+      setBreakEvenPrices([...breakEvenPrices, { price: '', startDate: '', endDate: '' }]);
+    } else {
+      alert('Please fill in the previous Break-Even Price before adding another.');
+    }
+  };
+
+  const handleBreakEvenPriceChange = (index, field, value) => {
+    const updated = [...breakEvenPrices];
+    updated[index][field] = value;
+    setBreakEvenPrices(updated);
+  };
+
+  const handleCategoryChange = (e) => {
+    const category = e.target.value;
+    setSelectedCategory(category);
+    setSelectedProduct('');
+    setFormData(prev => ({ ...prev, category }));
+  };
+
+  const handleDelete = async (itemId) => {
+    if (window.confirm('Are you sure you want to delete this item?')) {
+      try {
+        await axios.delete(`${apiUrl}/api/inventory/${itemId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert('✅ Product deleted successfully!');
+        await fetchInventory();
+        await fetchSalesData();
+      } catch (error) {
+        console.error('❌ Error deleting item:', error);
+        alert('Failed to delete product.');
+      }
+    }
+  };
+
+  const handleEdit = (item) => {
+    setEditingItem(item);
+    setFormData({
+      category: item.category,
+      expirationDate: item.expirationDate ? item.expirationDate.split('T')[0] : '',
+      harvestingDate: item.harvestingDate ? item.harvestingDate.split('T')[0] : '',
+      plantingDate: item.plantingDate ? item.plantingDate.split('T')[0] : '',
+      price: item.price,
+      productName: item.productName,
+      quantity: item.quantity,
+      stockAvailability: item.stockAvailability,
+      stockThreshold: item.stockThreshold,
+      supplyCapacityDaily: item.supplyCapacityDaily,
+      supplyCapacityWeekly: item.supplyCapacityWeekly,
+      supplySchedule: item.supplySchedule,
+      unit: item.unit,
+    });
+    setAdditionalDetails(item.additionalDetails || {
+      batchNumber: '',
+      bestClimate: '',
+      certificationType: '',
+      deliveryOptions: '',
+      humidity: '',
+      packagingSize: '',
+      packagingType: '',
+      preferredSoil: '',
+      processingMethod: '',
+      qrCodeUrl: '',
+      storageTemp: '',
+      supplierInfo: '',
+    });
+    setBreakEvenPrices(item.breakEvenPrices || []);
+    setSelectedCategory(item.category);
+    setSelectedProduct(item.productName);
+    setIsModalOpen(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (additionalDetails.hasOwnProperty(name)) {
+      setAdditionalDetails(prev => ({ ...prev, [name]: value }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleProductChange = (e) => {
+    const product = e.target.value;
+    setSelectedProduct(product);
+    setFormData(prev => ({ ...prev, productName: product }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.productName || !formData.category) {
+      alert('❌ Product Name and Category are required.');
+      return;
+    }
+
+    if (isNaN(formData.price) || formData.price <= 0) {
+      alert('❌ Price must be a positive number.');
+      return;
+    }
+
+    if (isNaN(formData.quantity) || formData.quantity <= 0) {
+      alert('❌ Quantity must be a positive number.');
+      return;
+    }
+
+    if (isNaN(formData.stockThreshold) || formData.stockThreshold < 0) {
+      alert('❌ Stock Threshold must be a non-negative number.');
+      return;
+    }
+
+    if (isNaN(formData.supplyCapacityDaily) || formData.supplyCapacityDaily < 0) {
+      alert('❌ Supply Capacity Daily must be a non-negative number.');
+      return;
+    }
+
+    if (isNaN(formData.supplyCapacityWeekly) || formData.supplyCapacityWeekly < 0) {
+      alert('❌ Supply Capacity Weekly must be a non-negative number.');
+      return;
+    }
+
+    for (const [index, entry] of breakEvenPrices.entries()) {
+      if (!entry.price || isNaN(entry.price) || entry.price <= 0) {
+        alert(`❌ Break-Even Price at row ${index + 1} must be a positive number.`);
+        return;
+      }
+      if (!entry.startDate || !entry.endDate) {
+        alert(`❌ Start Date and End Date are required for Break-Even Price at row ${index + 1}.`);
+        return;
+      }
+      if (new Date(entry.startDate) > new Date(entry.endDate)) {
+        alert(`❌ Start Date cannot be later than End Date for Break-Even Price at row ${index + 1}.`);
+        return;
+      }
+    }
+
+    try {
+      const payload = {
+        ...formData,
+        additionalDetails,
+        breakEvenPrices,
+        userId: localStorage.getItem('userId'),
+      };
+
+      payload.quantity = Number(payload.quantity);
+
+      if (editingItem) {
+        // Update existing item
+        await axios.put(`${apiUrl}/api/inventory/${editingItem._id}`, payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert('✅ Product updated successfully!');
+      } else {
+        // Create new item
+        await axios.post(`${apiUrl}/api/inventory`, payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert('✅ Product added successfully!');
+      }
+
+      setIsModalOpen(false);
+      resetForm();
       await fetchInventory();
-      await fetchSalesData();
-      processChartData();
-    };
-    fetchData();
-  }, [token]);
+      await fetchSalesData(); // Refresh sales data after adding new inventory
+    } catch (err) {
+      console.error('❌ Submission error:', err);
+      alert(editingItem ? 'Failed to update product.' : 'Failed to add product.');
+    }
+  };
 
   const processChartData = () => {
     // Process category distribution
@@ -270,163 +442,61 @@ const InventoryPage = () => {
 
     setChartData({
       categoryDistribution: categoryData,
-      stockLevels: stockData,
       priceComparison: priceData,
-      salesByStatus,
+      revenueByProduct,
       salesByDate,
-      revenueByProduct
+      salesByStatus,
+      stockLevels: stockData
     });
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    if (additionalDetails.hasOwnProperty(name)) {
-      setAdditionalDetails(prev => ({ ...prev, [name]: value }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleCategoryChange = (e) => {
-    const category = e.target.value;
-    setSelectedCategory(category);
-    setSelectedProduct('');
-    setFormData(prev => ({ ...prev, category }));
-  };
-
-  const handleProductChange = (e) => {
-    const product = e.target.value;
-    setSelectedProduct(product);
-    setFormData(prev => ({ ...prev, productName: product }));
-  };
-
-  const handleAddBreakEvenPrice = () => {
-    if (
-      breakEvenPrices.length === 0 ||
-      (breakEvenPrices.at(-1).price && breakEvenPrices.at(-1).startDate && breakEvenPrices.at(-1).endDate)
-    ) {
-      setBreakEvenPrices([...breakEvenPrices, { price: '', startDate: '', endDate: '' }]);
-    } else {
-      alert('Please fill in the previous Break-Even Price before adding another.');
-    }
-  };
-
-  const handleBreakEvenPriceChange = (index, field, value) => {
-    const updated = [...breakEvenPrices];
-    updated[index][field] = value;
-    setBreakEvenPrices(updated);
-  };
-
-  const toggleOtherDetails = () => setShowOtherDetails(prev => !prev);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!formData.productName || !formData.category) {
-      alert('❌ Product Name and Category are required.');
-      return;
-    }
-
-    if (isNaN(formData.price) || formData.price <= 0) {
-      alert('❌ Price must be a positive number.');
-      return;
-    }
-
-    if (isNaN(formData.quantity) || formData.quantity <= 0) {
-      alert('❌ Quantity must be a positive number.');
-      return;
-    }
-
-    if (isNaN(formData.stockThreshold) || formData.stockThreshold < 0) {
-      alert('❌ Stock Threshold must be a non-negative number.');
-      return;
-    }
-
-    if (isNaN(formData.supplyCapacityDaily) || formData.supplyCapacityDaily < 0) {
-      alert('❌ Supply Capacity Daily must be a non-negative number.');
-      return;
-    }
-
-    if (isNaN(formData.supplyCapacityWeekly) || formData.supplyCapacityWeekly < 0) {
-      alert('❌ Supply Capacity Weekly must be a non-negative number.');
-      return;
-    }
-
-    for (const [index, entry] of breakEvenPrices.entries()) {
-      if (!entry.price || isNaN(entry.price) || entry.price <= 0) {
-        alert(`❌ Break-Even Price at row ${index + 1} must be a positive number.`);
-        return;
-      }
-      if (!entry.startDate || !entry.endDate) {
-        alert(`❌ Start Date and End Date are required for Break-Even Price at row ${index + 1}.`);
-        return;
-      }
-      if (new Date(entry.startDate) > new Date(entry.endDate)) {
-        alert(`❌ Start Date cannot be later than End Date for Break-Even Price at row ${index + 1}.`);
-        return;
-      }
-    }
-
-    try {
-      const payload = {
-        ...formData,
-        breakEvenPrices,
-        additionalDetails,
-        userId: localStorage.getItem('userId'),
-      };
-
-      payload.quantity = Number(payload.quantity);
-
-      await axios.post(`${apiUrl}/api/inventory`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      alert('✅ Product added successfully!');
-      setIsModalOpen(false);
-      resetForm();
-      await fetchInventory();
-      await fetchSalesData(); // Refresh sales data after adding new inventory
-    } catch (err) {
-      console.error('❌ Submission error:', err);
-      alert('Failed to add product.');
-    }
   };
 
   const resetForm = () => {
     setFormData({
-      productName: '',
       category: '',
-      price: '',
-      unit: 'kilograms',
-      quantity: '',
       expirationDate: '',
-      plantingDate: '',
       harvestingDate: '',
-      supplySchedule: 'weekly',
+      plantingDate: '',
+      price: '',
+      productName: '',
+      quantity: '',
+      stockAvailability: '',
       stockThreshold: 10,
       supplyCapacityDaily: '',
       supplyCapacityWeekly: '',
-      stockAvailability: '',
+      supplySchedule: 'weekly',
+      unit: 'kilograms',
     });
     setAdditionalDetails({
-      storageTemp: '',
-      humidity: '',
-      packagingType: '',
-      certificationType: '',
-      processingMethod: '',
-      packagingSize: '',
-      preferredSoil: '',
-      bestClimate: '',
       batchNumber: '',
-      qrCodeUrl: '',
-      supplierInfo: '',
+      bestClimate: '',
+      certificationType: '',
       deliveryOptions: '',
+      humidity: '',
+      packagingSize: '',
+      packagingType: '',
+      preferredSoil: '',
+      processingMethod: '',
+      qrCodeUrl: '',
+      storageTemp: '',
+      supplierInfo: '',
     });
     setBreakEvenPrices([]);
     setSelectedCategory('');
     setSelectedProduct('');
     setShowOtherDetails(false);
+    setEditingItem(null);
   };
+
+  const toggleOtherDetails = () => setShowOtherDetails(prev => !prev);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchInventory();
+      await fetchSalesData();
+      processChartData();
+    };
+    fetchData();
+  }, [token]);
 
   return (
     <>
@@ -437,7 +507,7 @@ const InventoryPage = () => {
 
         {/* Sales Data Section - Moved above graphs */}
         <div className="sales-section">
-          <h2 className="sales-title">Sales Data</h2>
+          <h2 className="sales-title">Inventory Management</h2>
           
           {/* Sales Summary Cards */}
           <div className="sales-summary-cards">
@@ -493,7 +563,7 @@ const InventoryPage = () => {
           </div>
         </div>
 
-        <h1 className="inventory-title">Inventory Management</h1>
+        <h1 className="inventory-title"></h1>
 
         {/* Charts Section */}
         <div className="charts-container">
@@ -632,6 +702,7 @@ const InventoryPage = () => {
           <table className="inventory-table">
             <thead>
               <tr>
+                <th>Actions</th>
                 <th>Product Name</th>
                 <th>Category</th>
                 <th>Price</th>
@@ -652,6 +723,38 @@ const InventoryPage = () => {
               {inventoryItems.length > 0 ? (
                 inventoryItems.map((item) => (
                   <tr key={item._id}>
+                    <td>
+                      <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                        <button 
+                          onClick={() => handleEdit(item)}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: '#8A2D3B',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '13px'
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(item._id)}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: '#346751',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '13px'
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
                     <td>{item.productName}</td>
                     <td>{item.category}</td>
                     <td>{item.price}</td>
@@ -669,7 +772,7 @@ const InventoryPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="14">No inventory items found.</td></tr>
+                <tr><td colSpan="15">No inventory items found.</td></tr>
               )}
             </tbody>
           </table>
@@ -679,7 +782,7 @@ const InventoryPage = () => {
           <div className="inventory-modal">
             <div className="inventory-modal-overlay" onClick={() => setIsModalOpen(false)}></div>
             <div className="inventory-modal-content" style={{ overflowY: 'auto', maxHeight: '80vh' }}>
-              <h2>Add New Product</h2>
+              <h2>{editingItem ? 'Edit Product' : 'Add New Product'}</h2>
               <form onSubmit={handleSubmit}>
                 <label>Category:</label>
                 <select name="category" value={selectedCategory} onChange={handleCategoryChange} required>
@@ -740,7 +843,7 @@ const InventoryPage = () => {
                   </div>
                 ))}
 
-                <button type="submit" className="inventory-submit-btn">Submit</button>
+                <button type="submit" className="inventory-submit-btn">{editingItem ? 'Update' : 'Submit'}</button>
               </form>
             </div>
           </div>
