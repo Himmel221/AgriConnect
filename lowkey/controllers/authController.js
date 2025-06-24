@@ -53,7 +53,7 @@ const registerUser = async (req, res) => {
         newUser.password = await bcrypt.hash(password, salt);
         console.log('Hashed password:', newUser.password);
 
-        const verificationCode = crypto.randomBytes(16).toString('hex');
+        const verificationCode = crypto.randomBytes(16).toString('hex').substring(0, 6); 
         newUser.verificationCode = verificationCode;
         console.log(`Generated verification code for ${email}: ${verificationCode}`);
 
@@ -266,7 +266,7 @@ const sendVerificationEmail = async (req, res) => {
       });
     }
 
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationToken = crypto.randomBytes(32).toString('hex').substring(0, 6);;
     user.verificationToken = verificationToken;
     user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
     await user.save();
@@ -292,7 +292,7 @@ const sendVerificationEmail = async (req, res) => {
           please use the verification code below:
         </p>
         <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;">
-          <h1 style="color: #2E7D32; margin: 0; letter-spacing: 5px;">${verificationToken.substring(0, 6)}</h1>
+          <h1 style="color: #2E7D32; margin: 0; letter-spacing: 5px;">${verificationToken}</h1>
         </div>
         <p style="font-size: 14px; color: #666; text-align: center;">
           This code will expire in 24 hours.
