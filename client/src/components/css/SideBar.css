@@ -1,0 +1,291 @@
+/* SideBar.css */
+.sidebar-wrapper {
+  position: relative;
+  height: 100%;
+  display: flex;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 170px;
+  background-color: #ffffff;
+  padding: 0.6rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.sidebar-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: slideRight 0.3s ease-in-out;
+}
+
+@keyframes slideRight {
+  from {
+    transform: translateX(-15px);
+    opacity: 0.7;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.sidebar.expanded {
+  width: 170px;
+  transform: translateX(0);
+}
+
+.sidebar.collapsed {
+  width: 60px;
+  padding: 0.6rem 0.4rem;
+}
+
+.sidebar-toggle {
+  position: fixed;
+  left: 170px;
+  margin-top: 350px;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 60px;
+  background-color: #078622;
+  color: white;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 8;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.sidebar.collapsed + .sidebar-toggle {
+  left: 60px; 
+}
+
+.sidebar-toggle:hover {
+  background-color: #0e5fc6;
+}
+
+
+.weather-widget {
+  background-color: #cfa50d; 
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(247, 246, 246, 0.2);
+  font-weight: bold;
+  transition: all 0.3s ease;
+  align-self: center;
+  width: 90%;
+  margin-bottom: 1rem;
+}
+
+.sidebar.collapsed .weather-widget {
+  padding: 5px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .weather-widget h4,
+.sidebar.collapsed .weather-widget p {
+  display: none;
+}
+
+.sidebar.collapsed .weather-widget img {
+  margin: 0;
+}
+
+.weather-widget h4, .weather-widget p {
+  color: #ffffff;
+  margin: 5px 0;
+  transition: all 0.3s ease;
+}
+
+.weather-widget img {
+  transition: all 0.3s ease;
+}
+
+.weather-widget img.small-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.weather-widget .temp-only {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.weather-widget:hover {
+  transform: scale(1.02); 
+}
+
+
+.sidebar .icon-button {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  color: #1c1e21;
+  text-decoration: none;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  border: none;
+  background: none;
+  text-align: left;
+  margin: 10px;
+}
+
+.sidebar.collapsed .icon-button {
+  justify-content: center;
+  padding: 0.8rem;
+  margin: 10px 0;
+}
+
+.sidebar .icon {
+  color: #057c40;
+  margin-right: 12px;
+  font-size: 1.8rem;
+  min-width: 1.8rem;
+  transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .icon {
+  margin-right: 0;
+}
+
+.sidebar .icon-button:hover {
+  background-color: #f0f2f5;
+}
+
+.sidebar .icon-button:hover .icon {
+  color: #1877f2;
+}
+
+.sidebar .text-sm {
+  font-size: 0.95rem;
+  color: #1c1e21;
+  font-weight: 500;
+  opacity: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.sidebar.collapsed .text-sm {
+  opacity: 0;
+  transform: translateX(-20px);
+  width: 0;
+  margin: 0;
+}
+
+.sidebar .text-sm:hover {
+  color: #1877f2;
+}
+
+.sidebar .inventory-button {
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 80px;
+  }
+  
+  .sidebar.expanded {
+    width: 170px;
+  }
+  
+  .sidebar.collapsed {
+    width: 60px;
+  }
+  
+  .sidebar.collapsed + .sidebar-toggle {
+    left: 60px;
+  }
+  
+  .sidebar.expanded + .sidebar-toggle {
+    left: 170px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 60px;
+  }
+  
+  .sidebar.expanded {
+    width: 170px;
+  }
+  
+  .sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.collapsed + .sidebar-toggle {
+    left: 0;
+  }
+  
+  .sidebar.expanded + .sidebar-toggle {
+    left: 170px;
+  }
+  
+  .weather-widget {
+    max-width: 100%;
+    padding: 5px;
+  }
+  
+  .weather-widget h4 {
+    font-size: 12px;
+  }
+  
+  .weather-widget p {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    padding: 0.2rem;
+  }
+  
+  .sidebar .icon {
+    font-size: 1.5rem;
+    margin-right: 0; 
+  }
+  
+  .sidebar .icon-button {
+    padding: 0.4rem;
+    margin-top: 0.5rem;
+  }
+  
+  .sidebar.expanded {
+    width: 160px;
+  }
+  
+  .sidebar.expanded + .sidebar-toggle {
+    left: 160px;
+  }
+}

@@ -1,0 +1,44 @@
+/* App.css */
+
+html {
+  font-family: sans-serif;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+
+.App-header {
+  background-color: #1a202c; 
+  min-height: 100vh; 
+  display: flex;
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 1.5rem; 
+  color: #ffffff; 
+}
+
+.App-link {
+  color: #63b3ed; 
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+  animation: App-logo-spin 20s linear infinite;
+}
