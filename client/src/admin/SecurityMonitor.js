@@ -221,7 +221,7 @@ const SecurityMonitor = () => {
       {dashboardData && (
         <div className="stats-grid">
           <div className="stat-card">
-            <div className="stat-icon">📊</div>
+            <div className="stat-icon">H</div>
             <div className="stat-content">
               <h3>{dashboardData.summary.eventsLastHour}</h3>
               <p>Events (Last Hour)</p>
@@ -229,7 +229,7 @@ const SecurityMonitor = () => {
           </div>
           
           <div className="stat-card">
-            <div className="stat-icon">📈</div>
+            <div className="stat-icon">D</div>
             <div className="stat-content">
               <h3>{dashboardData.summary.eventsLastDay}</h3>
               <p>Events (Last 24h)</p>
@@ -237,7 +237,7 @@ const SecurityMonitor = () => {
           </div>
           
           <div className="stat-card">
-            <div className="stat-icon">🚫</div>
+            <div className="stat-icon">B</div>
             <div className="stat-content">
               <h3>{dashboardData.summary.currentlyBlocked}</h3>
               <p>Blocked IPs</p>
@@ -245,7 +245,7 @@ const SecurityMonitor = () => {
           </div>
           
           <div className="stat-card">
-            <div className="stat-icon">⚠️</div>
+            <div className="stat-icon">S</div>
             <div className="stat-content">
               <h3>{dashboardData.summary.suspiciousLastHour}</h3>
               <p>Suspicious (Last Hour)</p>
@@ -494,7 +494,7 @@ const SecurityMonitor = () => {
         <div className="security-container">
           <div className="security-header">
             <h1>Security Monitor</h1>
-            <p>Monitor and manage system security, DDoS protection, and suspicious activity</p>
+            <p>Manage and monitor security system here</p>
           </div>
 
           <div className="security-tabs">
@@ -502,25 +502,25 @@ const SecurityMonitor = () => {
               className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveTab('dashboard')}
             >
-              📊 Dashboard
+              Dashboard
             </button>
             <button 
               className={`tab-btn ${activeTab === 'logs' ? 'active' : ''}`}
               onClick={() => setActiveTab('logs')}
             >
-              📋 Logs
+              Logs
             </button>
             <button 
               className={`tab-btn ${activeTab === 'blocked' ? 'active' : ''}`}
               onClick={() => setActiveTab('blocked')}
             >
-              🚫 Blocked IPs
+              Blocked IPs
             </button>
             <button 
               className={`tab-btn ${activeTab === 'suspicious' ? 'active' : ''}`}
               onClick={() => setActiveTab('suspicious')}
             >
-              ⚠️ Suspicious Activity
+              Suspicious Activity
             </button>
           </div>
 
