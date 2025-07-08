@@ -3,7 +3,7 @@
 .security-monitor {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #fff;
 }
 
 .main-content {
@@ -21,66 +21,64 @@
 .security-header {
   text-align: center;
   margin-bottom: 2rem;
-  color: white;
+  color: #222;
 }
 
 .security-header h1 {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  color: #222;
 }
 
 .security-header p {
   font-size: 1.1rem;
+  color: #444;
   opacity: 0.9;
 }
 
-/* Security Tabs */
 .security-tabs {
   display: flex;
   justify-content: center;
   gap: 1rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  padding: 0.5rem 0;
 }
 
 .tab-btn {
   padding: 1rem 2rem;
   border: none;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: #222;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.tab-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  transition: color 0.2s, border-bottom 0.2s;
+  border-radius: 0;
 }
 
 .tab-btn.active {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  color: #4a7c59;
+  border-bottom: 3px solid #4a7c59;
+  background: #f6fbf7;
 }
 
-/* Security Content */
+.tab-btn:hover {
+  color: #357a38;
+}
+
 .security-content {
-  background: rgba(255, 255, 255, 0.95);
+  background: #fff;
   border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
 }
 
-/* Loading and Error States */
 .loading {
   text-align: center;
   padding: 3rem;
@@ -90,7 +88,7 @@
   width: 50px;
   height: 50px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border-top: 4px solid #4a7c59;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -102,9 +100,9 @@
 }
 
 .error-message {
-  background: #fee;
-  border: 1px solid #fcc;
-  color: #c33;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
@@ -114,7 +112,7 @@
 }
 
 .error-message button {
-  background: #c33;
+  background: #dc2626;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -122,7 +120,6 @@
   cursor: pointer;
 }
 
-/* Dashboard Styles */
 .security-dashboard {
   max-width: 1200px;
   margin: 0 auto;
@@ -136,7 +133,7 @@
 }
 
 .dashboard-header h2 {
-  color: #333;
+  color: #222;
   font-size: 1.8rem;
   margin: 0;
 }
@@ -145,14 +142,14 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #28a745;
+  color: #4a7c59;
   font-weight: 600;
 }
 
 .pulse {
   width: 10px;
   height: 10px;
-  background: #28a745;
+  background: #4a7c59;
   border-radius: 50%;
   animation: pulse 2s infinite;
 }
@@ -163,7 +160,6 @@
   100% { opacity: 1; }
 }
 
-/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -172,46 +168,59 @@
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #fff;
+  color: #222;
   padding: 1.5rem;
   border-radius: 15px;
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-  transition: transform 0.3s ease;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  transition: box-shadow 0.2s;
+  border: 1px solid #f0f0f0;
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
+  box-shadow: 0 6px 24px rgba(74, 124, 89, 0.10);
+  border-color: #e0f5e9;
 }
 
 .stat-icon {
   font-size: 2rem;
-  opacity: 0.8;
+  color: #4a7c59;
+  background: #f6fbf7;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 1.5px solid #e0f5e9;
 }
 
 .stat-content h3 {
   font-size: 2rem;
   margin: 0;
   font-weight: 700;
+  color: #4a7c59;
 }
 
 .stat-content p {
-  margin: 0;
+  margin: 0.5rem 0 0 0;
   opacity: 0.9;
   font-size: 0.9rem;
+  color: #444;
 }
 
-/* Real-time Section */
 .realtime-section {
   margin-bottom: 2rem;
 }
 
 .realtime-section h3 {
-  color: #333;
+  color: #222;
   margin-bottom: 1rem;
+  font-size: 1.5rem;
 }
 
 .realtime-grid {
@@ -221,40 +230,42 @@
 }
 
 .realtime-card {
-  background: #f8f9fa;
+  background: #fff;
   padding: 1.5rem;
   border-radius: 12px;
+  border: 1px solid #f0f0f0;
   text-align: center;
-  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
 }
 
 .realtime-card h4 {
-  color: #666;
+  color: #444;
   margin: 0 0 0.5rem 0;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .realtime-value {
   font-size: 2rem;
-  font-weight: 700;
-  color: #667eea;
+  font-weight: bold;
+  color: #4a7c59;
 }
 
-/* Charts Section */
 .charts-section {
-  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
 .chart-container {
-  background: #f8f9fa;
+  background: #fff;
   padding: 1.5rem;
   border-radius: 12px;
-  border: 1px solid #e9ecef;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
 }
 
 .chart-container h3 {
-  color: #333;
+  color: #222;
   margin-bottom: 1rem;
+  font-size: 1.3rem;
 }
 
 .chart {
@@ -271,49 +282,50 @@
 
 .bar-label {
   min-width: 150px;
-  font-size: 0.9rem;
-  color: #666;
+  color: #444;
+  font-weight: 500;
 }
 
 .bar-container {
   flex: 1;
   height: 20px;
-  background: #e9ecef;
+  background: #f0f0f0;
   border-radius: 10px;
   overflow: hidden;
 }
 
 .bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, #4a7c59, #68d391);
   border-radius: 10px;
-  transition: width 0.5s ease;
+  transition: width 0.3s ease;
 }
 
 .bar-value {
   min-width: 50px;
   text-align: right;
+  color: #4a7c59;
   font-weight: 600;
-  color: #333;
 }
 
-/* Logs Styles */
 .security-logs {
-  max-width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .logs-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
 }
 
 .logs-header h2 {
-  color: #333;
+  color: #222;
   margin: 0;
+  font-size: 1.8rem;
 }
 
 .logs-filters {
@@ -325,16 +337,17 @@
 .logs-filters select,
 .logs-filters input {
   padding: 0.5rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #444;
 }
 
 .logs-table {
-  overflow-x: auto;
-  background: white;
+  background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
 }
 
 .logs-table table {
@@ -346,93 +359,96 @@
 .logs-table td {
   padding: 1rem;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .logs-table th {
-  background: #f8f9fa;
+  background: #f6fbf7;
+  color: #222;
   font-weight: 600;
-  color: #333;
+  font-size: 0.9rem;
 }
 
 .logs-table tr:hover {
-  background: #f8f9fa;
+  background: #f6fbf7;
 }
 
 .ip-address {
   font-family: 'Courier New', monospace;
-  font-weight: 600;
-  color: #667eea;
+  color: #4a7c59;
+  font-weight: 500;
 }
 
 .severity-badge {
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
-  color: white;
+  color: #fff;
   font-size: 0.8rem;
   font-weight: 600;
+  text-transform: uppercase;
 }
 
 .log-details {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-size: 0.8rem;
-  color: #666;
+  font-size: 0.85rem;
+  color: #444;
 }
 
-/* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
 
 .page-btn {
   padding: 0.5rem 1rem;
-  border: 1px solid #ddd;
-  background: white;
+  border: 1px solid #f0f0f0;
+  background: #fff;
+  color: #444;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .page-btn:hover {
-  background: #f8f9fa;
+  background: #f6fbf7;
+  border-color: #4a7c59;
 }
 
 .page-btn.active {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
+  background: #4a7c59;
+  color: #fff;
+  border-color: #4a7c59;
 }
 
-/* Blocked IPs Styles */
 .blocked-ips {
-  max-width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .blocked-header {
-  text-align: center;
   margin-bottom: 2rem;
 }
 
 .blocked-header h2 {
-  color: #333;
+  color: #222;
   margin-bottom: 0.5rem;
+  font-size: 1.8rem;
 }
 
 .blocked-header p {
-  color: #666;
+  color: #444;
   margin: 0;
 }
 
 .blocked-table {
-  background: white;
+  background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
 }
 
 .blocked-table table {
@@ -444,53 +460,54 @@
 .blocked-table td {
   padding: 1rem;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .blocked-table th {
-  background: #f8f9fa;
+  background: #f6fbf7;
+  color: #222;
   font-weight: 600;
-  color: #333;
+  font-size: 0.9rem;
 }
 
 .unblock-btn {
-  background: #28a745;
-  color: white;
-  border: none;
   padding: 0.5rem 1rem;
+  background: #4a7c59;
+  color: #fff;
+  border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+  font-size: 0.85rem;
+  transition: background 0.2s;
 }
 
 .unblock-btn:hover:not(:disabled) {
-  background: #218838;
-  transform: translateY(-1px);
+  background: #357a38;
 }
 
 .unblock-btn:disabled {
-  background: #6c757d;
+  background: #9ca3af;
   cursor: not-allowed;
+  transform: none;
 }
 
-/* Suspicious Activity Styles */
 .suspicious-activity {
-  max-width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .suspicious-header {
-  text-align: center;
   margin-bottom: 2rem;
 }
 
 .suspicious-header h2 {
-  color: #333;
+  color: #222;
   margin-bottom: 0.5rem;
+  font-size: 1.8rem;
 }
 
 .suspicious-header p {
-  color: #666;
+  color: #444;
   margin: 0;
 }
 
@@ -501,11 +518,11 @@
 }
 
 .suspicious-card {
-  background: white;
+  background: #fff;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  border-left: 4px solid #fd7e14;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  border: 1px solid #f0f0f0;
 }
 
 .suspicious-card .suspicious-header {
@@ -513,18 +530,17 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  text-align: left;
 }
 
 .suspicious-card .suspicious-header h3 {
-  color: #333;
+  color: #222;
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
 .suspicious-score {
-  background: #fd7e14;
-  color: white;
+  background: #f6fbf7;
+  color: #4a7c59;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -532,8 +548,8 @@
 }
 
 .suspicious-details p {
+  color: #444;
   margin: 0.5rem 0;
-  color: #666;
   font-size: 0.9rem;
 }
 
@@ -542,117 +558,160 @@
 }
 
 .patterns-section h4 {
-  color: #333;
+  color: #222;
   margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .patterns-list {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
 }
 
 .pattern-item {
-  background: #f8f9fa;
-  padding: 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  color: #666;
+  background: #f6fbf7;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #444;
   font-family: 'Courier New', monospace;
 }
 
-/* Empty States */
 .empty-state {
   text-align: center;
   padding: 3rem;
-  color: #666;
+  color: #444;
 }
 
 .empty-state p {
-  font-size: 1.1rem;
   margin: 0;
+  font-size: 1.1rem;
 }
 
-/* Responsive Design */
+    
 @media (max-width: 768px) {
   .security-container {
     padding: 1rem;
   }
-  
   .security-tabs {
-    flex-direction: column;
+    gap: 0.5rem;
   }
-  
   .tab-btn {
-    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
   }
-  
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
-  
   .realtime-grid {
     grid-template-columns: 1fr;
   }
-  
   .suspicious-grid {
     grid-template-columns: 1fr;
   }
-  
   .logs-header {
     flex-direction: column;
     align-items: stretch;
   }
-  
   .logs-filters {
     flex-direction: column;
   }
-  
   .logs-table {
-    font-size: 0.8rem;
+    overflow-x: auto;
   }
-  
   .logs-table th,
   .logs-table td {
-    padding: 0.5rem;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  .security-header h1 {
+    font-size: 2rem;
+  }
+  .security-header p {
+    font-size: 1rem;
+  }
+  .stat-card {
+    padding: 1rem;
+  }
+  .stat-content h3 {
+    font-size: 1.5rem;
+  }
+  .realtime-value {
+    font-size: 1.5rem;
+  }
+  .chart-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .bar-label {
+    min-width: auto;
+  }
+  .bar-value {
+    text-align: left;
   }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
+@media (max-width: 480px) {
+  .security-container {
+    padding: 0.5rem;
+  }
   .security-content {
-    background: rgba(30, 30, 30, 0.95);
-    color: white;
+    padding: 1rem;
+    border-radius: 12px;
   }
-  
-  .logs-table,
-  .blocked-table,
-  .suspicious-card {
-    background: #2d2d2d;
-    color: white;
+  .security-header h1 {
+    font-size: 1.8rem;
   }
-  
-  .logs-table th,
-  .blocked-table th {
-    background: #3d3d3d;
-    color: white;
+  .tab-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
   }
-  
-  .logs-table tr:hover,
-  .blocked-table tr:hover {
-    background: #3d3d3d;
+  .stat-card {
+    padding: 0.75rem;
   }
-  
-  .chart-container,
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+  .stat-content h3 {
+    font-size: 1.3rem;
+  }
   .realtime-card {
-    background: #2d2d2d;
-    border-color: #444;
-    color: white;
+    padding: 1rem;
   }
-  
+  .realtime-value {
+    font-size: 1.3rem;
+  }
+  .logs-table th,
+  .logs-table td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
+  .severity-badge {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  .unblock-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  .suspicious-card {
+    padding: 1rem;
+  }
+  .suspicious-card .suspicious-header h3 {
+    font-size: 1.1rem;
+  }
   .pattern-item {
-    background: #3d3d3d;
-    color: #ccc;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
   }
 } 
