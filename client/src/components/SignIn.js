@@ -22,7 +22,7 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
         password,
       });
   
-      const { userId, accessToken, isAdmin, isVerified, userType } = response.data;
+      const { userId, accessToken, isAdmin, isVerified, userType, user } = response.data;
   
       if (!userId || !accessToken) {
         throw new Error('Invalid response: Missing userId or accessToken.');
@@ -30,9 +30,9 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
   
       const userData = {
         _id: userId,
-        isAdmin: isAdmin || false,
-        isVerified: isVerified || false,
-        userType: userType || 'user',
+        isAdmin: isAdmin || user?.isAdmin || false,
+        isVerified: isVerified || user?.isVerified || false,
+        userType: userType || user?.userType || 'user',
         email: email
       };
   
