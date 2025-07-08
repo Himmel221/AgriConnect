@@ -44,7 +44,7 @@ const io = new Server(server, {
     origin: process.env.CLIENT,
     methods: ['GET', 'POST'],
   },
-});
+}); //meow
 
 const corsOptions = {
   origin: process.env.CLIENT,
