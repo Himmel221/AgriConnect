@@ -1,0 +1,11 @@
+import Joi from 'joi';
+
+export const registerSchema = Joi.object({
+  first_name: Joi.string().min(1).max(50).required(),
+  middle_name: Joi.string().allow('').max(50),
+  last_name: Joi.string().min(1).max(50).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(8).max(100).required(),
+  confirm_password: Joi.ref('password'),
+  birthDate: Joi.date().required()
+});
