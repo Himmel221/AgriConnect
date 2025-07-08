@@ -3,6 +3,7 @@ import { Box, Button, TextField, Typography, IconButton, Modal, Fade, Select, Me
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import axios from 'axios';
 import { sanitize } from '../utils/unifiedValidation';
+import { validateEmailProvider } from '../utils/emailValidation';
 
 const SignUp = ({ open, handleClose, handleOpenSignIn }) => {
   const [firstName, setFirstName] = useState('');
@@ -30,6 +31,12 @@ const SignUp = ({ open, handleClose, handleOpenSignIn }) => {
   };
 
   const handleSignUp = async () => {
+    const emailValidation = validateEmailProvider(email);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error);
+      return;
+    }
+
     try {
       const formattedBirthDate = new Date(`${birthDate.year}-${birthDate.month}-${birthDate.day}`);
       const response = await axios.post(`${apiUrl}/api/auth/register`, {
@@ -45,7 +52,6 @@ const SignUp = ({ open, handleClose, handleOpenSignIn }) => {
       if (response.data.success) {
         setSuccessMessage(response.data.message || 'User registered successfully. A confirmation email has been sent.');
         setShowSuccess(true);
-        // Clear form
         setFirstName('');
         setMiddleName('');
         setLastName('');
@@ -55,7 +61,6 @@ const SignUp = ({ open, handleClose, handleOpenSignIn }) => {
         setBirthDate({ day: '', month: '', year: '' });
         setError('');
         
-        // Close the signup modal after 3 seconds
         setTimeout(() => {
           handleClose();
           setShowSuccess(false);
@@ -183,7 +188,15 @@ const SignUp = ({ open, handleClose, handleOpenSignIn }) => {
                 label="Email"
                 variant="outlined"
                 value={email}
-                onChange={(e) => setEmail(sanitize.email(e.target.value))}
+                onChange={(e) => {
+                  const sanitizedEmail = sanitize.email(e.target.value);
+                  setEmail(sanitizedEmail);   
+                  if (error && error.includes('Try again next time')) {
+                    setError('');
+                  }
+                }}
+                error={email && !validateEmailProvider(email).isValid}
+                helperText={email && !validateEmailProvider(email).isValid ? 'Try again next time' : ''}
                 sx={{ mb: 0.5 }}
               />
               
