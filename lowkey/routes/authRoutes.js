@@ -6,11 +6,14 @@ import auth from '../middleware/auth.js';
 import AdminRoutes from './Admin.js';
 import User from '../models/User.js';
 import { getSellerStatus } from '../controllers/authController.js';
+import { registerSchema } from '../validation/schemas.js';
+import { validateBody } from '../middleware/validate.js';
+import { checkIPBan } from '../middleware/ipBan.js';
 
 const router = express.Router();
 
 router.post('/login', login);
-router.post('/register', registerUser);
+router.post('/register', validateBody(registerSchema), checkIPBan, registerUser);
 router.post('/verify-email', verifyEmail);  
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
