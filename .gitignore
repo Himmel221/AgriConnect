@@ -32,8 +32,4 @@ build/
 *.md
 !README.md
 
-# Utility scripts (one-time setup/migration)
-lowkey/create-super-admin.js
-lowkey/create-admin.js
-lowkey/migrate-verification-fields.js
-lowkey/test-ddos-protection.js
+

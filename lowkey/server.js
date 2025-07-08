@@ -39,15 +39,13 @@ const server = http.createServer(app);
 server.keepAliveTimeout = 30000; 
 server.headersTimeout = 35000; 
 
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT,
-    methods: ['GET', 'POST'],
-  },
-}); //meow
+const allowedOrigins = [
+  process.env.CLIENT,
+  'https://agriconnect-1-81dp.onrender.com'
+];
 
 const corsOptions = {
-  origin: process.env.CLIENT,
+  origin: allowedOrigins,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   optionsSuccessStatus: 204,
@@ -111,6 +109,13 @@ app.get('/api/weather-key', enhancedApiRateLimit, (req, res) => {
 app.get('/testlamang', enhancedApiRateLimit, (req, res) => {
   res.send('Server is running!');
 });
+
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+  },
+}); //meow
 
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
