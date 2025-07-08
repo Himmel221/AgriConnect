@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import sendEmail from '../utils/email.js';
 import crypto from 'crypto';
+import { checkEmail } from '../utils/emailValidation.js';
 
 export async function loginUser(req, res) {
   const { email, password } = req.body;
@@ -40,9 +41,20 @@ export async function loginUser(req, res) {
 export async function createUser(req, res) {
   const { first_name, middle_name, last_name, email, password, birthDate, country = 'Philippines', province, cityOrTown, barangay, bio } = req.body;
 
+  const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+
   const userExists = await User.findOne({ email });
   if (userExists) {
     return res.status(400).json({ message: 'This email is already registered.' });
+  }
+
+    
+  const emailValidation = await checkEmail(email, clientIP);
+  if (!emailValidation.isValid) {
+    return res.status(400).json({ 
+      message: emailValidation.error,
+      banInfo: emailValidation.banInfo || null
+    });
   }
 
   try {
