@@ -12,7 +12,8 @@ router.get('/:userId', auth, async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const user = await User.findById(userId).select(
+    // const user = await User.findById(userId).select(
+    const user = await User.findOne({ userId: userId }).select(
       'first_name last_name email birthDate country province cityOrTown barangay bio createdAt userType'
     );
 
