@@ -10,6 +10,8 @@ import VerificationToken from '../models/tokens/verification_token.js';
 import nodemailer from 'nodemailer';
 import Token from '../models/tokens/login_state_token.js';
 import { generateAccessToken, generateRefreshToken } from '../middleware/auth.js';
+import { checkEmail } from '../utils/emailValidation.js';
+import axios from 'axios';
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>_])[A-Za-z\d!@#$%^&*(),.?":{}|<>_]{8,}$/;
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
@@ -222,8 +224,20 @@ const registerUser = async (req, res) => {
     console.log(req.body);
     const { first_name, middle_name, last_name, email, password, confirm_password, birthDate } = req.body;
 
+
+    const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+
     if (!emailRegex.test(email)) {
         return res.status(400).json({ message: "Invalid email format." });
+    }
+
+
+    const emailValidation = await checkEmail(email, clientIP);
+    if (!emailValidation.isValid) {
+        return res.status(400).json({ 
+            message: emailValidation.error,
+            banInfo: emailValidation.banInfo || null
+        });
     }
 
     if (password !== confirm_password) {
@@ -259,7 +273,6 @@ const registerUser = async (req, res) => {
         await newUser.save();
         console.log(`Saved user: ${newUser}`);
 
-        // Send registration confirmation email (separate from verification)
         const confirmationHtml = createRegistrationConfirmationTemplate(first_name, last_name, email);
         const confirmationText = createRegistrationConfirmationText(first_name, last_name, email);
 
