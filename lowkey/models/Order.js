@@ -4,7 +4,7 @@ const OrderSchema = new mongoose.Schema({
   orderId: {
     type: String,
     unique: true,
-    required: true
+    required: false
   },
   
   originalListing: {
@@ -24,15 +24,11 @@ const OrderSchema = new mongoose.Schema({
   seller: {
     sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     sellerName: { type: String, required: true },
-    sellerEmail: { type: String, required: true },
-    sellerLocation: { type: String, required: true }
   },
   
   buyer: {
     buyerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     buyerName: { type: String, required: true },
-    buyerEmail: { type: String, required: true },
-    buyerLocation: { type: String, required: true }
   },
   
   orderQuantity: {
@@ -46,7 +42,7 @@ const OrderSchema = new mongoose.Schema({
   },
   
   payment: {
-    bank: { type: String, required: true },
+    bank: { type: String, required: false },
     referenceNumber: { type: String, required: true },
     proofImage: { type: String, required: true },
     paymentDate: { type: Date, default: Date.now }
@@ -101,7 +97,6 @@ const OrderSchema = new mongoose.Schema({
   
   metadata: {
     originalListingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Listing' },
-    checkoutSubmissionId: { type: mongoose.Schema.Types.ObjectId, ref: 'CheckoutSubmission' },
     sellerOrderId: { type: mongoose.Schema.Types.ObjectId, ref: 'SellerOrder' }
   }
 }, {
