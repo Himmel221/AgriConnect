@@ -142,28 +142,51 @@ export const removeFromCart = async (req, res) => {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
+    
+    let itemToRemove;
+    let isDeletedProduct = false;
 
-    const itemToRemove = cart.items.find(item => 
+    
+    itemToRemove = cart.items.find(item => 
       item.productId && item.productId.toString() === productId
     );
+
+   
+    if (!itemToRemove) {
+      itemToRemove = cart.items.find(item => 
+        item._id.toString() === productId
+      );
+      isDeletedProduct = true;
+    }
 
     if (!itemToRemove) {
       return res.status(404).json({ message: 'Item not found in cart' });
     }
 
-
-    const updatedCart = await Cart.findOneAndUpdate(
-      { userId },
-      { $pull: { items: { productId } } },
-      { new: true }
-    );
-
-
-    if (itemToRemove.reservedAt) {
-      await Listing.findByIdAndUpdate(
-        productId,
-        { $inc: { quantity: itemToRemove.quantity } }
+    
+    let updatedCart;
+    if (isDeletedProduct) {
+      
+      updatedCart = await Cart.findOneAndUpdate(
+        { userId },
+        { $pull: { items: { _id: productId } } },
+        { new: true }
       );
+    } else {
+      
+      updatedCart = await Cart.findOneAndUpdate(
+        { userId },
+        { $pull: { items: { productId } } },
+        { new: true }
+      );
+
+        
+      if (itemToRemove.reservedAt && itemToRemove.productId) {
+        await Listing.findByIdAndUpdate(
+          itemToRemove.productId,
+          { $inc: { quantity: itemToRemove.quantity } }
+        );
+      }
     }
 
     res.status(200).json({ 
