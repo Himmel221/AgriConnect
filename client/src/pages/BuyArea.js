@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import apiClient from '../utils/apiClient';
 import { User } from 'lucide-react';
 import TopNavbar from '../components/top_navbar';
 import SideBar from '../components/side_bar';
@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { sanitize, validate, inputFilters } from '../utils/unifiedValidation';
 
 const BuyArea = () => {
-  const { token, userId } = useAuth();
+  const { userId } = useAuth();
   const [listings, setListings] = useState([]);
   const [openBuyModal, setOpenBuyModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -28,26 +28,25 @@ const BuyArea = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   
-  const apiUrl = process.env.REACT_APP_API_URL;
+
 
   const fetchListings = useCallback(async () => {
     try {
-      const response = await axios.get(`${apiUrl}/api/listings`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get('/api/listings');
 
       if (response.status === 200) {
-        let allListings
-
-
-        allListings = response.data.listings.filter((listing) => {
+        console.log('Raw listings from API:', response.data.listings);
+        console.log('Current userId:', userId);
         
+        let allListings = response.data.listings.filter((listing) => {
           const listingUserId = listing.userId?._id || listing.userId;
-          return listingUserId?.toString() !== userId?.toString(); 
+          console.log('Listing userId:', listingUserId, 'Current userId:', userId);
+          const shouldInclude = listingUserId?.toString() !== userId?.toString();
+          console.log('Should include listing:', shouldInclude);
+          return shouldInclude; 
         });
 
-        console.log(allListings)
-
+        console.log('Filtered listings:', allListings);
         setListings(allListings);
       } else {
         console.error('Failed to fetch listings:', response.data.message);
@@ -55,13 +54,11 @@ const BuyArea = () => {
     } catch (error) {
       console.error('Error fetching listings:', error.message);
     }
-  }, [token, userId]);
+  }, [userId]);
 
   useEffect(() => {
-    if (token) {
-      fetchListings();
-    }
-  }, [token, fetchListings]);
+    fetchListings();
+  }, [fetchListings]);
 
   const handleOpenBuyModal = (listing) => {
     setSelectedProduct(listing);
@@ -97,16 +94,10 @@ const BuyArea = () => {
     }
 
     try {
-      const response = await axios.post(
-        `${apiUrl}/api/cart/add`,
-        {
-          productId: selectedProduct._id,
-          quantity: cartQuantity,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await apiClient.post('/api/cart/add', {
+        productId: selectedProduct._id,
+        quantity: cartQuantity,
+      });
 
       if (response.status === 200) {
         setShowCartSuccess(true);
