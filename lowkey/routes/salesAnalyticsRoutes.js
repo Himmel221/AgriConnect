@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import CheckoutSubmission from '../models/CheckoutSubmission.js';
+import Order from '../models/Order.js';
 import Inventory from '../models/Inventory.js';
 
 const router = express.Router();
@@ -9,27 +9,27 @@ router.get('/', auth, async (req, res) => {
   try {
     const userId = req.userId;
 
-    const checkoutSubmissions = await CheckoutSubmission.find({
-      userId: userId
-    }).populate('listingId');
+    const orders = await Order.find({
+      'seller.sellerId': userId
+    });
 
     const inventoryItems = await Inventory.find({ userId: userId });
 
-    const salesData = checkoutSubmissions.map(submission => {
+    const salesData = orders.map(order => {
       const inventoryItem = inventoryItems.find(item => 
-        item._id.toString() === submission.listingId._id.toString()
+        item._id.toString() === order.metadata?.originalListingId?.toString()
       );
 
       return {
-        _id: submission._id,
-        productName: inventoryItem?.productName || 'Unknown Product',
-        quantity: submission.quantity,
-        totalPrice: submission.totalPrice,
-        status: submission.status,
-        buyerStatus: submission.BuyerStatus,
-        submittedAt: submission.submittedAt,
-        reviewedAt: submission.reviewedAt,
-        approvalNote: submission.approvalNote
+        _id: order._id,
+        productName: order.originalListing?.productName || 'Unknown Product',
+        quantity: order.orderQuantity,
+        totalPrice: order.totalPrice,
+        status: order.status,
+        buyerStatus: order.buyerStatus,
+        submittedAt: order.orderCreatedAt,
+        reviewedAt: order.review?.reviewedAt,
+        approvalNote: order.review?.approvalNote
       };
     });
 
@@ -93,16 +93,15 @@ router.get('/date-range', auth, async (req, res) => {
     const userId = req.userId;
 
     const query = {
-      userId: userId,
-      submittedAt: {
+      'seller.sellerId': userId,
+      orderCreatedAt: {
         $gte: new Date(startDate),
         $lte: new Date(endDate)
       }
     };
 
-    const salesData = await CheckoutSubmission.find(query)
-      .populate('listingId')
-      .sort({ submittedAt: 1 });
+    const salesData = await Order.find(query)
+      .sort({ orderCreatedAt: 1 });
 
     res.status(200).json({
       success: true,
@@ -124,11 +123,10 @@ router.get('/product-performance', auth, async (req, res) => {
   try {
     const userId = req.userId;
 
-    const salesData = await CheckoutSubmission.find({ userId })
-      .populate('listingId');
+    const salesData = await Order.find({ 'seller.sellerId': userId });
 
     const productPerformance = salesData.reduce((acc, sale) => {
-      const productId = sale.listingId._id.toString();
+      const productId = sale.metadata?.originalListingId?.toString();
       if (!acc[productId]) {
         acc[productId] = {
           totalSales: 0,
@@ -138,7 +136,7 @@ router.get('/product-performance', auth, async (req, res) => {
         };
       }
 
-      acc[productId].totalSales += sale.quantity;
+      acc[productId].totalSales += sale.orderQuantity;
       acc[productId].totalRevenue += sale.totalPrice;
       acc[productId].orderCount += 1;
       acc[productId].averageOrderValue = acc[productId].totalRevenue / acc[productId].orderCount;
@@ -165,21 +163,20 @@ router.get('/successful-orders', auth, async (req, res) => {
   try {
     const userId = req.userId;
 
-    const successfulOrders = await CheckoutSubmission.find({
-      userId: userId,
+    const successfulOrders = await Order.find({
+      'seller.sellerId': userId,
       status: 'Success'
     })
-    .populate('listingId')
-    .sort({ submittedAt: -1 }); 
+    .sort({ orderCreatedAt: -1 }); 
 
     const formattedOrders = successfulOrders.map(order => ({
       _id: order._id,
-      productName: order.listingId?.productName || 'Unknown Product',
-      quantity: order.quantity,
+      productName: order.originalListing?.productName || 'Unknown Product',
+      quantity: order.orderQuantity,
       totalPrice: order.totalPrice,
-      submittedAt: order.submittedAt,
-      buyerStatus: order.BuyerStatus,
-      approvalNote: order.approvalNote
+      submittedAt: order.orderCreatedAt,
+      buyerStatus: order.buyerStatus,
+      approvalNote: order.review?.approvalNote
     }));
 
     res.status(200).json({
