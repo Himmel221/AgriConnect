@@ -2,6 +2,7 @@ import express from 'express';
 import auth from '../middleware/auth.js';
 import { addIdentifier } from '../middleware/list.js';
 import Listing from '../models/Listing.js';
+import User from '../models/User.js';
 import upload, { 
   uploadRateLimit, 
   handleUpload, 
@@ -11,7 +12,7 @@ import upload, {
 import rateLimit from 'express-rate-limit';
 import { createValidationMiddleware } from '../utils/unifiedValidation.js';
 import PaymentMethod from '../models/PaymentMethod.js';
-import cache from '../utils/cache.js';
+import cache, { Cache } from '../utils/cache.js';
 import AuditLogger from '../utils/auditLogger.js';
 
 const router = express.Router();
@@ -62,8 +63,15 @@ const validateListingInput = (req, res, next) => {
 
 const checkPaymentMethod = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.userId || req.user?._id;
     
+    if (!userId) {
+      return res.status(401).json({
+        error: 'User not authenticated',
+        message: 'Please login to create listings',
+        code: 'USER_NOT_AUTHENTICATED'
+      });
+    }
     
     const paymentMethods = await PaymentMethod.find({ userId });
     
@@ -91,7 +99,17 @@ router.get('/user/:userId', auth, async (req, res) => {
     const { userId } = req.params; 
     console.log(`Fetching listings for User ID: ${userId}`);
 
-    const listings = await Listing.find({ userId, status: true })
+    
+    const user = await User.findOne({ userId: userId });
+    if (!user) {
+      console.log(`User not found with userId: ${userId}`);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log(`Found user with _id: ${user._id}`);
+
+    
+    const listings = await Listing.find({ userId: user._id, status: true, isDeleted: false })
       .select('productName category price quantity unit details color listedDate status location minimumOrder imageUrl');
 
     if (listings.length === 0) {
@@ -108,7 +126,7 @@ router.get('/user/:userId', auth, async (req, res) => {
 
 router.get('/user-listings', auth, async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.userId;
 
     console.log('Fetching user listings for logged-in User ID:', userId);
 
@@ -129,11 +147,12 @@ router.get('/user-listings', auth, async (req, res) => {
 
 router.get('/', auth, async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.userId;
     console.log('Logged-in User ID:', userId);
 
     // Generate cache key
-    const cacheKey = cache.generateKey(req);
+    const cacheKey = Cache.generateKey(req);
+    console.log('Cache key generated:', cacheKey);
     
     // Check cache first
     const cachedData = cache.get(cacheKey);
@@ -142,14 +161,17 @@ router.get('/', auth, async (req, res) => {
       return res.status(200).json(cachedData);
     }
 
+    console.log('Executing database query for listings...');
     const listings = await Listing.find({
-      // userId: { $ne: userId },
       status: true, 
       quantity: { $gt: 0 },
       isDeleted: false,
     })
       .populate('userId', 'userId first_name last_name location')
-      .select('productName category price quantity unit details userId imageUrl listedDate status location minimumOrder');
+      .select('productName category price quantity unit details userId imageUrl listedDate status location minimumOrder')
+      .lean();
+    console.log('Database query completed. Found', listings.length, 'listings');
+    console.log('Raw listings data:', JSON.stringify(listings, null, 2));
 
     if (!listings || listings.length === 0) {
       console.log('No available listings found.');
@@ -158,15 +180,18 @@ router.get('/', auth, async (req, res) => {
       return res.status(200).json(emptyResponse);
     }
 
-    const updatedListings = listings.map((listing) => ({
-      ...listing.toObject(),
-      seller: `${listing.userId.first_name} ${listing.userId.last_name}`,
-      sellerUserId: listing.userId.userId, // Add this line
-      description: listing.details,
-      imageUrl: listing.imageUrl || 'default-image.jpg',
-      location: listing.location || (listing.userId.address ? listing.userId.address.location : 'Not specified'),
-
-    }));
+    console.log('Mapping listings to response format...');
+    const updatedListings = listings.map((listing) => {
+      console.log('Processing listing:', listing._id, 'with userId:', listing.userId);
+      return {
+        ...listing,
+        seller: `${listing.userId.first_name} ${listing.userId.last_name}`,
+        sellerUserId: listing.userId.userId,
+        description: listing.details,
+        imageUrl: listing.imageUrl || 'default-image.jpg',
+        location: listing.location || (listing.userId.address ? listing.userId.address.location : 'Not specified'),
+      };
+    });
 
     console.log('Updated Listings with Seller Information:', updatedListings);
 
@@ -178,6 +203,7 @@ router.get('/', auth, async (req, res) => {
     res.status(200).json(response);
   } catch (error) {
     console.error('Error fetching listings:', error.message);
+    console.error('Error stack:', error.stack);
     res.status(500).json({ message: 'Error fetching listings', error: error.message });
   }
 });
@@ -193,7 +219,7 @@ router.post('/', auth, addIdentifier, createListingRateLimit, secureListingUploa
     console.log('Uploaded File:', req.file); 
 
     const { identifier, productName, quantity, unit, category, details, location, price, minimumOrder } = req.body;
-    const userId = req.user._id;
+    const userId = req.userId;
     
     if (!req.file || !req.file.path) {
       console.error('Image upload failed or missing');
@@ -302,7 +328,7 @@ router.put('/:id', auth, secureListingUpload, validateListingInput, async (req, 
       });
     }
 
-    if (existingListing.userId.toString() !== req.user._id.toString()) {
+    if (existingListing.userId.toString() !== req.userId.toString()) {
       return res.status(403).json({
         error: 'Access denied',
         message: 'You can only update your own listings',
@@ -334,7 +360,7 @@ router.put('/:id', auth, secureListingUpload, validateListingInput, async (req, 
     // Invalidate cache for listings
     cache.clear();
     
-    console.log(`[SECURE_LISTING_UPDATE] User ${req.user._id} updated listing: ${id}`);
+    console.log(`[SECURE_LISTING_UPDATE] User ${req.userId} updated listing: ${id}`);
     
     res.status(200).json({ 
       success: true,
@@ -412,16 +438,16 @@ router.delete('/:id', auth, async (req, res) => {
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found.' });
     }
-    if (listing.userId.toString() !== req.user._id.toString()) {
+    if (listing.userId.toString() !== req.userId.toString()) {
       return res.status(403).json({ message: 'Unauthorized: You can only delete your own listings.' });
     }
     listing.isDeleted = true;
     listing.deletedAt = new Date();
-    listing.deletedBy = req.user._id;
+    listing.deletedBy = req.userId;
     await listing.save();
     
     // Log the listing deletion
-    await AuditLogger.logListingDelete(listing._id, listing.userId, req.user._id, 'Listing soft deleted by owner', ipAddress);
+    await AuditLogger.logListingDelete(listing._id, listing.userId, req.userId, 'Listing soft deleted by owner', ipAddress);
     
     res.status(200).json({ message: 'Listing soft-deleted successfully.' });
   } catch (error) {
