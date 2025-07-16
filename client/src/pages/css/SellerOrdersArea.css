@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: row;
   min-height: 100vh;
-  background: linear-gradient(to right, #ececec, #d6d6d6);
+  background: #f5f5f5;
   margin-top: 6rem;
   margin-left: 200px;
   transition: all 0.3s ease-in-out;
@@ -156,6 +156,233 @@
   background: #35551B; 
 }
 
+.order-card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.order-product-thumbnail {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  margin-left: 1rem;
+}
+
+.order-card.modern {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.10);
+  padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+  margin-bottom: 2rem;
+  min-width: 320px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.order-card.modern:hover {
+  box-shadow: 0 8px 24px rgba(44, 62, 80, 0.16);
+  /* No transform or scale */
+}
+.order-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 0.2rem 0;
+}
+.order-header span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.2rem 0.8rem;
+  margin-left: 0.5rem;
+}
+.order-details {
+  margin-top: 0.5rem;
+  font-size: 1.05rem;
+  color: #333;
+}
+.order-details p {
+  margin: 0.4rem 0;
+  font-size: 1rem;
+}
+.order-identifier {
+  font-size: 1.1rem;
+  color: #4D7C2E;
+  margin-bottom: 0.2rem;
+}
+.view-proof-btn {
+  background: linear-gradient(90deg, #4D7C2E 60%, #6FAF44 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.7rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s;
+  box-shadow: 0 2px 8px rgba(67,233,123,0.08);
+}
+.view-proof-btn:hover {
+  background: linear-gradient(90deg, #35551B 60%, #4D7C2E 100%);
+  transform: translateY(-2px) scale(1.04);
+}
+.proof-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.proof-modal-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem 2.5rem 1.5rem 2.5rem;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+.proof-modal-image {
+  max-width: 420px;
+  max-height: 60vh;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(44, 62, 80, 0.13);
+}
+.proof-modal-close-btn {
+  background: #BF3131;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.18s, transform 0.18s;
+}
+.proof-modal-close-btn:hover {
+  background: #a82323;
+  transform: translateY(-2px) scale(1.04);
+}
+
+.order-header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.order-header-icon {
+  color: #4D7C2E;
+  margin-right: 0.2rem;
+}
+.order-detail-icon {
+  color: #6FAF44;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+.order-divider {
+  height: 1.5px;
+  background: linear-gradient(90deg, #e0e0e0 60%, #b7e4c7 100%);
+  border: none;
+  margin: 0.7rem 0 0.7rem 0;
+}
+.accent-border {
+  border: 2.5px solid #6FAF44;
+}
+.order-product-thumbnail.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f3f3;
+  border: 2px dashed #bbb;
+}
+.approve-btn {
+  background: linear-gradient(90deg, #4D7C2E 60%, #6FAF44 100%) !important;
+  color: #fff !important;
+  margin-right: 0.7rem;
+}
+.approve-btn:hover {
+  background: linear-gradient(90deg, #35551B 60%, #4D7C2E 100%) !important;
+}
+.reject-btn {
+  background: linear-gradient(90deg, #BF3131 60%, #F87171 100%) !important;
+  color: #fff !important;
+}
+.reject-btn:hover {
+  background: linear-gradient(90deg, #a82323 60%, #BF3131 100%) !important;
+}
+.order-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+  justify-content: flex-end;
+}
+
+.order-details-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.order-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid #f3f3f3;
+}
+.order-detail-label {
+  color: #666;
+  font-size: 0.98rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.order-detail-value {
+  color: #222;
+  font-size: 1.05rem;
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-weight: 600;
+  text-align: right;
+}
+.orderstats-notification-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  color: #222;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.13);
+  padding: 1.2rem 2.5rem;
+  z-index: 3000;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  animation: fadeInOut 2s forwards;
+}
+.orderstats-notification-popup.success {
+  border: 2.5px solid #4CAF50;
+}
+.orderstats-notification-popup.error {
+  border: 2.5px solid #BF3131;
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  10% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+  80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+}
 
 
 @media (max-width: 1024px) {
@@ -224,5 +451,33 @@
     justify-content: center;
     gap: 10px;
     margin-left: 0;
+  }
+} 
+
+@media (max-width: 600px) {
+  .order-header-title-row h3 {
+    font-size: 1rem;
+  }
+  .order-divider {
+    margin: 0.5rem 0;
+  }
+  .order-details p {
+    font-size: 0.95rem;
+  }
+  .order-card.modern {
+    padding: 1rem 0.5rem 1rem 0.5rem;
+    min-width: 0;
+    max-width: 98vw;
+  }
+  .order-product-thumbnail {
+    width: 48px;
+    height: 48px;
+  }
+  .proof-modal-content {
+    padding: 1rem 0.5rem 1rem 0.5rem;
+  }
+  .proof-modal-image {
+    max-width: 90vw;
+    max-height: 40vh;
   }
 } 
