@@ -3,11 +3,12 @@
 import CheckoutSubmission from '../models/CheckoutSubmission.js';
 import Cart from '../models/Cart.js';
 import UserBalance from '../models/UserBalance.js';
-import Listing from '../models/Listing.js'; 
+import Listing from '../models/Listing.js';
+import PaymentMethod from '../models/PaymentMethod.js'; 
 
 export const submitCheckout = async (req, res) => {
   try {
-    const { bank, referenceNumber, listingId, quantity } = req.body;
+    const { referenceNumber, listingId, quantity } = req.body;
     const proofImage = req.file?.path; 
 
     if (!proofImage) {
@@ -45,14 +46,26 @@ export const submitCheckout = async (req, res) => {
       });
     }
 
-    const sellerId = listing.userId; 
+    const sellerId = listing.userId;
+
+    // Check if seller has payment methods
+    const sellerPaymentMethods = await PaymentMethod.find({ userId: sellerId });
+    if (sellerPaymentMethods.length === 0) {
+      // Restore the quantity since we're rejecting the checkout
+      await Listing.findByIdAndUpdate(listingId, { $inc: { quantity: quantity } });
+      return res.status(400).json({
+        error: 'Seller has no payment methods',
+        message: 'No payment methods found for this seller. Ask the seller first to add one.',
+        code: 'SELLER_NO_PAYMENT_METHODS'
+      });
+    }
+
     const totalPrice = (quantity * listing.price) * 1.01;
 
     const newCheckout = new CheckoutSubmission({
       userId: req.userId,
       listingId,
       sellerId, 
-      bank,
       referenceNumber,
       proofImage,
       quantity,
