@@ -73,7 +73,16 @@ const CartArea = () => {
       );
 
       if (response.status === 200) {
-        const updatedCart = cartItems.filter(item => item.productId?._id !== productId);
+        
+        const updatedCart = cartItems.filter(item => {
+          if (item.productId) {
+            
+            return item.productId._id !== productId;
+          } else {
+          
+            return item._id !== productId;
+          }
+        });
         setCartItems(updatedCart);
         setSelectedItems((prevSelected) => prevSelected.filter((id) => id !== productId));
         if (expandedItem === productId) setExpandedItem(null);
@@ -245,10 +254,11 @@ const CartArea = () => {
   
   const handleClosePaymentModal = () => {
     setOpenPaymentModal(false);
-    setBank('');
     setRefNo('');
     setUploadedImage(null);
     setSelectedPaymentMethod(null);
+    setImageError('');
+    setIsSubmitting(false);
   };
   
   const [checkoutResultModal, setCheckoutResultModal] = useState({ open: false, success: null });
@@ -261,13 +271,27 @@ const CartArea = () => {
       const token = localStorage.getItem('authToken');
   
       if (selectedItems.length === 0) {
+        setIsSubmitting(false);
         handleClosePaymentModal(); 
         setCheckoutResultModal({ open: true, success: false });
+        return;
+      }
+
+      // Check if seller has payment methods
+      if (sellerPaymentMethods.length === 0) {
+        setImageError('No payment methods found for this seller. Ask the seller first to add one.');
+        setIsSubmitting(false);
         return;
       }
   
       if (!uploadedImage) {
         setImageError('Payment proof image is required.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!selectedPaymentMethod) {
+        setImageError('Please select a payment method.');
         setIsSubmitting(false);
         return;
       }
@@ -285,7 +309,6 @@ const CartArea = () => {
         }
   
         const formData = new FormData();
-        formData.append('bank', bank);
         formData.append('referenceNumber', refNo);
         formData.append('listingId', listingId);
         formData.append('proofImage', uploadedImage);
@@ -306,13 +329,16 @@ const CartArea = () => {
         } catch (error) {
           failCount++;
           
-              
           if (error.response?.data?.code === 'INSUFFICIENT_STOCK') {
             stockErrors.push({
               productName: item.productId?.productName || 'Unknown Product',
               requestedQuantity: item.quantity,
               availableQuantity: error.response.data.availableQuantity || 0
             });
+          } else if (error.response?.data?.code === 'SELLER_NO_PAYMENT_METHODS') {
+            setImageError('No payment methods found for this seller. Ask the seller first to add one.');
+            setIsSubmitting(false);
+            return;
           }
         }
       }
@@ -320,6 +346,7 @@ const CartArea = () => {
       if (successCount > 0) {
         setCartItems(prev => prev.filter(item => !purchasedItems.includes(item.productId?._id)));
         setSelectedItems([]);
+        setIsSubmitting(false);
         handleClosePaymentModal(); 
         setCheckoutResultModal({ open: true, success: true });
   
@@ -337,6 +364,7 @@ const CartArea = () => {
           setImageError('Failed to process checkout. Please try again.');
         }
         
+        setIsSubmitting(false);
         handleClosePaymentModal(); 
         setCheckoutResultModal({ open: true, success: false });
       }
@@ -392,7 +420,7 @@ const CartArea = () => {
                     return (
                       <div 
                         key={item.productId?._id || Math.random()} 
-                        className={`cartarea-item-card ${isExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}`}
+                        className={`cartarea-item-card ${isExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''} ${!item.productId ? 'deleted-product' : ''}`}
                         onClick={(e) => handleCardClick(e, item.productId?._id)}
                       >
                         <div className="cartarea-item-header">
@@ -428,7 +456,7 @@ const CartArea = () => {
                                   e.stopPropagation();
                                   handleQuantityChange(item.productId?._id, item.quantity - 1);
                                 }}
-                                disabled={item.quantity <= (item.productId?.minimumOrder || 1) || isUpdatingQuantity[item.productId?._id]}
+                                disabled={!item.productId || item.quantity <= (item.productId?.minimumOrder || 1) || isUpdatingQuantity[item.productId?._id]}
                               >
                                 <Minus size={16} />
                               </button>
@@ -439,7 +467,7 @@ const CartArea = () => {
                                   e.stopPropagation();
                                   handleQuantityChange(item.productId?._id, item.quantity + 1);
                                 }}
-                                disabled={isUpdatingQuantity[item.productId?._id]}
+                                disabled={!item.productId || isUpdatingQuantity[item.productId?._id]}
                               >
                                 <Plus size={16} />
                               </button>
@@ -447,10 +475,10 @@ const CartArea = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleRemoveItem(item.productId?._id);
+                                handleRemoveItem(item.productId?._id || item._id);
                               }}
                               className="cartarea-remove-btn"
-                              disabled={!item.productId}
+                              disabled={false}
                             >
                               <Trash2 size={18} />
                             </button>
@@ -600,21 +628,12 @@ const CartArea = () => {
               )}
             </div>
           ) : (
-            <p className="cartarea-no-payment-methods">No payment methods found for this seller.</p>
+            <p className="cartarea-no-payment-methods">No payment methods found for this seller. Ask the seller first to add one.</p>
           )}
 
           <div className="cartarea-payment-submission">
             <h2>Submit Your Payment</h2>
             <div className="cartarea-payment-form">
-              <div className="cartarea-form-group">
-                <label>Bank Name</label>
-                <input 
-                  type="text" 
-                  placeholder="Enter bank name" 
-                  value={bank} 
-                  onChange={(e) => setBank(e.target.value)} 
-                />
-              </div>
               <div className="cartarea-form-group">
                 <label>Reference Number</label>
                 <input 
@@ -654,12 +673,21 @@ const CartArea = () => {
                 />
                 {imageError && <div className="error-message">{imageError}</div>}
               </div>
-              <button 
+                            <button
                 className="cartarea-submit-payment-btn"
                 onClick={handleSavePayment}
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting || 
+                  sellerPaymentMethods.length === 0 || 
+                  !uploadedImage || 
+                  !selectedPaymentMethod
+                }
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Payment'}
+                {isSubmitting ? 'Submitting...' : 
+                 sellerPaymentMethods.length === 0 ? 'No Payment Methods Available' : 
+                 !uploadedImage ? 'Upload Payment Proof' :
+                 !selectedPaymentMethod ? 'Select Payment Method' :
+                 'Submit Payment'}
               </button>
             </div>
           </div>
