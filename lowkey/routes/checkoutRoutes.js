@@ -4,8 +4,7 @@ import express from 'express';
 import auth from '../middleware/auth.js';
 import { checkoutCart } from '../controllers/cartController.js'; 
 import { submitCheckout } from '../controllers/submitCheckout.js'; 
-import CheckoutSubmission from '../models/CheckoutSubmission.js';
-import Listing from '../models/Listing.js';
+import Order from '../models/Order.js';
 import upload, { 
   uploadRateLimit, 
   handleUpload, 
@@ -37,22 +36,22 @@ const checkoutSubmitRateLimit = rateLimit({
 });
 
 const validateCheckoutInput = (req, res, next) => {
-  const { bank, referenceNumber, listingId, quantity } = req.body;
+  const { referenceNumber, listingId, quantity } = req.body;
   
   // Check for required fields
-  if (!bank || !referenceNumber || !listingId || !quantity) {
+  if (!referenceNumber || !listingId || !quantity) {
     return res.status(400).json({
       error: 'Missing required fields',
-      message: 'Bank, reference number, listing ID, and quantity are required',
+      message: 'Reference number, listing ID, and quantity are required',
       code: 'MISSING_FIELDS'
     });
   }
 
   // Validate string lengths
-  if (bank.length > 100 || referenceNumber.length > 50) {
+  if (referenceNumber.length > 50) {
     return res.status(400).json({
       error: 'Field too long',
-      message: 'Bank name or reference number is too long',
+      message: 'Reference number is too long',
       code: 'FIELD_TOO_LONG'
     });
   }
@@ -73,24 +72,23 @@ router.patch('/approve/:id', auth, async (req, res) => {
 
     if (!id || id.length !== 24) {
       return res.status(400).json({
-        error: 'Invalid checkout ID',
-        message: 'Please provide a valid checkout ID',
+        error: 'Invalid order ID',
+        message: 'Please provide a valid order ID',
         code: 'INVALID_ID'
       });
     }
     
-    const checkout = await CheckoutSubmission.findById(id);
+    const order = await Order.findById(id);
 
-    if (!checkout) {
+    if (!order) {
       return res.status(404).json({ 
-        error: 'Checkout not found',
-        message: 'The requested checkout does not exist',
+        error: 'Order not found',
+        message: 'The requested order does not exist',
         code: 'NOT_FOUND'
       });
     }
 
-    const listing = await Listing.findById(checkout.listingId);
-    if (!listing || listing.userId.toString() !== req.userId) {
+    if (order.seller.sellerId.toString() !== req.userId) {
       return res.status(403).json({ 
         error: 'Access denied',
         message: 'You are not authorized to approve this order.',
@@ -98,18 +96,21 @@ router.patch('/approve/:id', auth, async (req, res) => {
       });
     }
 
-    checkout.status = 'Accepted'; 
-    await checkout.save();
+    order.status = 'Ongoing'; 
+    order.review = order.review || {};
+    order.review.reviewedBy = req.userId;
+    order.review.reviewedAt = new Date();
+    await order.save();
 
-    console.log(`[SECURE_CHECKOUT_APPROVE] User ${req.userId} approved checkout: ${id}`);
+    console.log(`[SECURE_ORDER_APPROVE] User ${req.userId} approved order: ${id}`);
 
     res.status(200).json({ 
       success: true,
       message: 'Order approved successfully.', 
-      checkout 
+      order 
     });
   } catch (error) {
-    console.error('[CHECKOUT_APPROVE_ERROR]', error.message);
+    console.error('[ORDER_APPROVE_ERROR]', error.message);
     res.status(500).json({ 
       error: 'Failed to approve order',
       message: 'An error occurred while approving the order.',
@@ -124,24 +125,23 @@ router.patch('/reject/:id', auth, async (req, res) => {
     
     if (!id || id.length !== 24) {
       return res.status(400).json({
-        error: 'Invalid checkout ID',
-        message: 'Please provide a valid checkout ID',
+        error: 'Invalid order ID',
+        message: 'Please provide a valid order ID',
         code: 'INVALID_ID'
       });
     }
     
-    const checkout = await CheckoutSubmission.findById(id);
+    const order = await Order.findById(id);
 
-    if (!checkout) {
+    if (!order) {
       return res.status(404).json({ 
-        error: 'Checkout not found',
-        message: 'The requested checkout does not exist',
+        error: 'Order not found',
+        message: 'The requested order does not exist',
         code: 'NOT_FOUND'
       });
     }
 
-    const listing = await Listing.findById(checkout.listingId);
-    if (!listing || listing.userId.toString() !== req.userId) {
+    if (order.seller.sellerId.toString() !== req.userId) {
       return res.status(403).json({ 
         error: 'Access denied',
         message: 'You are not authorized to reject this order.',
@@ -149,18 +149,21 @@ router.patch('/reject/:id', auth, async (req, res) => {
       });
     }
 
-    checkout.status = 'rejected';
-    await checkout.save();
+    order.status = 'Rejected';
+    order.review = order.review || {};
+    order.review.reviewedBy = req.userId;
+    order.review.reviewedAt = new Date();
+    await order.save();
 
-    console.log(`[SECURE_CHECKOUT_REJECT] User ${req.userId} rejected checkout: ${id}`);
+    console.log(`[SECURE_ORDER_REJECT] User ${req.userId} rejected order: ${id}`);
 
     res.status(200).json({ 
       success: true,
       message: 'Order rejected successfully.', 
-      checkout 
+      order 
     });
   } catch (error) {
-    console.error('[CHECKOUT_REJECT_ERROR]', error.message);
+    console.error('[ORDER_REJECT_ERROR]', error.message);
     res.status(500).json({ 
       error: 'Failed to reject order',
       message: 'An error occurred while rejecting the order.',
