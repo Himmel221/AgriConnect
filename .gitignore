@@ -1,0 +1,35 @@
+# Node modules
+node_modules/
+client/node_modules/
+lowkey/node_modules/
+
+# Environment variables
+.env
+lowkey/.env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.swp
+
+# Documentation files (except README.md)
+*.md
+!README.md
+
+
