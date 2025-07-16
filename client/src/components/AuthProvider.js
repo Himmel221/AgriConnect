@@ -10,13 +10,16 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [userId, setUserId] = useState(null);
   const [user, setUser] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(null);
 
   const validateToken = async (token) => {
     return !!token;
   };
 
-  const login = (authToken, userData) => {
-    console.log("Login function called with:", { authToken, userData });
+
+
+  const login = (authToken, userData, refreshTokenData) => {
+    console.log("Login function called with:", { authToken, userData, refreshTokenData });
 
     if (!authToken || !userData || !userData._id) {
       console.error("Invalid login data:", { authToken, userData });
@@ -27,10 +30,16 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("isAdmin", userData.isAdmin);
     localStorage.setItem("userType", userData.userType || 'user');
+    if (refreshTokenData) {
+      localStorage.setItem("refreshToken", refreshTokenData);
+    }
 
     setToken(authToken);
     setUserId(userData._id);
     setUser(userData);
+    if (refreshTokenData) {
+      setRefreshToken(refreshTokenData);
+    }
     setIsAuthenticated(true);
   };
 
@@ -39,9 +48,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("userType");
+    localStorage.removeItem("refreshToken");
     setToken(null);
     setUserId(null);
     setUser(null);
+    setRefreshToken(null);
     setIsAuthenticated(false);
   };
 
@@ -49,8 +60,9 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       const storedToken = localStorage.getItem("authToken");
       const storedUserStr = localStorage.getItem("user");
+      const storedRefreshToken = localStorage.getItem("refreshToken");
 
-      console.log("Retrieved from localStorage:", { token: storedToken, userStr: storedUserStr });
+      console.log("Retrieved from localStorage:", { token: storedToken, userStr: storedUserStr, refreshToken: storedRefreshToken });
 
       if (storedToken && storedUserStr) {
         try {
@@ -61,6 +73,9 @@ export const AuthProvider = ({ children }) => {
             setToken(storedToken);
             setUserId(userData._id);
             setUser(userData);
+            if (storedRefreshToken) {
+              setRefreshToken(storedRefreshToken);
+            }
             setIsAuthenticated(true);
           } else {
             console.log("Token validation failed or invalid user data");
