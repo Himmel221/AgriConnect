@@ -2,7 +2,7 @@
 
 import express from 'express';
 import { login, registerUser, verifyEmail, forgotPassword, resetPassword, resendVerificationCode, sendVerificationEmail, getUser } from '../controllers/authController.js';
-import auth from '../middleware/auth.js';
+import auth, { refreshToken } from '../middleware/auth.js';
 import AdminRoutes from './Admin.js';
 import User from '../models/User.js';
 import { getSellerStatus } from '../controllers/authController.js';
@@ -19,6 +19,7 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.post('/resend-verification-code', resendVerificationCode);
 router.post('/send-verification-email', sendVerificationEmail);
+router.post('/refresh-token', refreshToken);
 router.get('/user', auth, getUser);
 router.get("/seller-status", auth, getSellerStatus);
 
