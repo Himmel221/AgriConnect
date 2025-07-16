@@ -106,10 +106,13 @@ const ViewProfile = () => {
               {listings.length > 0 ? (
                 listings.map((listing) => (
                   <div key={listing._id} className="viewprofile-listing-card">
-                    <div
-                      className="viewprofile-image-placeholder"
-                      style={{ backgroundColor: listing.color || '#f1f1f1' }}
-                    ></div>
+                    <div className="viewprofile-image-placeholder">
+                      <img
+                        src={listing.imageUrl || "default-image.jpg"}
+                        alt={listing.productName}
+                        className="viewprofile-listing-image"
+                      />
+                    </div>
                     <h3>{listing.productName}</h3>
                     <p>Category: {listing.category}</p>
                     <p>Price: ₱{listing.price}</p>
