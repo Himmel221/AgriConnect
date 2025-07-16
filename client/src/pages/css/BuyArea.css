@@ -527,8 +527,9 @@
 
 .cart-success-popup {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 2000;
   animation: slideInRight 0.3s ease, fadeOut 0.3s ease 1.7s forwards;
 }
@@ -556,8 +557,9 @@
 
 .cart-error-popup {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 2000;
   animation: slideInRight 0.3s ease, fadeOut 0.3s ease 1.7s forwards;
 }
@@ -585,22 +587,22 @@
 @keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateX(100%);
+    transform: translate(-50%, -50%) scale(0.8);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
 @keyframes fadeOut {
   from {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate(-50%, -50%) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateX(100%);
+    transform: translate(-50%, -50%) scale(0.8);
   }
 }
 
