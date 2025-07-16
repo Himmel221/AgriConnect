@@ -145,42 +145,50 @@ const OrderStatus = () => {
               </div>
             ) : orders.length > 0 ? (
               <div className="orderstats-list">
-                {orders.map((order) => (
-                  <div key={order._id} className="orderstats-list-item">
-                    <div className="orderstats-item-header">
-                      <div className="orderstats-item-icon">
-                        {getStatusIcon()}
+                {orders
+                  .filter(order => status !== 'Ongoing' || order.status === 'Ongoing')
+                  .map((order) => (
+                    <div key={order._id} className="orderstats-list-item">
+                      <div className="orderstats-item-header">
+                        <div className="orderstats-item-icon">
+                          {getStatusIcon()}
+                        </div>
+                        <div className="orderstats-item-title">
+                          <h3>{order.originalListing?.productName || order.productName || 'Product Name Unavailable'}</h3>
+                          <span className="orderstats-item-status">{order.status}</span>
+                        </div>
                       </div>
-                      <div className="orderstats-item-title">
-                        <h3>{order.listingId?.productName || 'Removed Product'}</h3>
-                        <span className="orderstats-item-status">{order.status}</span>
-                      </div>
-                    </div>
-
-                    <div className="orderstats-item-details">
+                                <div className="orderstats-detail-row">
+            <span className="orderstats-detail-value">{order.originalListing?.identifier || order.orderId || 'N/A'}</span>
+          </div>
                       <div className="orderstats-detail-row">
                         <span className="orderstats-detail-label">Seller:</span>
-                        <span className="orderstats-detail-value">
-                          {order.listingId?.userId || 'Unknown'}
-                        </span>
+                        <span className="orderstats-detail-value">{order.seller?.sellerName || 'Unknown'}</span>
+                      </div>
+                      <div className="orderstats-detail-row">
+                        <span className="orderstats-detail-label">Quantity:</span>
+                        <span className="orderstats-detail-value">{order.orderQuantity} {order.originalListing?.unit}</span>
                       </div>
                       <div className="orderstats-detail-row">
                         <span className="orderstats-detail-label">Total Price:</span>
-                        <span className="orderstats-detail-value">
-                          ₱{order.totalPrice?.toFixed(2) || 'N/A'}
-                        </span>
+                        <span className="orderstats-detail-value">₱{order.totalPrice?.toFixed(2) || 'N/A'}</span>
                       </div>
+                      {/* Remove BuyerStatus display if value is NotYetReceived or undefined */}
+                      {order.buyerStatus && order.buyerStatus !== 'NotYetReceived' && (
+                        <div className="orderstats-detail-row">
+                          <span className="orderstats-detail-label">Buyer Status:</span>
+                          <span className="orderstats-detail-value">{order.buyerStatus}</span>
+                        </div>
+                      )}
+                      {status === 'Ongoing' && order.buyerStatus !== 'Received' && (
+                        <div className="orderstats-item-actions">
+                          <button onClick={() => handleReceivedOrder(order._id)} className="orderstats-received-btn">
+                            Mark as Received
+                          </button>
+                        </div>
+                      )}
                     </div>
-
-                    {status === 'Ongoing' && order.BuyerStatus !== 'Received' && (
-                      <div className="orderstats-item-actions">
-                        <button onClick={() => handleReceivedOrder(order._id)} className="orderstats-received-btn">
-                          Mark as Received
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ))}
               </div>
             ) : (
               <div className="orderstats-empty">
