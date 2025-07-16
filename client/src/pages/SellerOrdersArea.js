@@ -4,6 +4,7 @@ import SideBar from '../components/side_bar';
 import './css/SellerOrdersArea.css';
 import { useAuth } from '../components/AuthProvider';
 import axios from 'axios';
+import { User, ShoppingBag, Tag, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
 
 const SellerOrdersArea = () => {
   const { token } = useAuth();
@@ -17,6 +18,8 @@ const SellerOrdersArea = () => {
     action: '',
     note: '',
   });
+  const [proofModal, setProofModal] = useState({ open: false, image: '' });
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -90,6 +93,11 @@ const SellerOrdersArea = () => {
     setConfirmationModal({ isVisible: false, orderId: null, action: '', note: '' });
   };
 
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: '' }), 2000);
+  };
+
   const handleUpdateStatus = async () => {
     const { orderId, action, note } = confirmationModal;
   
@@ -104,13 +112,14 @@ const SellerOrdersArea = () => {
   
       if (response.status === 200) {
         setOrders((prevOrders) => prevOrders.filter((order) => order._id !== orderId)); 
+        showNotification(`Order ${action === 'Approved' ? 'approved' : 'rejected'}!`, 'success');
       }
   
       fetchSellerOrders(); 
       closeConfirmationModal();
     } catch (error) {
       console.error(`Error updating order status:`, error.response?.data || error.message);
-      alert(`Failed to update order status: ${error.response?.data?.message || 'An error occurred.'}`);
+      showNotification('Failed to update order status.', 'error');
     }
   };
 
@@ -160,32 +169,91 @@ const SellerOrdersArea = () => {
           ) : orders.length > 0 ? (
             <div className="seller-orders-container">
               {orders.map((order) => (
-                <div key={order._id} className="order-card">
-                  <div className="order-header">
-                    <h3>{order.productName}</h3>
-                    <span className={getStatusBadgeClass(order.status)}>
-                      {order.status}
-                    </span>
-                  </div>
-                  
-                  <div className="order-details">
-                    <p><strong>Order#:</strong> {order._id}</p>
-                    <p><strong>Buyer:</strong> {order.buyerName}</p>
-                    <p><strong>Quantity:</strong> {order.quantity} {order.unit}</p>
-                    <p><strong>Price:</strong> {new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(order.totalPrice || 0)}</p>
-                    <p><strong>Buyer Status:</strong> {order.BuyerStatus ? order.BuyerStatus : "NotYetReceived"}</p>
-  
-                    {order.proofImage && (
-                      <p>
-                        <strong>Proof Image:</strong> 
-                        <a href={order.proofImage} target="_blank" rel="noopener noreferrer" className="hyperlink">View Image</a>
-                      </p>
+                <div key={order._id} className="order-card modern">
+                  <div className="order-card-header-row">
+                    <div className="order-header">
+                      <div className="order-header-title-row">
+                        <ShoppingBag size={20} className="order-header-icon" aria-label="Product" />
+                        <h3>{order.originalListing?.productName || order.productName || 'Product Name Unavailable'}</h3>
+                      </div>
+                      <span className={getStatusBadgeClass(order.status)}>
+                        {order.status}
+                      </span>
+                    </div>
+                    {order.originalListing?.imageUrl ? (
+                      <img
+                        src={order.originalListing.imageUrl}
+                        alt="Product"
+                        className="order-product-thumbnail accent-border"
+                        aria-label="Product Image"
+                      />
+                    ) : (
+                      <div className="order-product-thumbnail placeholder">
+                        <ImageIcon size={32} color="#bbb" />
+                      </div>
                     )}
-                    
+                  </div>
+                  <div className="order-divider" />
+                  <div className="order-details order-details-rows">
+                    <div className="order-detail-row">
+                      <span className="order-detail-label"><Tag size={16} className="order-detail-icon" aria-label="Order Identifier" />Order</span>
+                      <span className="order-detail-value">{order.originalListing?.identifier || order.orderId || ''}</span>
+                    </div>
+                    <div className="order-detail-row">
+                      <span className="order-detail-label"><User size={16} className="order-detail-icon" aria-label="Buyer" />Buyer</span>
+                      <span className="order-detail-value">{
+                        order.buyer?.buyerName
+                          || order.buyerName
+                          || (order.userId && (order.userId.first_name || order.userId.last_name)
+                            ? `${order.userId.first_name || ''} ${order.userId.last_name || ''}`.trim()
+                            : '')
+                      }</span>
+                    </div>
+                    <div className="order-detail-row">
+                      <span className="order-detail-label"><ShoppingBag size={16} className="order-detail-icon" aria-label="Quantity" />Quantity</span>
+                      <span className="order-detail-value">{
+                        (() => {
+                          if (order.orderQuantity) {
+                            const num = Number(order.orderQuantity);
+                            const unit = order.originalListing?.unit || '';
+                            return `${num.toLocaleString()}${unit ? ' ' + unit : ''}`;
+                          }
+                          return 'N/A';
+                        })()
+                      }</span>
+                    </div>
+                    <div className="order-detail-row">
+                      <span className="order-detail-label"><CheckCircle size={16} className="order-detail-icon" aria-label="Price" />Price</span>
+                      <span className="order-detail-value">{new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(order.totalPrice || 0)}</span>
+                    </div>
+                    {order.buyerStatus && order.buyerStatus !== 'NotYetReceived' && (
+                      <div className="order-detail-row">
+                        <span className="order-detail-label">Buyer Status</span>
+                        <span className="order-detail-value">{order.buyerStatus}</span>
+                      </div>
+                    )}
+                    {order.payment?.proofImage && (
+                      <div className="order-detail-row">
+                        <span className="order-detail-label">Proof</span>
+                        <span className="order-detail-value">
+                          <button
+                            className="view-proof-btn"
+                            onClick={() => setProofModal({ open: true, image: order.payment.proofImage })}
+                            aria-label="View Proof Image"
+                          >
+                            <ImageIcon size={16} style={{ marginRight: 6, verticalAlign: 'middle' }} /> View Proof
+                          </button>
+                        </span>
+                      </div>
+                    )}
                     {order.status === 'Pending' && (
                       <div className="order-actions">
-                        <button onClick={() => openConfirmationModal(order._id, 'Approved')} className="notify-btn">Approve</button>
-                        <button onClick={() => openConfirmationModal(order._id, 'Rejected')} className="notify-btn">Reject</button>
+                        <button onClick={() => openConfirmationModal(order._id, 'Approved')} className="notify-btn approve-btn" aria-label="Approve Order">
+                          <CheckCircle size={16} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Approve
+                        </button>
+                        <button onClick={() => openConfirmationModal(order._id, 'Rejected')} className="notify-btn reject-btn" aria-label="Reject Order">
+                          <XCircle size={16} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Reject
+                        </button>
                       </div>
                     )}
                   </div>
@@ -218,6 +286,19 @@ const SellerOrdersArea = () => {
           </div>
         </div>
       ) : null}
+      {proofModal.open && (
+        <div className="proof-modal-overlay" onClick={() => setProofModal({ open: false, image: '' })}>
+          <div className="proof-modal-content" onClick={e => e.stopPropagation()}>
+            <img src={proofModal.image} alt="Proof" className="proof-modal-image" />
+            <button className="proof-modal-close-btn" onClick={() => setProofModal({ open: false, image: '' })}>Close</button>
+          </div>
+        </div>
+      )}
+      {notification.show && (
+        <div className={`orderstats-notification-popup ${notification.type}`}>
+          <p>{notification.message}</p>
+        </div>
+      )}
     </>
   );
 };
