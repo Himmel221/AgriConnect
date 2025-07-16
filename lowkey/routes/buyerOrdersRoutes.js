@@ -11,12 +11,14 @@ router.get('/', auth, async (req, res) => {
     if (!['Pending', 'Ongoing', 'Success', 'Rejected', 'Cancelled'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status type' });
     }
+    
     const orders = await Order.find({
       'buyer.buyerId': buyerId,
       status: status
     })
       .sort({ orderCreatedAt: -1 })
       .lean();
+      
     res.status(200).json({ orders });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch buyer orders', error: error.message });
