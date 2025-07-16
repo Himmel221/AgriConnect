@@ -23,7 +23,7 @@ const CheckoutSubmissionSchema = new mongoose.Schema({
   },
   bank: {
     type: String,
-    required: true,
+    required: false,
   },
   referenceNumber: {
     type: String,
