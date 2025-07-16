@@ -736,10 +736,16 @@ useEffect(() => {
       </div>
     )}
         
-        {/* Payment Method Required Popup */}
+        {}
         {showPaymentMethodPopup && (
           <div className="sellarea-payment-method-popup-overlay">
             <div className="sellarea-payment-method-popup-content">
+              <button 
+                className="sellarea-payment-method-popup-close-btn" 
+                onClick={() => setShowPaymentMethodPopup(false)}
+              >
+                ✖
+              </button>
               <div className="sellarea-payment-method-icon">💳</div>
               <h3>Payment Method Required</h3>
               <p>{paymentMethodMessage}</p>
