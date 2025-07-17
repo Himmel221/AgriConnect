@@ -14,6 +14,10 @@ const ManageUsers = () => {
   const usersPerPage = 5;
   const [loading, setLoading] = useState(false); 
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [banModal, setBanModal] = useState({ open: false, userId: null });
+  const [banReason, setBanReason] = useState('');
+  const [unbanModal, setUnbanModal] = useState({ open: false, userId: null });
+  const [unbanReason, setUnbanReason] = useState('');
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -23,7 +27,7 @@ const ManageUsers = () => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
       setNotification({ show: false, message: '', type: '' });
-    }, 2000);
+    }, 3000);
   };
 
   const handleExpiredSession = useCallback(() => {
@@ -67,31 +71,29 @@ const ManageUsers = () => {
     verifyAdmin();
   }, [handleExpiredSession, navigate]);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
+  const fetchUsers = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      handleExpiredSession();
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axios.get(`${apiUrl}/api/admin/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      if (error.response?.status === 401) {
         handleExpiredSession();
-        return;
       }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      setLoading(true); 
-
-      try {
-        const response = await axios.get(`${apiUrl}/api/admin/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUsers(response.data);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        if (error.response?.status === 401) {
-          handleExpiredSession();
-        }
-      } finally {
-        setLoading(false); 
-      }
-    };
-
+  useEffect(() => {
     fetchUsers();
   }, [handleExpiredSession, navigate]);
 
@@ -175,72 +177,93 @@ const ManageUsers = () => {
     }
   };
 
-  const handleBanUser = async (userId) => {
-    const reason = prompt('Enter ban reason:');
-    if (!reason) return;
+  const handleBanUser = (userId) => {
+    setBanModal({ open: true, userId });
+    setBanReason('');
+  };
 
+  const confirmBanUser = async () => {
+    if (!banReason.trim()) {
+      showNotification('Ban reason is required.', 'error');
+      return;
+    }
     try {
       const response = await axios.post(
-        `${apiUrl}/api/admin/ban-user/${userId}`,
-        { reason },
+        `${apiUrl}/api/admin/ban-user/${banModal.userId}`,
+        { reason: banReason },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
         }
       );
-
+      setBanModal({ open: false, userId: null });
+      setBanReason('');
       if (response.status === 200) {
-        showNotification('User banned successfully!', 'success');
-        const updatedUsers = users.map((user) =>
-          user.userId === userId ? { 
-            ...user, 
-            isBanned: true, 
-            bannedAt: new Date().toISOString(),
-            banReason: reason 
-          } : user
-        );
-        setUsers(updatedUsers);
+        await fetchUsers();
+        setTimeout(() => {
+          showNotification('User banned successfully!', 'success');
+        }, 200);
       } else {
-        console.error('Failed to ban user:', response.data);
-        showNotification(response.data.message || 'Failed to ban user.', 'error');
+        setTimeout(() => {
+          showNotification(response.data.message || 'Failed to ban user.', 'error');
+        }, 200);
       }
     } catch (error) {
-      console.error('Error banning user:', error.message);
-      showNotification(error.response?.data?.message || 'Error banning user. Please try again.', 'error');
+      setBanModal({ open: false, userId: null });
+      setBanReason('');
+      setTimeout(() => {
+        showNotification(error.response?.data?.message || 'Error banning user. Please try again.', 'error');
+      }, 200);
     }
   };
 
-  const handleUnbanUser = async (userId) => {
-    const reason = prompt('Enter unban reason:');
-    if (!reason) return;
+  const cancelBanUser = () => {
+    setBanModal({ open: false, userId: null });
+    setBanReason('');
+  };
 
+  // Unban modal logic
+  const handleUnbanUser = (userId) => {
+    setUnbanModal({ open: true, userId });
+    setUnbanReason('');
+  };
+
+  const confirmUnbanUser = async () => {
+    if (!unbanReason.trim()) {
+      showNotification('Unban reason is required.', 'error');
+      return;
+    }
     try {
       const response = await axios.post(
-        `${apiUrl}/api/admin/unban-user/${userId}`,
-        { reason },
+        `${apiUrl}/api/admin/unban-user/${unbanModal.userId}`,
+        { reason: unbanReason },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
         }
       );
-
+      setUnbanModal({ open: false, userId: null });
+      setUnbanReason('');
       if (response.status === 200) {
-        showNotification('User unbanned successfully!', 'success');
-        const updatedUsers = users.map((user) =>
-          user.userId === userId ? { 
-            ...user, 
-            isBanned: false, 
-            bannedAt: null,
-            banReason: null 
-          } : user
-        );
-        setUsers(updatedUsers);
+        await fetchUsers();
+        setTimeout(() => {
+          showNotification('User unbanned successfully!', 'success');
+        }, 200);
       } else {
-        console.error('Failed to unban user:', response.data);
-        showNotification(response.data.message || 'Failed to unban user.', 'error');
+        setTimeout(() => {
+          showNotification(response.data.message || 'Failed to unban user.', 'error');
+        }, 200);
       }
     } catch (error) {
-      console.error('Error unbanning user:', error.message);
-      showNotification(error.response?.data?.message || 'Error unbanning user. Please try again.', 'error');
+      setUnbanModal({ open: false, userId: null });
+      setUnbanReason('');
+      setTimeout(() => {
+        showNotification(error.response?.data?.message || 'Error unbanning user. Please try again.', 'error');
+      }, 200);
     }
+  };
+
+  const cancelUnbanUser = () => {
+    setUnbanModal({ open: false, userId: null });
+    setUnbanReason('');
   };
 
   const indexOfLastUser = currentPage * usersPerPage;
@@ -312,7 +335,18 @@ const ManageUsers = () => {
               <tbody>
                 {filteredUser ? (
                   <tr>
-                    <td>{`${filteredUser.first_name} ${filteredUser.last_name}`}</td>
+                    <td>
+                      {filteredUser.isBanned ? (
+                        <span
+                          className="banned-user-name"
+                          title={`Banned: ${filteredUser.banReason || 'No reason'}\nAt: ${filteredUser.bannedAt ? new Date(filteredUser.bannedAt).toLocaleString() : ''}`}
+                        >
+                          {`${filteredUser.first_name} ${filteredUser.last_name}`}
+                        </span>
+                      ) : (
+                        `${filteredUser.first_name} ${filteredUser.last_name}`
+                      )}
+                    </td>
                     <td>
                       {formatEmail(filteredUser.email, showEmails[filteredUser.userId])}
                       <button onClick={() => toggleEmailVisibility(filteredUser.userId)}>
@@ -357,7 +391,18 @@ const ManageUsers = () => {
                 ) : (
                   currentUsers.map((user) => (
                     <tr key={user.userId}>
-                      <td>{`${user.first_name} ${user.last_name}`}</td>
+                      <td>
+                        {user.isBanned ? (
+                          <span
+                            className="banned-user-name"
+                            title={`Banned: ${user.banReason || 'No reason'}\nAt: ${user.bannedAt ? new Date(user.bannedAt).toLocaleString() : ''}`}
+                          >
+                            {`${user.first_name} ${user.last_name}`}
+                          </span>
+                        ) : (
+                          `${user.first_name} ${user.last_name}`
+                        )}
+                      </td>
                       <td>
                         {formatEmail(user.email, showEmails[user.userId])}
                         <button onClick={() => toggleEmailVisibility(user.userId)}>
@@ -423,6 +468,68 @@ const ManageUsers = () => {
       {notification.show && (
         <div className={`notification-popup ${notification.type}`}>
           <p>{notification.message}</p>
+        </div>
+      )}
+      {/* Ban Reason Modal */}
+      {banModal.open && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Ban User</h2>
+            <p>Please provide a reason for banning this user:</p>
+            <textarea
+              value={banReason}
+              onChange={(e) => setBanReason(e.target.value)}
+              placeholder="Enter ban reason..."
+              rows={4}
+              style={{ width: '100%', borderRadius: '8px', padding: '8px', marginBottom: '1rem' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+              <button onClick={cancelBanUser} style={{ background: '#ccc', color: '#222' }}>Cancel</button>
+              <button
+                onClick={confirmBanUser}
+                style={{
+                  background: '#dc3545',
+                  color: 'white',
+                  cursor: !banReason.trim() ? 'not-allowed' : 'pointer',
+                  opacity: !banReason.trim() ? 0.6 : 1
+                }}
+                disabled={!banReason.trim()}
+              >
+                Ban User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Unban Reason Modal */}
+      {unbanModal.open && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Unban User</h2>
+            <p>Please provide a reason for unbanning this user:</p>
+            <textarea
+              value={unbanReason}
+              onChange={(e) => setUnbanReason(e.target.value)}
+              placeholder="Enter unban reason..."
+              rows={4}
+              style={{ width: '100%', borderRadius: '8px', padding: '8px', marginBottom: '1rem' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+              <button onClick={cancelUnbanUser} style={{ background: '#ccc', color: '#222' }}>Cancel</button>
+              <button
+                onClick={confirmUnbanUser}
+                style={{
+                  background: '#4CAF50',
+                  color: 'white',
+                  cursor: !unbanReason.trim() ? 'not-allowed' : 'pointer',
+                  opacity: !unbanReason.trim() ? 0.6 : 1
+                }}
+                disabled={!unbanReason.trim()}
+              >
+                Unban User
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

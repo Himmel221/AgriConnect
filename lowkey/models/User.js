@@ -77,7 +77,15 @@ const UserSchema = new mongoose.Schema({
   isBanned: { type: Boolean, default: false },
   bannedAt: { type: Date },
   bannedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  banReason: { type: String }
+  banReason: { type: String },
+  banHistory: [{
+    bannedAt: { type: Date, default: Date.now },
+    bannedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    banReason: { type: String },
+    unbannedAt: { type: Date },
+    unbannedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    unbanReason: { type: String }
+  }]
 }, { 
   timestamps: true,
   toJSON: { getters: true },

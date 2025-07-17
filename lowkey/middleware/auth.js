@@ -47,6 +47,13 @@ const auth = async (req, res, next) => {
       });
     }
 
+    if (user.isBanned) {
+      return res.status(403).json({
+        message: 'Your account has been banned.',
+        code: 'USER_BANNED',
+        banReason: user.banReason || undefined
+      });
+    }
 
     if (!user.isVerified) {
       return res.status(403).json({

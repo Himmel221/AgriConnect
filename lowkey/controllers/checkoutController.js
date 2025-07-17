@@ -1,15 +1,15 @@
 //checkoutController.js
 
-import CheckoutSubmission from '../models/CheckoutSubmission.js';
 import Cart from '../models/Cart.js';
 import UserBalance from '../models/UserBalance.js';
 import Listing from '../models/Listing.js';
-import PaymentMethod from '../models/PaymentMethod.js'; 
+import PaymentMethod from '../models/PaymentMethod.js';
+import Order from '../models/Order.js';
 
 export const submitCheckout = async (req, res) => {
   try {
     const { referenceNumber, listingId, quantity } = req.body;
-    const proofImage = req.file?.path; 
+    const proofImage = req.file?.path;
 
     if (!proofImage) {
       return res.status(400).json({ message: 'Proof image is required.' });
@@ -25,22 +25,22 @@ export const submitCheckout = async (req, res) => {
 
 
     const listing = await Listing.findOneAndUpdate(
-      { 
+      {
         _id: listingId,
-              status: true, 
-        quantity: { $gte: quantity } 
+              status: true,
+        quantity: { $gte: quantity }
       },
-      { 
-        $inc: { quantity: -quantity } 
+      {
+        $inc: { quantity: -quantity }
       },
-      { 
+      {
         new: true,
         runValidators: true
       }
     );
 
     if (!listing) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: 'Listing not found, inactive, or insufficient quantity available.',
         code: 'INSUFFICIENT_STOCK'
       });
@@ -62,25 +62,25 @@ export const submitCheckout = async (req, res) => {
 
     const totalPrice = (quantity * listing.price) * 1.01;
 
-    const newCheckout = new CheckoutSubmission({
+    const newOrder = new Order({
       userId: req.userId,
       listingId,
-      sellerId, 
+      sellerId,
       referenceNumber,
       proofImage,
       quantity,
       totalPrice,
-      status: 'Pending', 
-      BuyerStatus: 'NotYetReceived', 
+      status: 'Pending',
+      BuyerStatus: 'NotYetReceived',
     });
 
-    await newCheckout.save();
+    await newOrder.save();
 
     console.log(`[CHECKOUT_SUCCESS] User ${req.userId} submitted checkout for listing ${listingId}, quantity: ${quantity}`);
 
     res.status(201).json({
       message: 'Payment details submitted successfully',
-      checkout: newCheckout,
+      checkout: newOrder,
     });
   } catch (error) {
     console.error('Error submitting payment:', error.message);
@@ -98,33 +98,33 @@ export const updateCheckoutStatus = async (req, res) => {
     }
 
 
-    const checkout = await CheckoutSubmission.findById(req.params.id).populate('listingId');
+    const order = await Order.findById(req.params.id).populate('listingId');
 
-    if (!checkout) {
+    if (!order) {
       return res.status(404).json({ message: 'Checkout not found.' });
     }
 
 
-    if (status === 'Success' && checkout.status !== 'Success') {
-      const sellerId = checkout.listingId.userId;
-      
+    if (status === 'Success' && order.status !== 'Success') {
+      const sellerId = order.listingId.userId;
+
 
       const balanceResult = await UserBalance.findOneAndUpdate(
         { userId: sellerId },
-        { 
-          $inc: { sellerBalance: checkout.totalPrice },
+        {
+          $inc: { sellerBalance: order.totalPrice },
           $push: {
             transactions: {
-              amount: checkout.totalPrice,
+              amount: order.totalPrice,
               type: 'credit',
-              referenceId: checkout._id,
+              referenceId: order._id,
               timestamp: new Date()
             }
           }
         },
-        { 
-          upsert: true, 
-          new: true 
+        {
+          upsert: true,
+          new: true
         }
       );
 
@@ -133,27 +133,27 @@ export const updateCheckoutStatus = async (req, res) => {
       }
 
 
-      checkout.status = status;
-      checkout.BuyerStatus = 'Received';
+      order.status = status;
+      order.BuyerStatus = 'Received';
       if (approvalNote) {
-        checkout.approvalNote = approvalNote;
+        order.approvalNote = approvalNote;
       }
 
-      await checkout.save();
+      await order.save();
 
-      console.log(`[SECURE_CHECKOUT_APPROVAL] Checkout ${checkout._id} approved. Seller ${sellerId} balance updated by ${checkout.totalPrice}`);
+      console.log(`[SECURE_CHECKOUT_APPROVAL] Checkout ${order._id} approved. Seller ${sellerId} balance updated by ${order.totalPrice}`);
     } else {
-      
-      checkout.status = status;
+
+      order.status = status;
       if (approvalNote) {
-        checkout.approvalNote = approvalNote;
+        order.approvalNote = approvalNote;
       }
-      await checkout.save();
+      await order.save();
     }
 
-    res.status(200).json({ message: 'Checkout status updated successfully.', checkout });
+    res.status(200).json({ message: 'Checkout status updated successfully.', order });
   } catch (error) {
-    console.error('Error updating checkout:', error.message); 
+    console.error('Error updating checkout:', error.message);
     res.status(500).json({ message: 'Failed to update checkout status.', error: error.message });
   }
 };
@@ -162,39 +162,39 @@ export const receivedCheckout = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const checkout = await CheckoutSubmission.findById(id).populate('listingId');
-    if (!checkout) {
+    const order = await Order.findById(id).populate('listingId');
+    if (!order) {
       return res.status(404).json({ message: 'Checkout not found.' });
     }
 
-    if (checkout.BuyerStatus === 'Received') {
+    if (order.BuyerStatus === 'Received') {
       return res.status(400).json({ message: 'Order already marked as Received.' });
     }
 
-    checkout.BuyerStatus = 'Received';
-    checkout.status = 'Success';
-    await checkout.save();
+    order.BuyerStatus = 'Received';
+    order.status = 'Success';
+    await order.save();
 
-    const sellerId = checkout.listingId.userId;
+    const sellerId = order.listingId.userId;
     const sellerBalance = await UserBalance.findOne({ userId: sellerId });
 
     if (!sellerBalance) {
       await new UserBalance({
         userId: sellerId,
-        sellerBalance: checkout.totalPrice,
-        transactions: [{ amount: checkout.totalPrice, type: 'credit', referenceId: checkout._id }],
+        sellerBalance: order.totalPrice,
+        transactions: [{ amount: order.totalPrice, type: 'credit', referenceId: order._id }],
       }).save();
     } else {
-      sellerBalance.sellerBalance += checkout.totalPrice;
+      sellerBalance.sellerBalance += order.totalPrice;
       sellerBalance.transactions.push({
-        amount: checkout.totalPrice,
+        amount: order.totalPrice,
         type: 'credit',
-        referenceId: checkout._id,
+        referenceId: order._id,
       });
       await sellerBalance.save();
     }
 
-    res.status(200).json({ message: 'Order marked as Received successfully.', checkout });
+    res.status(200).json({ message: 'Order marked as Received successfully.', order });
   } catch (error) {
     console.error('Error marking order as Received:', error.message);
     res.status(500).json({ message: 'Failed to mark order as Received.', error: error.message });

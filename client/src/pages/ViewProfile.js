@@ -6,11 +6,12 @@ import axios from 'axios';
 import TopNavbar from '../components/top_navbar';
 import SideBar from '../components/side_bar';
 import './css/ViewProfile.css';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthProvider';
 
 const ViewProfile = () => {
   const { userId } = useParams(); 
+  const navigate = useNavigate();
   console.log('userId from useParams:', userId); 
   const { token } = useAuth(); 
   const [userData, setUserData] = useState(null); 
@@ -31,13 +32,26 @@ const ViewProfile = () => {
           { headers: { Authorization: `Bearer ${token}` } } 
         );
 
+        if (response.status === 401 || response.status === 403) {
+          navigate('/banned');
+          return;
+        }
+
         if (response.status === 200) {
-          setUserData(response.data.user); 
+          if (response.data.user && response.data.user.isBanned) {
+            navigate('/banned');
+            return;
+          }
+          setUserData(response.data.user);
         } else {
-          console.error('Failed to fetch user data:', response.data.message);
+          setUserData(null);
         }
       } catch (error) {
-        console.error('Error fetching user data:', error.message);
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          navigate('/banned');
+          return;
+        }
+        setUserData(null);
       }
     };
 
@@ -95,6 +109,9 @@ const ViewProfile = () => {
                   </p>
                 )}
                 {userData.bio && <p className="viewprofile-bio">{userData.bio}</p>}
+                {userData && userData.isBanned ? null : (
+                  <p className="viewprofile-email">{userData?.email}</p>
+                )}
               </div>
             </>
           )}

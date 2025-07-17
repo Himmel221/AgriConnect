@@ -43,7 +43,7 @@ router.delete('/:userId', auth, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    // Only allow self-delete or admin
+    
     if (user._id.toString() !== req.userId && !req.user.isAdmin) {
       return res.status(403).json({ message: 'Unauthorized: You can only delete your own account.' });
     }
@@ -104,7 +104,7 @@ router.patch('/approve-seller/:userId', auth, async (req, res) => {
     user.userType = 'seller';
     await user.save();
 
-    // Log the role change
+   
     await AuditLogger.logUserRoleChange(user._id, oldRole, 'seller', req.userId, 'Approved as seller', ipAddress);
 
     res.status(200).json({ message: 'User approved as seller', user });
@@ -134,7 +134,7 @@ router.patch('/remove-seller/:userId', auth, async (req, res) => {
     user.userType = 'user';
     await user.save();
 
-    // Log the role change
+  
     await AuditLogger.logUserRoleChange(user._id, oldRole, 'user', req.userId, 'Removed seller role', ipAddress);
 
     res.status(200).json({ message: 'Seller role removed successfully', user });
@@ -200,9 +200,15 @@ router.patch('/ban/:userId', auth, adminMiddleware, async (req, res) => {
     user.bannedAt = new Date();
     user.bannedBy = req.userId;
     user.banReason = reason || '';
+    
+    user.banHistory.push({
+      bannedAt: user.bannedAt,
+      bannedBy: req.userId,
+      banReason: reason || ''
+    });
     await user.save();
     
-    // Log the ban action
+  
     await AuditLogger.logUserBan(user._id, req.userId, reason || 'No reason provided', ipAddress);
     
     res.status(200).json({ message: 'User banned successfully.' });
@@ -234,6 +240,15 @@ router.patch('/unban/:userId', auth, adminMiddleware, async (req, res) => {
     user.bannedAt = null;
     user.bannedBy = null;
     user.banReason = '';
+    // Update latest banHistory entry
+    if (user.banHistory && user.banHistory.length > 0) {
+      const lastBan = user.banHistory[user.banHistory.length - 1];
+      if (!lastBan.unbannedAt) {
+        lastBan.unbannedAt = new Date();
+        lastBan.unbannedBy = req.userId;
+        lastBan.unbanReason = reason || '';
+      }
+    }
     await user.save();
     
     // Log the unban action

@@ -192,44 +192,42 @@ const TopNavbar = ({ handleOpenSignIn, onSearch }) => {
               <button className="navbar-icon-button" onClick={() => navigate("/withdraw")}>
                 <Wallet className="navbar-icon" />
               </button>
-              <div className="navbar-dropdown">
-                <button 
-                  className="navbar-dropdown-toggle" 
-                  onClick={handleDropdownToggle}
-                >
-                  <Menu className="navbar-icon" />
-                </button>
-                {dropdownOpen && (
-                  <div className="navbar-dropdown-menu" onClick={(e) => e.stopPropagation()}>
-                    <div className="navbar-dropdown-section">
-                      <button className="navbar-dropdown-item" onClick={() => {
-                        navigate("/profile");
-                        setDropdownOpen(false);
-                      }}>
-                        <User size={16} className="navbar-dropdown-icon" />
-                        Profile
-                      </button>
-                      <button className="navbar-dropdown-item" onClick={() => {
-                        navigate("/settings");
-                        setDropdownOpen(false);
-                      }}>
-                        <Settings size={16} className="navbar-dropdown-icon" />
-                        Settings
-                      </button>
-                    </div>
-                    <div className="navbar-dropdown-divider"></div>
-                    <div className="navbar-dropdown-section">
-                      <button className="navbar-dropdown-item" onClick={() => {
-                        handleLogout();
-                        setDropdownOpen(false);
-                      }}>
-                        <LogOut size={16} className="navbar-dropdown-icon" />
-                        Log Out
-                      </button>
-                    </div>
+              <button 
+                className="navbar-dropdown-toggle" 
+                onClick={handleDropdownToggle}
+              >
+                <Menu className="navbar-icon" />
+              </button>
+              {dropdownOpen && (
+                <div className="navbar-dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                  <div className="navbar-dropdown-section">
+                    <button className="navbar-dropdown-item" onClick={() => {
+                      navigate("/profile");
+                      setDropdownOpen(false);
+                    }}>
+                      <User size={16} className="navbar-dropdown-icon" />
+                      Profile
+                    </button>
+                    <button className="navbar-dropdown-item" onClick={() => {
+                      navigate("/settings");
+                      setDropdownOpen(false);
+                    }}>
+                      <Settings size={16} className="navbar-dropdown-icon" />
+                      Settings
+                    </button>
                   </div>
-                )}
-              </div>
+                  <div className="navbar-dropdown-divider"></div>
+                  <div className="navbar-dropdown-section">
+                    <button className="navbar-dropdown-item" onClick={() => {
+                      handleLogout();
+                      setDropdownOpen(false);
+                    }}>
+                      <LogOut size={16} className="navbar-dropdown-icon" />
+                      Log Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

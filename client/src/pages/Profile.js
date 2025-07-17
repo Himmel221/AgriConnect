@@ -7,12 +7,13 @@ import TopNavbar from '../components/top_navbar';
 import SideBar from '../components/side_bar';
 import axios from 'axios';
 import { Snackbar, Alert } from '@mui/material'; 
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthProvider'
 
 
 const Profile = () => {
   const { token, isAuthenticated, logout, user: authUser } = useAuth();
+  const navigate = useNavigate();
   const [ user,  setUser ] = useState({})
   const [loading, setLoading] = useState(true);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -44,55 +45,61 @@ const Profile = () => {
   useEffect(() => {
     if (authUser) {
       setUser(authUser);
-      // Always try to fetch from backend for complete data
-        const fetchUserData = async () => {
-          try {
-            if (!token) {
-              console.error('No token found');
+      const fetchUserData = async () => {
+        try {
+          if (!token) {
+            localStorage.removeItem('authToken');
+            logout();
+            navigate('/login');
+            return;
+          }
+          const response = await axios.get(`${apiUrl}/api/auth/user`, {
+            headers: { Authorization: `Bearer ${token}` },
+            validateStatus: function (status) { return status < 500; }
+          });
+          if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('authToken');
+            logout();
+            setUser(null);
+            setFormData({});
+            navigate('/banned');
+            return;
+          }
+          if (response.status === 200) {
+            const userData = response.data;
+            if (userData.isBanned) {
               localStorage.removeItem('authToken');
-              window.location.href = '/login';
+              logout();
+              setUser(null);
+              setFormData({});
+              navigate('/banned');
               return;
             }
-            const response = await axios.get(`${apiUrl}/api/auth/user`, {
-              headers: { Authorization: `Bearer ${token}` },
-              validateStatus: function (status) { return status < 500; }
+            setUser(userData);
+            const userBio = userData.bio || '';
+            setFormData({
+              firstName: userData.first_name || '',
+              middleName: userData.middle_name || '',
+              lastName: userData.last_name || '',
+              email: userData.isBanned ? 'Banned User' : (userData.email || ''),
+              birthDate: userData.birthDate
+                ? new Date(userData.birthDate).toISOString().split('T')[0]
+                : '',
+              country: userData.country || 'Philippines',
+              province: userData.province || '',
+              cityOrTown: userData.cityOrTown || '',
+              barangay: userData.barangay || '',
+              phone: userData.phone || '',
+              bio: userBio.substring(0, MAX_BIO_LENGTH),
             });
-            if (response.status === 401) {
-              console.error('Token is invalid or expired');
-              localStorage.removeItem('authToken');
-              window.location.href = '/login';
-              return;
-            }
-            if (response.status === 200) {
-              const userData = response.data;
-              setUser(userData);
-              const userBio = userData.bio || '';
-              setFormData({
-                firstName: userData.first_name || '',
-                middleName: userData.middle_name || '',
-                lastName: userData.last_name || '',
-                email: userData.email || '',
-                birthDate: userData.birthDate
-                  ? new Date(userData.birthDate).toISOString().split('T')[0]
-                  : '',
-                country: userData.country || 'Philippines',
-                province: userData.province || '',
-                cityOrTown: userData.cityOrTown || '',
-                barangay: userData.barangay || '',
-                phone: userData.phone || '',
-                bio: userBio.substring(0, MAX_BIO_LENGTH),
-              });
-              setBioCharCount(userBio.length);
-            } else {
-              console.error('Failed to fetch user data. Status:', response.status);
-              console.error('Response data:', response.data);
-            // Use authUser data as fallback
+            setBioCharCount(userBio.length);
+          } else {
             const userBio = authUser.bio || '';
             setFormData({
               firstName: authUser.first_name || '',
               middleName: authUser.middle_name || '',
               lastName: authUser.last_name || '',
-              email: authUser.email || '',
+              email: authUser.isBanned ? 'Banned User' : (authUser.email || ''),
               birthDate: authUser.birthDate
                 ? new Date(authUser.birthDate).toISOString().split('T')[0]
                 : '',
@@ -104,26 +111,22 @@ const Profile = () => {
               bio: userBio.substring(0, MAX_BIO_LENGTH),
             });
             setBioCharCount(userBio.length);
-            }
-          } catch (error) {
-            console.error('Detailed error information:', {
-              message: error.message,
-              response: error.response?.data,
-              status: error.response?.status,
-              headers: error.response?.headers
-            });
-            if (error.response?.status === 401 || error.message.includes('jwt expired')) {
-              localStorage.removeItem('authToken');
-              window.location.href = '/login';
-              return;
-            }
-          // Use authUser data as fallback
+          }
+        } catch (error) {
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            localStorage.removeItem('authToken');
+            logout();
+            setUser(null);
+            setFormData({});
+            navigate('/banned');
+            return;
+          }
           const userBio = authUser.bio || '';
           setFormData({
             firstName: authUser.first_name || '',
             middleName: authUser.middle_name || '',
             lastName: authUser.last_name || '',
-            email: authUser.email || '',
+            email: authUser.isBanned ? 'Banned User' : (authUser.email || ''),
             birthDate: authUser.birthDate
               ? new Date(authUser.birthDate).toISOString().split('T')[0]
               : '',
@@ -135,15 +138,15 @@ const Profile = () => {
             bio: userBio.substring(0, MAX_BIO_LENGTH),
           });
           setBioCharCount(userBio.length);
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchUserData();
-      } else {
-        setLoading(false);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchUserData();
+    } else {
+      setLoading(false);
     }
-  }, [authUser, token]);
+  }, [authUser, token, navigate]);
 
   useEffect(() => {
     setProvinces(['Ilocos Norte', 'Ilocos Sur', 'Pangasinan', 'La Union', 'Nueva Ecija']);
@@ -311,7 +314,7 @@ const Profile = () => {
               <input
                 type="email"
                 name="email"
-                value={formData.email}
+                value={user && user.isBanned ? 'Banned User' : formData.email}
                 readOnly
                 className="profile-input"
               />

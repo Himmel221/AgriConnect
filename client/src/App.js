@@ -24,6 +24,7 @@ import WithdrawalPage from './pages/WithdrawalPage';
 import ResetPassword from './pages/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword';
 import axios from 'axios';
+import Banned from './pages/Banned';
 
 const App = () => {
   const loggedInUserId = localStorage.getItem('userId') || 'default-user-id';
@@ -169,6 +170,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            <Route path="/banned" element={<Banned />} />
           </Routes>
 
           <Chatbox senderId={loggedInUserId} />

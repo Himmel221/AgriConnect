@@ -102,21 +102,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// GLOBAL RATE LIMITING - 300 requests per 15 minutes
+
 import rateLimit from 'express-rate-limit';
 
 const globalRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // limit each IP to 300 requests per windowMs
+  windowMs: 15 * 60 * 1000, 
+  max: 300, 
   message: {
-    error: 'Too many requests from this IP, please try again after 15 minutes.',
-    retryAfter: 15 * 60 // 15 minutes in seconds
+    error: 'Too many requests, please try again after 15 minutes.',
+    retryAfter: 15 * 60 
   },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  standardHeaders: true, 
+  legacyHeaders: false, 
   handler: (req, res) => {
     res.status(429).json({
-      error: 'Too many requests from this IP, please try again after 15 minutes.',
+      error: 'Too many requests, please try again after 15 minutes.',
       retryAfter: 15 * 60
     });
   }

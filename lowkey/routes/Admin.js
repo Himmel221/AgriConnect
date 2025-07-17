@@ -226,7 +226,7 @@ router.post('/ban-user/:userId', auth, isAdminMiddleware, async (req, res) => {
     const { reason } = req.body;
     const ipAddress = getClientIP(req);
 
-    if (!reason) {
+    if (!reason || !reason.trim()) {
       return res.status(400).json({ message: 'Ban reason is required' });
     }
 
@@ -253,7 +253,12 @@ router.post('/ban-user/:userId', auth, isAdminMiddleware, async (req, res) => {
     targetUser.bannedAt = new Date();
     targetUser.bannedBy = req.user._id;
     targetUser.banReason = reason;
-
+    // Add to banHistory
+    targetUser.banHistory.push({
+      bannedAt: targetUser.bannedAt,
+      bannedBy: req.user._id,
+      banReason: reason
+    });
     await targetUser.save();
 
     // Log the ban action
@@ -301,7 +306,15 @@ router.post('/unban-user/:userId', auth, isAdminMiddleware, async (req, res) => 
     targetUser.bannedAt = null;
     targetUser.bannedBy = null;
     targetUser.banReason = null;
-
+    // Update latest banHistory entry
+    if (targetUser.banHistory && targetUser.banHistory.length > 0) {
+      const lastBan = targetUser.banHistory[targetUser.banHistory.length - 1];
+      if (!lastBan.unbannedAt) {
+        lastBan.unbannedAt = new Date();
+        lastBan.unbannedBy = req.user._id;
+        lastBan.unbanReason = reason;
+      }
+    }
     await targetUser.save();
 
     // Log the unban action

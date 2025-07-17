@@ -2,7 +2,7 @@
 
 import Cart from '../models/Cart.js';
 import Listing from '../models/Listing.js'; 
-import CheckoutSubmission from '../models/CheckoutSubmission.js'; 
+import Order from '../models/Order.js'; 
 
 export const getCart = async (req, res) => {
   try {
@@ -447,14 +447,14 @@ export const checkoutCart = async (req, res) => {
       totalPrice: item.totalPrice,
     }));
 
-    const newCheckout = new CheckoutSubmission({
+    const newOrder = new Order({
       userId,
       items: checkoutItems,
       status: 'Pending', 
       BuyerStatus: 'NotYetReceived', 
     });
 
-    await newCheckout.save();
+    await newOrder.save();
 
         
     await Cart.findOneAndUpdate(
@@ -466,7 +466,7 @@ export const checkoutCart = async (req, res) => {
 
     res.status(201).json({ 
       message: 'Checkout successful', 
-      checkout: newCheckout,
+      checkout: newOrder,
       processedItems: processedItems.length
     });
   } catch (error) {

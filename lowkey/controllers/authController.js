@@ -357,13 +357,9 @@ const login = async (req, res) => {
           return res.status(400).json({ message: "Invalid email or password." });
       }
 
-      console.log('User found:', { 
-          id: user._id, 
-          email: user.email, 
-          isVerified: user.isVerified,
-          userType: user.userType,
-          hashedPassword: user.password ? 'YES' : 'NO'
-      });
+      if (user.isBanned) {
+          return res.status(403).json({ message: "Your account has been banned.", banReason: user.banReason || undefined });
+      }
 
       if (user.accountLocked) {
           if (user.lockExpiresAt && user.lockExpiresAt > new Date()) {
