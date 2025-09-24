@@ -48,21 +48,21 @@ const [selectedBankMethod, setSelectedBankMethod] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
 
-  console.log("Checking useAuth():", user);
-  console.log("SellArea.js -> Extracted isAuthenticated from useAuth():", isAuthenticated);
+  //console.log("Checking useAuth():", user);
+  //console.log("SellArea.js -> Extracted isAuthenticated from useAuth():", isAuthenticated);
   
   useEffect(() => {
     if (!user) {
-      console.log("User is still loading...");
+      //console.log("User is still loading...");
       return; 
     }
-    console.log("User object before setting:", user);
+    //console.log("User object before setting:", user);
   },   [user]); 
 
 
 
 useEffect(() => {
-  console.log("SELLAREA Checking isSeller before modal display:", isSeller);
+  //console.log("SELLAREA Checking isSeller before modal display:", isSeller);
 
   if (isSeller === null) return; 
 
@@ -73,7 +73,7 @@ useEffect(() => {
     setShowSellerExclusiveModal(false); 
   }
 
-  console.log("SELLAREA Modal state AFTER update:", showSellerExclusiveModal);
+  //console.log("SELLAREA Modal state AFTER update:", showSellerExclusiveModal);
 }, [isSeller]);
 
   const fetchSellerStatus = async () => {

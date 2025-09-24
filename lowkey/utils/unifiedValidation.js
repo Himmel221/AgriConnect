@@ -363,9 +363,15 @@ const validateMultipleFields = (validations) => {
 };
 
 const globalSanitizationMiddleware = (req, res, next) => {
+  const emojiSafeFields = new Set(['emoji', 'content', 'message', 'description', 'comment']);
+
   if (req.body) {
     for (const [key, value] of Object.entries(req.body)) {
       if (typeof value === 'string') {
+       
+        if (emojiSafeFields.has(key)) {
+          continue;
+        }
         req.body[key] = sanitize.normalizeUnicode(value);
       }
     }

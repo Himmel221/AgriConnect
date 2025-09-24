@@ -49,7 +49,7 @@ const AdminDashboard = () => {
   }, [navigate]);
 
   const totalUsers = users.length;
-  const onlineUsers = users.filter(user => user.isOnline).length;
+  const onlineUsers = 1; // Hardcoded to 1 for demonstration
   const verifiedSellers = users.filter(user => user.userType === 'seller' && user.isVerified).length;
 
   const maxUsers = 200; 

@@ -11,10 +11,79 @@ const socket = io("http://localhost:5000");
 const EmojiPicker = ({ onEmojiSelect, onClose }) => {
   const emojis = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "✨"];
   
+  // Test function to verify emojis
+  const testEmojis = () => {
+    console.log("=== EMOJI TEST ===");
+    emojis.forEach((emoji, index) => {
+      console.log(`Emoji ${index}:`, {
+        emoji,
+        type: typeof emoji,
+        length: emoji.length,
+        charCode: emoji.charCodeAt(0),
+        stringified: JSON.stringify(emoji),
+        isValid: emoji && emoji.trim() !== ''
+      });
+    });
+    console.log("==================");
+  };
+  
+  // Test emojis on component mount
+  React.useEffect(() => {
+    testEmojis();
+  }, []);
+  
+  console.log("EmojiPicker rendered with emojis:", emojis);
+  console.log("Emoji details:", emojis.map((emoji, index) => ({
+    index,
+    emoji,
+    type: typeof emoji,
+    length: emoji.length,
+    charCode: emoji.charCodeAt(0),
+    stringified: JSON.stringify(emoji)
+  })));
+  
+  const handleEmojiClick = (emoji) => {
+    console.log("=== EMOJI CLICK DEBUG ===");
+    console.log("Emoji clicked:", emoji);
+    console.log("Emoji type:", typeof emoji);
+    console.log("Emoji length:", emoji.length);
+    console.log("Emoji charCode:", emoji.charCodeAt(0));
+    console.log("Emoji stringified:", JSON.stringify(emoji));
+    console.log("Emoji === '👍':", emoji === '👍');
+    console.log("Emoji === '❤️':", emoji === '❤️');
+    console.log("Emoji === '😂':", emoji === '😂');
+    console.log("Emoji === '😮':", emoji === '😮');
+    console.log("Emoji === '😢':", emoji === '😢');
+    console.log("Emoji === '🔥':", emoji === '🔥');
+    console.log("Emoji === '👏':", emoji === '👏');
+    console.log("Emoji === '✨':", emoji === '✨');
+    console.log("========================");
+    
+    // Validate emoji before passing it
+    if (!emoji || emoji.trim() === '') {
+      console.error("Invalid emoji detected:", emoji);
+      return;
+    }
+    
+    // Additional validation - check if emoji is in our valid list
+    if (!emojis.includes(emoji)) {
+      console.error("Emoji not in valid list:", emoji);
+      return;
+    }
+    
+    onEmojiSelect(emoji);
+  };
+  
   return (
     <div className="emoji-picker">
       {emojis.map((emoji, index) => (
-        <button key={index} onClick={() => onEmojiSelect(emoji)}>
+        <button 
+          key={index} 
+          onClick={() => handleEmojiClick(emoji)}
+          title={`Add ${emoji} reaction`}
+          data-emoji={emoji}
+          data-index={index}
+        >
           {emoji}
         </button>
       ))}
@@ -24,17 +93,41 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
 };
 
 
-const Message = React.memo(({ message, isOutgoing, userId, onReactionAdd }) => {
+const Message = React.memo(({ message, isOutgoing, userId, onReactionAdd, onReactionRemove }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   
-  console.log("Message Debug:", {
-    id: message._id,
-    content: message.content,
-    imageUrl: message.imageUrl,
-    fullMessage: message
-  });
+  //console.log("Message Debug:", {
+  //  id: message._id,
+  //  content: message.content,
+  //  imageUrl: message.imageUrl,
+  //  fullMessage: message
+  //});
 
   const handleReactionClick = useCallback((emoji) => {
+    //console.log("debug reaction click");
+    //console.log("handleReactionClick called with emoji:", emoji);
+    //console.log("Emoji type:", typeof emoji);
+    //console.log("Emoji length:", emoji.length);
+    //console.log("Emoji value:", emoji);
+    //console.log("Emoji stringified:", JSON.stringify(emoji));
+    //console.log("Emoji === '👍':", emoji === '👍');
+    //console.log("Emoji === '❤️':", emoji === '❤️');
+    //console.log("Emoji === '😂':", emoji === '😂');
+    //console.log("Emoji === '😮':", emoji === '😮');
+    //console.log("Emoji === '😢':", emoji === '😢');
+    //console.log("Emoji === '🔥':", emoji === '🔥');
+    //console.log("Emoji === '👏':", emoji === '👏');
+    //console.log("Emoji === '✨':", emoji === '✨');
+    //console.log("===========================");
+    
+    // Validate emoji before proceeding
+    if (!emoji || emoji.trim() === '') {
+      console.error("Invalid emoji received in handleReactionClick:", emoji);
+      alert("Invalid emoji selected. Please try again.");
+      setShowEmojiPicker(false);
+      return;
+    }
+    
     if (!message._id) {
       console.error("Cannot add reaction: Message has no valid ID", message);
       alert("Cannot add reaction to this message yet");
@@ -42,6 +135,7 @@ const Message = React.memo(({ message, isOutgoing, userId, onReactionAdd }) => {
       return;
     }
     
+    //console.log("Calling onReactionAdd with:", message._id, emoji);
     onReactionAdd(message._id, emoji);
     setShowEmojiPicker(false);
   }, [message._id, onReactionAdd]);
@@ -106,6 +200,8 @@ const Message = React.memo(({ message, isOutgoing, userId, onReactionAdd }) => {
           className="reaction-button" 
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
           aria-label="Add reaction"
+          disabled={!userId}
+          title={!userId ? "Please wait for user to load" : "Add reaction"}
         >
           <Smile size={14} />
         </button>
@@ -120,7 +216,13 @@ const Message = React.memo(({ message, isOutgoing, userId, onReactionAdd }) => {
       {message.reactions && message.reactions.length > 0 && (
         <div className="message-reactions">
           {message.reactions.map((reaction, index) => (
-            <span key={`${reaction.emoji}-${index}`} className="reaction">
+            <span
+              key={`${reaction.emoji}-${index}`}
+              className="reaction"
+              onClick={reaction.userId === userId ? () => onReactionRemove(message._id, reaction.emoji) : undefined}
+              title={reaction.userId === userId ? 'Remove your reaction' : undefined}
+              role={reaction.userId === userId ? 'button' : undefined}
+            >
               {reaction.emoji}
             </span>
           ))}
@@ -195,6 +297,14 @@ const Chatbox = () => {
     fetchUser();
   }, []);
 
+  // Add demo message when chatbox opens for demonstration
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      console.log("Adding demo message with reactions for demonstration");
+      // setMessages([demoMessage]); // This line is removed
+    }
+  }, [isOpen, messages.length]);
+
   
   useEffect(() => {
     if (userId) {
@@ -256,29 +366,30 @@ const Chatbox = () => {
     if (!activeRecipientId || !userId) return;
 
     const fetchMessages = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        const response = await axios.get(
+              try {
+          const token = localStorage.getItem("authToken");
+          const response = await axios.get(
           `${apiUrl}/api/messages/${userId}/${activeRecipientId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        if (response.status === 200) {
-          
-          if (response.data.length > 0) {
-            console.log("Sample messages received:", response.data.slice(0, 2));
-          }
-          
-          setMessages(response.data);
+                  if (response.status === 200) {
+            
+            if (response.data.length > 0) {
+              console.log("Sample messages received:", response.data.slice(0, 2));
+            } else {
+            }
+            
+            setMessages(response.data);
           messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
           
           markMessagesAsRead();
         } else {
           console.error("Failed to fetch messages:", response.data.message);
         }
-      } catch (error) {
-        console.error("Error fetching messages:", error.message);
-      }
+              } catch (error) {
+          console.error("Error fetching messages:", error.message);
+        }
     };
 
     
@@ -792,15 +903,93 @@ const Chatbox = () => {
     setSearchTerm("");
   }, []);
 
+  const handleReactionRemove = useCallback(async (messageId, emoji) => {
+    if (!userId || !messageId || !emoji) return;
+
+    // Optimistically remove
+    setMessages(prevMessages =>
+      prevMessages.map(msg =>
+        msg._id === messageId
+          ? {
+              ...msg,
+              reactions: (msg.reactions || []).filter(r => !(r.emoji === emoji && r.userId === userId))
+            }
+          : msg
+      )
+    );
+
+    try {
+      const token = localStorage.getItem("authToken");
+      await axios.delete(`http://localhost:5000/api/messages/${messageId}/reactions`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { emoji, userId }
+      });
+
+      socket.emit("messageReaction", {
+        messageId,
+        reaction: { emoji, userId },
+        recipientId: activeRecipientId
+      });
+    } catch (error) {
+      console.error("Error removing reaction:", error.response?.data || error.message);
+      // Rollback: add it back
+      setMessages(prevMessages =>
+        prevMessages.map(msg =>
+          msg._id === messageId
+            ? { ...msg, reactions: [...(msg.reactions || []), { emoji, userId }] }
+            : msg
+        )
+      );
+    }
+  }, [userId, activeRecipientId]);
+
   const handleReactionAdd = useCallback(async (messageId, emoji) => {
+    console.log('=== REACTION ADD DEBUG ===');
+    console.log('handleReactionAdd called with:', { messageId, emoji, userId, activeRecipientId });
+    console.log('userId type:', typeof userId, 'userId value:', userId);
+    console.log('emoji type:', typeof emoji, 'emoji value:', emoji);
+    console.log('emoji length:', emoji.length);
+    console.log('emoji stringified:', JSON.stringify(emoji));
+    console.log('messageId type:', typeof messageId, 'messageId value:', messageId);
+    console.log('==========================');
+    
+    // Check if user is properly loaded
+    if (!userId) {
+      console.error("User not loaded yet, cannot add reaction");
+      alert("Please wait for user to load before adding reactions");
+      return;
+    }
+    
+    // Validate emoji before proceeding
+    if (!emoji || emoji.trim() === '') {
+      console.error("Invalid emoji received in handleReactionAdd:", emoji);
+      alert("Invalid emoji selected. Please try again.");
+      return;
+    }
     
     if (!messageId || !emoji || !userId || !activeRecipientId) {
       console.error("Missing data for reaction:", { messageId, emoji, userId, activeRecipientId });
+      console.error("Validation details:", {
+        messageId: !!messageId,
+        emoji: !!emoji,
+        userId: !!userId,
+        activeRecipientId: !!activeRecipientId
+      });
+      return;
+    }
+    
+    // Check if user already reacted with the same emoji - toggle behavior
+    const targetMessage = messages.find(m => m._id === messageId);
+    const alreadyReacted = !!targetMessage && (targetMessage.reactions || []).some(r => r.emoji === emoji && r.userId === userId);
+    if (alreadyReacted) {
+      await handleReactionRemove(messageId, emoji);
       return;
     }
     
     try {
       console.log("Adding reaction:", emoji, "to message:", messageId);
+      console.log("Emoji type:", typeof emoji, "Emoji length:", emoji.length);
+      console.log("Emoji value:", JSON.stringify(emoji));
       
       const token = localStorage.getItem("authToken");
       if (!token) {
@@ -808,27 +997,35 @@ const Chatbox = () => {
         return;
       }
       
+      // Optimistically update: remove any existing reactions from this user, then add new one (1 reaction per user limit)
       setMessages(prevMessages => 
         prevMessages.map(msg => 
           msg._id === messageId 
             ? { 
                 ...msg, 
-                reactions: [...(msg.reactions || []), { emoji, userId }] 
+                reactions: [
+                  // Keep reactions from other users
+                  ...(msg.reactions || []).filter(r => r.userId !== userId),
+                  // Add new reaction from current user
+                  { emoji, userId }
+                ]
               } 
             : msg
         )
       );
       
       try {
-       
+        const requestBody = { emoji, userId };
+        console.log("Sending request body:", requestBody);
+        console.log("Request body stringified:", JSON.stringify(requestBody));
+        
         const response = await axios.post(
           `http://localhost:5000/api/messages/${messageId}/reactions`,
-          { emoji, userId },
+          requestBody,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
         if (response.status === 200) {
-      
           socket.emit("messageReaction", {
             messageId,
             reaction: { emoji, userId },
@@ -838,10 +1035,12 @@ const Chatbox = () => {
           console.log("Reaction added successfully");
         }
       } catch (apiError) {
+        console.error("API Error details:", apiError.response?.data);
+        console.error("API Error status:", apiError.response?.status);
+        console.error("Full API error:", apiError);
         
         if (apiError.response && apiError.response.status === 404) {
           console.warn("API endpoint not found for reactions, but keeping optimistic update");
-          
           
           socket.emit("messageReaction", {
             messageId,
@@ -849,26 +1048,23 @@ const Chatbox = () => {
             recipientId: activeRecipientId
           });
         } else {
-          
           throw apiError; 
         }
       }
     } catch (error) {
       console.error("Error adding reaction:", error.response?.data || error.message);
       
-    
+      // Rollback: restore original reactions
+      const originalMessage = messages.find(m => m._id === messageId);
       setMessages(prevMessages => 
         prevMessages.map(msg => 
           msg._id === messageId 
-            ? { 
-                ...msg, 
-                reactions: (msg.reactions || []).filter(r => !(r.emoji === emoji && r.userId === userId))
-              } 
+            ? { ...msg, reactions: originalMessage?.reactions || [] }
             : msg
         )
       );
     }
-  }, [userId, activeRecipientId]);
+  }, [userId, activeRecipientId, messages, handleReactionRemove]);
 
   
   const handleImageButtonClick = () => {
@@ -1028,6 +1224,7 @@ const Chatbox = () => {
                             isOutgoing={message.senderId === userId}
                             userId={userId}
                             onReactionAdd={handleReactionAdd}
+                            onReactionRemove={handleReactionRemove}
                           />
                         ))
                       )}
@@ -1119,10 +1316,10 @@ export default Chatbox;
 
 // On few notes, rendering issue ng image ang problem, you won't see it on the chatbox if nasend
 // nakakasend kaso hindi mo makikita HAHAHAHHAHAHA
-// about sa design, kayo na lang bahala madali na lang 'yon
+// about sa design, kayo na lang bahala madadi na lang 'yon
 // line 190 to 448 ang issue if wala ron nasa tuloy ng 448 pababa
 // made some several changes, chatbox.js, chatbox.css, uploadRoute.js (new) at server.js
-// THERE WAS A MEMO NA WALANG DELETE FUNCTION SA IMAGE KAYA DON'T ASK ME WHY IT ISN'T INCLUDED. T H E R E W A S A M E M O
+// THERE WAS A MEMO NA WALANG DELETE FUNCTION SA IMAGE KAYA DON'T ASK ME WHY IT ISN'T INCLUDED. T H E R E W A M E M E M O
 // wala rin sa kontrata na need maglagay ng delete function on the image.
 // Right click > Inspect > Console to see some hidden errors
 // Don't mind about the payment, idefend niyo na lang.

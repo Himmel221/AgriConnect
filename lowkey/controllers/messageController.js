@@ -60,15 +60,15 @@ export const getConversations = async (req, res) => {
 export const getMessages = async (req, res) => {
   const { senderId, recipientId } = req.params;
 
-  console.log("Raw senderId:", senderId);
-  console.log("Raw recipientId:", recipientId);
+  //console.log("Raw senderId:", senderId);
+  //console.log("Raw recipientId:", recipientId);
 
   try {
     const senderObjectId = new mongoose.Types.ObjectId(senderId);
     const recipientObjectId = new mongoose.Types.ObjectId(recipientId);
 
-    console.log("Converted senderId (ObjectId):", senderObjectId);
-    console.log("Converted recipientId (ObjectId):", recipientObjectId);
+    //console.log("Converted senderId (ObjectId):", senderObjectId);
+    //console.log("Converted recipientId (ObjectId):", recipientObjectId);
 
     const messages = await Message.find({
       $or: [
@@ -77,7 +77,7 @@ export const getMessages = async (req, res) => {
       ],
     }).sort({ timestamp: 1 });
 
-    console.log("Fetched messages:", messages);
+    //console.log("Fetched messages:", messages);
     res.status(200).json(messages);
   } catch (error) {
     console.error("Error fetching messages:", error.message);
@@ -95,9 +95,9 @@ export const sendMessage = async (req, res) => {
     const senderObject = await User.findById(senderObjectId).select("_id isVerified");
     const recipientObject = await User.findById(recipientObjectId).select("_id");
     
-    console.log("Sender Found:", senderObject);
-    console.log("Recipient Found:", recipientObject);
-    console.log("Message data:", { content, imageUrl });
+    //console.log("Sender Found:", senderObject);
+    //console.log("Recipient Found:", recipientObject);
+    //console.log("Message data:", { content, imageUrl });
 
     if (!senderObject || !recipientObject) {
       return res.status(404).json({ error: "User not found" });
@@ -116,7 +116,7 @@ export const sendMessage = async (req, res) => {
     });
 
     await newMessage.save();
-    console.log("Saved message:", newMessage);
+    //console.log("Saved message:", newMessage);
     res.status(201).json(newMessage);
   } catch (error) {
     console.error("Error creating message:", error.message);
@@ -128,28 +128,84 @@ export const addReaction = async (req, res) => {
   const { messageId } = req.params;
   const { emoji, userId } = req.body;
 
+  //console.log('=== ADD REACTION DEBUG ===');
+  //console.log('addReaction called with:', { messageId, emoji, userId });
+  //console.log('Request body:', req.body);
+  //console.log('Request body type:', typeof req.body);
+  //console.log('Request body keys:', Object.keys(req.body));
+  //console.log('Request params:', req.params);
+  //console.log('Request headers:', req.headers);
+  //console.log('Content-Type:', req.headers['content-type']);
+  //console.log('Raw body:', req.body);
+  //console.log('Parsed emoji:', emoji);
+  //console.log('Parsed userId:', userId);
+  //console.log('Emoji type:', typeof emoji);
+  //console.log('Emoji length:', emoji ? emoji.length : 'undefined');
+  //console.log('Emoji stringified:', JSON.stringify(emoji));
+  //console.log('========================');
+
   try {
+    // Validate that emoji and userId are provided
+    if (!emoji || !userId) {
+      //console.log('Validation failed:', { emoji: !!emoji, userId: !!userId });
+      //console.log('Emoji value:', emoji);
+      //console.log('UserId value:', userId);
+      return res.status(400).json({ 
+        error: 'Missing required fields', 
+        details: { emoji: !emoji ? 'Emoji is required' : null, userId: !userId ? 'UserId is required' : null }
+      });
+    }
+
+    // Validate messageId format
+    if (!mongoose.Types.ObjectId.isValid(messageId)) {
+      //console.log('Invalid messageId format:', messageId);
+      return res.status(400).json({ error: 'Invalid message ID format' });
+    }
+
+    // Validate userId format
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      //console.log('Invalid userId format:', userId);
+      return res.status(400).json({ error: 'Invalid user ID format' });
+    }
+
     const message = await Message.findById(messageId);
     if (!message) {
+      //console.log('Message not found:', messageId);
       return res.status(404).json({ error: 'Message not found' });
     }
+
+    //console.log('Found message:', message._id);
+    //console.log('Current reactions:', message.reactions);
+
+    // Convert userId to ObjectId
+    const userObjectId = new mongoose.Types.ObjectId(userId);
 
     const existingReaction = message.reactions.find(
       reaction => reaction.userId.toString() === userId && reaction.emoji === emoji
     );
 
     if (existingReaction) {
+      //console.log('Removing existing reaction');
       message.reactions = message.reactions.filter(
         reaction => !(reaction.userId.toString() === userId && reaction.emoji === emoji)
       );
     } else {
-      message.reactions.push({ userId, emoji });
+      //console.log('Adding new reaction (1 per user limit):', { emoji, userId: userObjectId });
+      
+      message.reactions = message.reactions.filter(
+        reaction => reaction.userId.toString() !== userId
+      );
+     
+      message.reactions.push({ userId: userObjectId, emoji });
     }
 
+    //console.log('Reactions after modification:', message.reactions);
     await message.save();
+    //console.log('Message saved successfully');
     res.status(200).json(message);
   } catch (error) {
     console.error('Error adding reaction:', error.message);
+    console.error('Full error:', error);
     res.status(500).json({ error: 'Failed to add reaction' });
   }
 };
@@ -194,7 +250,7 @@ export const markMessagesAsRead = async (req, res) => {
       }
     );
 
-    console.log("Marked messages as read:", result);
+    //console.log("Marked messages as read:", result);
     res.status(200).json({ message: "Messages marked as read", updatedCount: result.modifiedCount });
   } catch (error) {
     console.error("Error marking messages as read:", error.message);

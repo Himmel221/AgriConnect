@@ -32,34 +32,6 @@ import {
 } from './middleware/rateLimiter.js';
 import { globalSanitizationMiddleware } from './utils/unifiedValidation.js';
 
-// WAF/CDN SETUP COMMENTS
-// ======================
-// For Web Application Firewall (WAF) setup:
-// 1. Cloudflare: Enable WAF rules in Cloudflare dashboard
-// 2. AWS WAF: Configure rules for rate limiting, IP reputation, and SQL injection
-// 3. Azure Application Gateway: Enable WAF policy with OWASP rules
-// 4. Custom WAF: Implement rules for XSS, SQL injection, path traversal
-//
-// For CDN setup:
-// 1. Cloudflare: Enable CDN with caching rules
-// 2. AWS CloudFront: Configure distribution with caching behaviors
-// 3. Azure CDN: Set up caching rules for static assets
-// 4. Custom CDN: Implement edge caching for images and static files
-//
-// Recommended WAF Rules:
-// - Rate limiting: 300 requests per 15 minutes per IP
-// - Block suspicious user agents (bots, crawlers)
-// - Block common attack patterns (SQL injection, XSS)
-// - Geo-blocking for specific regions if needed
-// - IP reputation filtering
-//
-// Recommended CDN Configuration:
-// - Cache static assets (images, CSS, JS) for 1 year
-// - Cache API responses for 5 minutes (with cache invalidation)
-// - Enable gzip compression
-// - Use HTTPS only
-// - Set up proper cache headers
-
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
@@ -102,18 +74,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// GLOBAL RATE LIMITING - 300 requests per 15 minutes
+// 300 req per 15 min only
 import rateLimit from 'express-rate-limit';
 
 const globalRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // limit each IP to 300 requests per windowMs
+  windowMs: 15 * 60 * 1000, // 15 mimns
+  max: 300, // request num
   message: {
     error: 'Too many requests from this IP, please try again after 15 minutes.',
-    retryAfter: 15 * 60 // 15 minutes in seconds
+    retryAfter: 15 * 60 
   },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  standardHeaders: true, 
+  legacyHeaders: false, 
   handler: (req, res) => {
     res.status(429).json({
       error: 'Too many requests from this IP, please try again after 15 minutes.',
@@ -231,7 +203,7 @@ const start = async () => {
     await connectDB();
     server.listen(PORT, () => {
       console.log(`Server listening on ${PORT}`);
-      console.log('DDoS protection is working!!!!!');
+      console.log('Prot enabled');
     });
   } catch (error) {
     console.log(error);

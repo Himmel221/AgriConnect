@@ -6,9 +6,11 @@ import LockIcon from '@mui/icons-material/Lock';
 import GoogleIcon from '@mui/icons-material/Google';
 import axios from 'axios';
 import { useAuth } from './AuthProvider';
+import { useNavigate } from 'react-router-dom';
 
 const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
   const { login } = useAuth(); 
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -50,6 +52,11 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
   const handleSignUpClick = () => {
     handleClose();
     handleOpenSignUp();
+  };
+
+  const handleForgotPasswordClick = () => {
+    handleClose();
+    navigate('/forgot-password');
   };
 
   return (
@@ -208,6 +215,7 @@ const SignIn = ({ open, handleClose, handleOpenSignUp }) => {
             <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
               <Typography
                 variant="body2"
+                onClick={handleForgotPasswordClick}
                 sx={{ 
                   color: '#4D7C2E',
                   fontWeight: 500,

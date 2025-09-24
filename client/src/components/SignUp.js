@@ -206,7 +206,7 @@ const SignUp = ({ open, handleClose, handleOpenSignIn }) => {
                   }
                 }}
                 error={email && !validateEmailProvider(email).isValid}
-                helperText={email && !validateEmailProvider(email).isValid ? 'Try again next time' : ''}
+                helperText={email && !validateEmailProvider(email).isValid ? validateEmailProvider(email).error : ''}
                 sx={{ mb: 0.5 }}
               />
               

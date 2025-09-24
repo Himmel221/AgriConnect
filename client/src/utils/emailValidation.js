@@ -49,7 +49,7 @@ export const validateEmailProvider = (email) => {
   if (!isAllowedEmailProvider(email)) {
     return {
       isValid: false,
-      error: 'Try again next time'
+      error: 'Invalid email address'
     };
   }
 

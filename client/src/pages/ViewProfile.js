@@ -1,7 +1,7 @@
 /* ViewProfile.js */
 
 import React, { useState, useEffect } from 'react';
-import { User } from 'lucide-react'; 
+import { User, Award, TrendingUp } from 'lucide-react'; 
 import axios from 'axios';
 import TopNavbar from '../components/top_navbar';
 import SideBar from '../components/side_bar';
@@ -19,6 +19,26 @@ const ViewProfile = () => {
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
+  const renderSellerBadge = (successCount) => {
+    let badgeClass = "seller-badge";
+    let badgeText = "";
+
+    if (successCount === 0) {
+      badgeClass += " new-seller";
+      badgeText = "New Seller";
+    } else if (successCount < 5) {
+      badgeClass += " beginner-seller";
+      badgeText = "Beginner Seller";
+    } else if (successCount < 20) {
+      badgeClass += " experienced-seller";
+      badgeText = "Experienced Seller";
+    } else {
+      badgeClass += " trusted-seller";
+      badgeText = "Trusted Seller";
+    }
+
+    return <span className={badgeClass}>{badgeText}</span>;
+  };
 
   useEffect(() => {
     const colors = ['#F0A500', '#4CAF50', '#FF4081', '#2196F3', '#9C27B0'];
@@ -32,7 +52,7 @@ const ViewProfile = () => {
         );
 
         if (response.status === 200) {
-          setUserData(response.data.user); 
+          setUserData(response.data); 
         } else {
           console.error('Failed to fetch user data:', response.data.message);
         }
@@ -81,10 +101,36 @@ const ViewProfile = () => {
               <div className="viewprofile-user-info-section">
                 <h1 className="viewprofile-user-name">
                   {userData.first_name} {userData.last_name}
+                  {userData.userType === 'seller' && (
+                    <span className="seller-tag">SELLER</span>
+                  )}
                   {userData.isBanned && (
                     <span className="banned-tag">BANNED</span>
                   )}
                 </h1>
+                
+                {/* Seller Success Information */}
+                {userData.userType === 'seller' && (
+                  <div className="seller-success-section">
+                    <div className="successful-transactions-display">
+                      <TrendingUp size={20} className="transaction-icon" />
+                      <span className="transaction-count">
+                        Successful Transactions: {userData.successfulTransactions || 0}
+                      </span>
+                    </div>
+                    {userData.successfulTransactions > 0 && (
+                      <div className="seller-badge-container">
+                        {renderSellerBadge(userData.successfulTransactions)}
+                      </div>
+                    )}
+                    {userData.lastSuccessfulTransaction && (
+                      <p className="last-transaction">
+                        Last transaction: {new Date(userData.lastSuccessfulTransaction).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <p className="viewprofile-account-created">
                   Account Created: {new Date(userData.createdAt).toLocaleString()}
                 </p>

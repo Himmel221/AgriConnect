@@ -167,7 +167,7 @@ router.get('/', auth, async (req, res) => {
       quantity: { $gt: 0 },
       isDeleted: false,
     })
-      .populate('userId', 'userId first_name last_name location')
+      .populate('userId', 'userId first_name last_name location successfulTransactions userType')
       .select('productName category price quantity unit details userId imageUrl listedDate status location minimumOrder')
       .lean();
     console.log('Database query completed. Found', listings.length, 'listings');
@@ -187,6 +187,8 @@ router.get('/', auth, async (req, res) => {
         ...listing,
         seller: `${listing.userId.first_name} ${listing.userId.last_name}`,
         sellerUserId: listing.userId.userId,
+        sellerSuccessfulTransactions: listing.userId.userType === 'seller' ? (listing.userId.successfulTransactions || 0) : 0,
+        sellerUserType: listing.userId.userType,
         description: listing.details,
         imageUrl: listing.imageUrl || 'default-image.jpg',
         location: listing.location || (listing.userId.address ? listing.userId.address.location : 'Not specified'),

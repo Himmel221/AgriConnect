@@ -5,6 +5,7 @@ import TopNavbar from '../components/top_navbar';
 import SideBar from '../components/side_bar';
 import { useAuth } from '../components/AuthProvider';
 import Chatbox from '../components/Chatbox';
+import NotificationPopup from '../components/NotificationPopup';
 import './css/BuyArea.css';
 import { useNavigate } from 'react-router-dom';
 import { sanitize, validate, inputFilters } from '../utils/unifiedValidation';
@@ -25,6 +26,9 @@ const BuyArea = () => {
   const [isUpdatingQuantity, setIsUpdatingQuantity] = useState({});
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showReceivedPopup, setShowReceivedPopup] = useState(false);
+  const [receivedMessage, setReceivedMessage] = useState('');
+  const [receivedPopupType, setReceivedPopupType] = useState('success');
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   
@@ -35,18 +39,18 @@ const BuyArea = () => {
       const response = await apiClient.get('/api/listings');
 
       if (response.status === 200) {
-        console.log('Raw listings from API:', response.data.listings);
-        console.log('Current userId:', userId);
+        //console.log('Raw listings from API:', response.data.listings);
+        //console.log('Current userId:', userId);
         
         let allListings = response.data.listings.filter((listing) => {
           const listingUserId = listing.userId?._id || listing.userId;
-          console.log('Listing userId:', listingUserId, 'Current userId:', userId);
+          //console.log('Listing userId:', listingUserId, 'Current userId:', userId);
           const shouldInclude = listingUserId?.toString() !== userId?.toString();
-          console.log('Should include listing:', shouldInclude);
+          //console.log('Should include listing:', shouldInclude);
           return shouldInclude; 
         });
 
-        console.log('Filtered listings:', allListings);
+        //console.log('Filtered listings:', allListings);
         setListings(allListings);
       } else {
         console.error('Failed to fetch listings:', response.data.message);
@@ -153,7 +157,7 @@ const BuyArea = () => {
       badgeText = "New Seller";
     } else if (successCount < 5) {
       badgeClass += " beginner-seller";
-      badgeText = "Beginner";
+      badgeText = "New Seller";
     } else if (successCount < 20) {
       badgeClass += " experienced-seller";
       badgeText = "Experienced";
@@ -164,9 +168,44 @@ const BuyArea = () => {
 
     return <span className={badgeClass}>{badgeText}</span>;
   };
+
+  const handleReceivedOrder = async (id) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await apiClient.patch(
+        `${process.env.REACT_APP_API_URL}/api/orders/buyer-orders/received/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      if (response.status === 200) {
+        setReceivedMessage('Order marked as received!');
+        setReceivedPopupType('success');
+        setShowReceivedPopup(true);
+        
+        // Assuming 'orders' state exists elsewhere or is not needed for this specific update
+        // For now, we'll just close the modal as the order is marked as received.
+        // If 'orders' state is managed, you would update it here.
+        // setOrders((prevOrders) =>
+        //   prevOrders.map((order) =>
+        //     order._id === id
+        //       ? { ...order, BuyerStatus: 'Received', status: 'Success' }
+        //       : order
+        //   )
+        // );
+        // setShowModal(false); // Assuming 'showModal' state exists
+      }
+    } catch (error) {
+      console.error('Error marking order as received:', error.message);
+      setReceivedMessage('Failed to mark order as received.');
+      setReceivedPopupType('error');
+      setShowReceivedPopup(true);
+    }
+  };
+
   return (
     <>
-      <TopNavbar onSearch={setSearchTerm} /> {}
+      <TopNavbar onSearch={setSearchTerm} />
       <main className="main" onClick={handleClickOutside}>
         <SideBar />
         <div className="main-content">
@@ -178,15 +217,13 @@ const BuyArea = () => {
                   className="listing-card"
                   onClick={() => handleOpenBuyModal(listing)}
                 >
-  <div className="image-placeholder">
-    <img
-      src={listing.imageUrl ? listing.imageUrl : "default-image.jpg"}
-      alt={listing.productName}
-      className="listing-product-image"
-    />
-  </div>
-
-
+                  <div className="image-placeholder">
+                    <img
+                      src={listing.imageUrl ? listing.imageUrl : "default-image.jpg"}
+                      alt={listing.productName}
+                      className="listing-product-image"
+                    />
+                  </div>
                   <div className="listing-content">
                     <h3>{listing.productName}</h3>
                     <p>Category: {listing.category}</p>
@@ -195,12 +232,6 @@ const BuyArea = () => {
                       Available Stocks: {listing.quantity} {listing.unit}
                     </p>
                     <p>Location: {listing.location || listing.userId?.address?.location || 'Not specified'}</p>
-                    <div className="seller-info">
-
-                      {listing.sellerSuccessCount !== undefined && (
-                        renderSellerSuccessBadge(listing.sellerSuccessCount)
-                      )}
-                    </div>
                   </div>
                 </div>
               ))
@@ -217,9 +248,9 @@ const BuyArea = () => {
                   &times;
                 </button>
                 <div
-  className="image-placeholder-modal"
-  style={{ backgroundImage: `url(${selectedProduct.imageUrl ? selectedProduct.imageUrl : "default-image.jpg"})` }}
-></div>
+                  className="image-placeholder-modal"
+                  style={{ backgroundImage: `url(${selectedProduct.imageUrl ? selectedProduct.imageUrl : "default-image.jpg"})` }}
+                ></div>
                 <div className="product-header">
                   <h2>{selectedProduct.productName}</h2>
                   <User
@@ -257,17 +288,17 @@ const BuyArea = () => {
                   )}
                 </div>
                 <div className="seller-details">
+                  {selectedProduct.sellerSuccessfulTransactions !== undefined && selectedProduct.sellerUserType === 'seller' && (
+                    <div className="seller-success-info">
+                      <span className="successful-transactions">
+                        Successful Transactions: {selectedProduct.sellerSuccessfulTransactions}
+                      </span>
+                      {renderSellerSuccessBadge(selectedProduct.sellerSuccessfulTransactions)}
+                    </div>
+                  )}
                   <p className="user-info">
                     User: <strong>{selectedProduct.seller || 'Unknown'}</strong>
                   </p>
-                  {selectedProduct.sellerSuccessCount !== undefined && (
-                    <div className="seller-success-info">
-                      {renderSellerSuccessBadge(selectedProduct.sellerSuccessCount)}
-                      <span className="success-transactions">
-                        ({selectedProduct.sellerSuccessCount} successful transactions)
-                      </span>
-                    </div>
-                  )}
                 </div>
                 <p>
                   <strong>Price:</strong> ₱{selectedProduct.price}
@@ -283,7 +314,6 @@ const BuyArea = () => {
                   <strong>Listed on:</strong> {selectedProduct.listedDate || 'N/A'}
                 </p>
                 <p><strong>Location:</strong> {selectedProduct.location || selectedProduct.userId?.location || 'Not specified'}</p>
-
 
                 {selectedProduct.userId !== userId && (
                   <div className="add-to-cart-container">
@@ -362,6 +392,12 @@ const BuyArea = () => {
           </div>
         </div>
       )}
+      <NotificationPopup
+        message={receivedMessage}
+        type={receivedPopupType}
+        isVisible={showReceivedPopup}
+        onClose={() => setShowReceivedPopup(false)}
+      />
     </>
   );
 };

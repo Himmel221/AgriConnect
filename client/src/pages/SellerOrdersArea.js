@@ -25,7 +25,7 @@ const SellerOrdersArea = () => {
 
   const fetchSellerOrders = useCallback(async () => {
     try {
-      console.log("Fetching orders for status:", status);
+      //console.log("Fetching orders for status:", status);
 
       const response = await fetch(`${apiUrl}/api/orders/seller-orders`, {
         method: 'GET',
@@ -33,12 +33,12 @@ const SellerOrdersArea = () => {
       });
 
       const result = await response.json();
-      console.log("Raw API Response:", result); 
+      //console.log("Raw API Response:", result); 
       
       if (response.ok) {
-        console.log('Orders fetched:', result.orders);
+        //console.log('Orders fetched:', result.orders);
 
-        result.orders.forEach(order => console.log("Order Status:", order.status, "Buyer Status:", order.buyerStatus));
+        //result.orders.forEach(order => console.log("Order Status:", order.status, "Buyer Status:", order.buyerStatus));
 
         let filteredOrders = [];
         if (status === 'Pending') {
@@ -59,7 +59,7 @@ const SellerOrdersArea = () => {
           );
         }
 
-        console.log("Filtered Orders:", filteredOrders);
+        //console.log("Filtered Orders:", filteredOrders);
 
         setOrders(filteredOrders);
         setError(null);

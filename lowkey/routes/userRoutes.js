@@ -15,7 +15,7 @@ router.get('/:userId', auth, async (req, res) => {
   try {
    
     const user = await User.findOne({ userId: userId, isDeleted: false }).select(
-      'first_name last_name email birthDate country province cityOrTown barangay bio createdAt userType isBanned bannedAt banReason'
+      'first_name last_name email birthDate country province cityOrTown barangay bio createdAt userType isBanned bannedAt banReason successfulTransactions lastSuccessfulTransaction'
     );
 
     if (!user) {

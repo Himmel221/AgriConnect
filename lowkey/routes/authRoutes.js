@@ -1,7 +1,7 @@
 // authRoutes.js
 
 import express from 'express';
-import { login, registerUser, verifyEmail, forgotPassword, resetPassword, resendVerificationCode, sendVerificationEmail, getUser } from '../controllers/authController.js';
+import { login, registerUser, verifyEmail, forgotPassword, resetPassword, resendVerificationCode, sendVerificationEmail, getUser, changePassword } from '../controllers/authController.js';
 import auth, { refreshToken } from '../middleware/auth.js';
 import AdminRoutes from './Admin.js';
 import User from '../models/User.js';
@@ -20,6 +20,7 @@ router.post('/reset-password', resetPassword);
 router.post('/resend-verification-code', resendVerificationCode);
 router.post('/send-verification-email', sendVerificationEmail);
 router.post('/refresh-token', refreshToken);
+router.post('/change-password', auth, changePassword);
 router.get('/user', auth, getUser);
 router.get("/seller-status", auth, getSellerStatus);
 

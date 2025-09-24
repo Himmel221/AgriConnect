@@ -48,6 +48,30 @@ const UserSchema = new mongoose.Schema({
     }
   },
 
+  // Successful transaction tracking for sellers
+  successfulTransactions: { 
+    type: Number, 
+    default: 0,
+    min: 0,
+    validate: {
+      validator: function(value) {
+        // Only allow incrementing, never decrementing
+        return value >= 0;
+      },
+      message: 'Successful transactions cannot be negative'
+    }
+  },
+  lastSuccessfulTransaction: { type: Date },
+  transactionHistory: [{
+    orderId: { type: String, required: true },
+    orderDate: { type: Date, required: true },
+    totalAmount: { type: Number, required: true },
+    buyerName: { type: String, required: true },
+    productName: { type: String, required: true },
+    quantity: { type: Number, required: true },
+    unit: { type: String, required: true }
+  }],
+
   lastAccessedAt: { type: Date, default: Date.now },
   lastLoginAt: { type: Date },
   lastPasswordChangeAt: { type: Date, default: Date.now },
@@ -102,6 +126,34 @@ UserSchema.pre('validate', async function (next) {
 
   next();
 }); 
+
+// Method to increment successful transactions (only for sellers)
+UserSchema.methods.incrementSuccessfulTransaction = async function(orderData) {
+  if (this.userType !== 'seller') {
+    throw new Error('Only sellers can have successful transactions');
+  }
+  
+  this.successfulTransactions += 1;
+  this.lastSuccessfulTransaction = new Date();
+  
+  // Add to transaction history (keep last 50 transactions)
+  this.transactionHistory.unshift({
+    orderId: orderData.orderId,
+    orderDate: orderData.orderDate,
+    totalAmount: orderData.totalAmount,
+    buyerName: orderData.buyerName,
+    productName: orderData.productName,
+    quantity: orderData.quantity,
+    unit: orderData.unit
+  });
+  
+  // Keep only last 50 transactions
+  if (this.transactionHistory.length > 50) {
+    this.transactionHistory = this.transactionHistory.slice(0, 50);
+  }
+  
+  return this.save();
+};
 
 const User = mongoose.model('User', UserSchema);
 export default User;

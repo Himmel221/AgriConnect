@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import TopNavbar from '../components/top_navbar';
 import SideBar from '../components/side_bar';
+import NotificationPopup from '../components/NotificationPopup';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './css/OrderStatus.css';
 import { ShoppingCart, Clock, Package, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
@@ -12,6 +13,9 @@ const OrderStatus = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showReceivedPopup, setShowReceivedPopup] = useState(false);
+  const [receivedMessage, setReceivedMessage] = useState('');
+  const [receivedPopupType, setReceivedPopupType] = useState('success');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -69,7 +73,10 @@ const OrderStatus = () => {
       );
   
       if (response.status === 200) {
-        alert('Order marked as received!');
+        setReceivedMessage('Order marked as received!');
+        setReceivedPopupType('success');
+        setShowReceivedPopup(true);
+        
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
             order._id === id
@@ -81,7 +88,9 @@ const OrderStatus = () => {
       }
     } catch (error) {
       console.error('Error marking order as received:', error.message);
-      alert('Failed to mark order as received.');
+      setReceivedMessage('Failed to mark order as received.');
+      setReceivedPopupType('error');
+      setShowReceivedPopup(true);
     }
   };
 
@@ -158,9 +167,9 @@ const OrderStatus = () => {
                           <span className="orderstats-item-status">{order.status}</span>
                         </div>
                       </div>
-                                <div className="orderstats-detail-row">
-            <span className="orderstats-detail-value">{order.originalListing?.identifier || order.orderId || 'N/A'}</span>
-          </div>
+                      <div className="orderstats-detail-row">
+                        <span className="orderstats-detail-value">{order.originalListing?.identifier || order.orderId || 'N/A'}</span>
+                      </div>
                       <div className="orderstats-detail-row">
                         <span className="orderstats-detail-label">Seller:</span>
                         <span className="orderstats-detail-value">{order.seller?.sellerName || 'Unknown'}</span>
@@ -199,6 +208,12 @@ const OrderStatus = () => {
           </div>
         </div>
       </div>
+      <NotificationPopup
+        message={receivedMessage}
+        type={receivedPopupType}
+        isVisible={showReceivedPopup}
+        onClose={() => setShowReceivedPopup(false)}
+      />
     </>
   );
 };

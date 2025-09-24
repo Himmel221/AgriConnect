@@ -251,31 +251,30 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 1000;
 }
 
 .orderstats-modal {
   background-color: white;
-  border-radius: 0.5rem;
   padding: 2rem;
-  width: 100%;
-  max-width: 400px;
+  border-radius: 0.5rem;
+  max-width: 500px;
+  width: 90%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .orderstats-modal h3 {
-  margin: 0 0 1rem 0;
+  margin-top: 0;
   color: #333;
   font-size: 1.2rem;
 }
 
 .orderstats-modal p {
-  margin: 0 0 1.5rem 0;
   color: #666;
-  font-size: 0.9rem;
   line-height: 1.5;
+  margin-bottom: 1.5rem;
 }
 
 .orderstats-modal-buttons {
@@ -290,8 +289,8 @@
   color: white;
   border: none;
   border-radius: 0.5rem;
-  font-size: 0.9rem;
   cursor: pointer;
+  font-size: 0.9rem;
   transition: all 0.2s ease;
 }
 
@@ -305,8 +304,8 @@
   color: #666;
   border: none;
   border-radius: 0.5rem;
-  font-size: 0.9rem;
   cursor: pointer;
+  font-size: 0.9rem;
   transition: all 0.2s ease;
 }
 
@@ -323,12 +322,12 @@
 
   .orderstats-navigation {
     flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
   .orderstats-navigation button {
-    flex: 1;
-    justify-content: center;
-    min-width: 120px;
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
   }
 
   .orderstats-item-header {

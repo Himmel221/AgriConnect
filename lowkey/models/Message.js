@@ -33,9 +33,37 @@ const MessageSchema = new mongoose.Schema({
     },
     emoji: {
       type: String,
-      required: true
+      required: true,
+      validate: {
+        validator: function(v) {
+          return v && v.length > 0;
+        },
+        message: 'Emoji cannot be empty'
+      }
     }
   }]
+});
+
+// Add pre-save middleware to validate reactions
+MessageSchema.pre('save', function(next) {
+  console.log('Message pre-save middleware triggered');
+  console.log('Reactions before save:', this.reactions);
+  
+  if (this.reactions && this.reactions.length > 0) {
+    for (let i = 0; i < this.reactions.length; i++) {
+      const reaction = this.reactions[i];
+      if (!reaction.emoji || reaction.emoji.trim() === '') {
+        console.error('Invalid reaction at index', i, ':', reaction);
+        return next(new Error(`Reaction at index ${i} has invalid emoji: ${reaction.emoji}`));
+      }
+      if (!reaction.userId) {
+        console.error('Invalid reaction at index', i, ':', reaction);
+        return next(new Error(`Reaction at index ${i} has invalid userId: ${reaction.userId}`));
+      }
+    }
+  }
+  
+  next();
 });
 
 const Message = mongoose.model('Message', MessageSchema);

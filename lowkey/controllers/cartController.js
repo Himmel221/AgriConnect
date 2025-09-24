@@ -2,7 +2,7 @@
 
 import Cart from '../models/Cart.js';
 import Listing from '../models/Listing.js'; 
-import CheckoutSubmission from '../models/CheckoutSubmission.js'; 
+import Order from '../models/Order.js'; 
 
 export const getCart = async (req, res) => {
   try {
@@ -447,14 +447,50 @@ export const checkoutCart = async (req, res) => {
       totalPrice: item.totalPrice,
     }));
 
-    const newCheckout = new CheckoutSubmission({
-      userId,
-      items: checkoutItems,
-      status: 'Pending', 
-      BuyerStatus: 'NotYetReceived', 
-    });
-
-    await newCheckout.save();
+    // Note: This function is legacy and should be replaced by submitCheckout
+    // For now, we'll create a simple order for each item
+    for (const item of checkoutItems) {
+      const listing = await Listing.findById(item.productId);
+      if (listing) {
+        const buyer = await User.findById(userId);
+        const seller = await User.findById(listing.userId);
+        
+        if (buyer && seller) {
+          const newOrder = new Order({
+            originalListing: {
+              identifier: listing.identifier,
+              productName: listing.productName,
+              quantity: listing.quantity,
+              unit: listing.unit,
+              category: listing.category,
+              details: listing.details,
+              location: listing.location,
+              price: listing.price,
+              imageUrl: listing.imageUrl,
+              minimumOrder: listing.minimumOrder,
+              listedDate: listing.listedDate
+            },
+            seller: {
+              sellerId: listing.userId,
+              sellerName: `${seller.first_name} ${seller.last_name}`
+            },
+            buyer: {
+              buyerId: userId,
+              buyerName: `${buyer.first_name} ${buyer.last_name}`
+            },
+            orderQuantity: item.quantity,
+            totalPrice: item.totalPrice,
+            status: 'Pending',
+            buyerStatus: 'NotYetReceived',
+            metadata: {
+              originalListingId: item.productId
+            }
+          });
+          
+          await newOrder.save();
+        }
+      }
+    }
 
         
     await Cart.findOneAndUpdate(

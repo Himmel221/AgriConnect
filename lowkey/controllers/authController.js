@@ -48,9 +48,9 @@ const createVerificationEmailTemplate = (firstName, lastName, verificationCode) 
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .header { background: #4D7C2E; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
         .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-        .verification-code { background: #fff; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0; font-size: 24px; font-weight: bold; color: #667eea; border: 2px dashed #667eea; }
+        .verification-code { background: #fff; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0; font-size: 24px; font-weight: bold; color: #4D7C2E; border: 2px dashed #4D7C2E; }
         .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
         .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
       </style>
@@ -58,35 +58,27 @@ const createVerificationEmailTemplate = (firstName, lastName, verificationCode) 
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; color: white;">Welcome to AgriConnect!</h1>
-          <p style="margin: 10px 0 0 0; opacity: 0.9;">Your trusted agricultural marketplace</p>
+          <h1 style="margin: 0; color: white;">AgriConnect</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Email Verification</p>
         </div>
         <div class="content">
           <h2>Hello ${firstName} ${lastName},</h2>
-          <p>Thank you for registering with AgriConnect! To complete your registration and start using our platform, please verify your email address using the verification code below:</p>
+          <p>Please verify your email address using the verification code below:</p>
           
           <div class="verification-code">
             ${verificationCode}
           </div>
           
           <div class="warning">
-            <strong>Important:</strong> This verification code will expire in 15 minutes for your security. If you didn't request this code, please ignore this email.
+            <strong>Important:</strong> This verification code will expire in 15 minutes. If you didn't request this code, please ignore this email.
           </div>
           
-          <p>Once verified, you'll be able to:</p>
-          <ul>
-            <li>Buy and sell agricultural products</li>
-            <li>Connect with other farmers and buyers</li>
-            <li>Access our secure marketplace</li>
-            <li>Manage your profile and listings</li>
-          </ul>
-          
-          <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+          <p>If you have any questions, please contact our support team.</p>
           
           <p>Best regards,<br>The AgriConnect Team</p>
         </div>
         <div class="footer">
-          <p>This email was sent to verify your AgriConnect account. Please do not share this verification code with anyone.</p>
+          <p>This email was sent to verify your AgriConnect account.</p>
           <p>&copy; 2024 AgriConnect. All rights reserved.</p>
         </div>
       </div>
@@ -126,50 +118,32 @@ const createRegistrationConfirmationTemplate = (firstName, lastName, email) => {
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #4D7C2E 0%, #2E5C1A 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .header { background: #4D7C2E; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
         .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
         .highlight { background: #fff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4D7C2E; }
         .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
-        .button { display: inline-block; padding: 12px 24px; background: #4D7C2E; color: white; text-decoration: none; border-radius: 5px; margin: 15px 0; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; color: white;">🎉 Welcome to AgriConnect!</h1>
-          <p style="margin: 10px 0 0 0; opacity: 0.9;">Your account has been created successfully</p>
+          <h1 style="margin: 0; color: white;">AgriConnect</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Account Created Successfully</p>
         </div>
         <div class="content">
           <h2>Hello ${firstName} ${lastName},</h2>
-          <p>Congratulations! You have successfully created an account on AgriConnect.</p>
+          <p>Your AgriConnect account has been created successfully.</p>
           
           <div class="highlight">
-            <h3>📧 Account Details:</h3>
+            <h3>Account Details:</h3>
             <p><strong>Email:</strong> ${email}</p>
             <p><strong>Status:</strong> Account Created</p>
             <p><strong>Next Step:</strong> Email Verification Required</p>
           </div>
           
-          <p>Welcome to our trusted agricultural marketplace! We're excited to have you join our community of farmers, buyers, and agricultural enthusiasts.</p>
+          <p>To complete your registration, please verify your email address in your account settings.</p>
           
-          <h3>🚀 What You Can Do Next:</h3>
-          <ul>
-            <li>Verify your email address in your account settings</li>
-            <li>Complete your profile with additional information</li>
-            <li>Browse agricultural products and listings</li>
-            <li>Connect with other farmers and buyers</li>
-            <li>Start buying and selling agricultural products</li>
-          </ul>
-          
-          <h3>🔐 Security Tips:</h3>
-          <ul>
-            <li>Use a strong, unique password</li>
-            <li>Verify your email address for account security</li>
-            <li>Keep your account information up to date</li>
-            <li>Report any suspicious activity immediately</li>
-          </ul>
-          
-          <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+          <p>If you have any questions, please contact our support team.</p>
           
           <p>Best regards,<br>The AgriConnect Team</p>
         </div>
@@ -221,7 +195,7 @@ The AgriConnect Team
 };
 
 const registerUser = async (req, res) => {
-    console.log(req.body);
+    //console.log(req.body);
     const { first_name, middle_name, last_name, email, password, confirm_password, birthDate } = req.body;
 
 
@@ -300,10 +274,10 @@ const registerUser = async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         newUser.password = await bcrypt.hash(password, salt);
-        console.log('Hashed password:', newUser.password);
+        //console.log('Hashed password:', newUser.password);
 
         await newUser.save();
-        console.log(`Saved user: ${newUser}`);
+        //console.log(`Saved user: ${newUser}`);
 
         
         try {
@@ -316,7 +290,7 @@ const registerUser = async (req, res) => {
                 confirmationText,
                 confirmationHtml
             );
-            console.log('Confirmation email sent to:', email);
+            //console.log('Confirmation email sent to:', email);
 
             return res.status(200).json({ 
                 message: 'User registered successfully. A confirmation email has been sent.',
@@ -338,42 +312,42 @@ const registerUser = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  console.log('=== LOGIN ATTEMPT START ===');
+  console.log('Attempting to login,.');
   const { email, password } = req.body;
 
-  console.log('Login attempt for email:', email);
-  console.log('Password provided:', password ? 'YES' : 'NO');
+  //console.log('Login attempt email:', email);
+  //console.log('Provided password:', password ? 'YES' : 'NO');
 
   try {
       if (!email || !password) {
-          console.log('Missing email or password');
+          //console.log('Missing email or password');
           return res.status(400).json({ message: "Email and password are required." });
       }
 
       const user = await User.findOne({ email });
 
       if (!user) {
-          console.log(`User not found for email: ${email}`);
+          //console.log(`User not found for email: ${email}`);
           return res.status(400).json({ message: "Invalid email or password." });
       }
 
-      console.log('User found:', { 
-          id: user._id, 
-          email: user.email, 
-          isVerified: user.isVerified,
-          userType: user.userType,
-          hashedPassword: user.password ? 'YES' : 'NO'
-      });
+      //console.log('User found:', { 
+      //    id: user._id, 
+      //    email: user.email, 
+      //    isVerified: user.isVerified,
+      //    userType: user.userType,
+      //    hashedPassword: user.password ? 'YES' : 'NO'
+      //});
 
       if (user.accountLocked) {
           if (user.lockExpiresAt && user.lockExpiresAt > new Date()) {
-              console.log('Account is locked');
+              //console.log('Account is locked');
               return res.status(423).json({ 
                   message: `Account is locked: ${user.lockReason}`,
                   lockExpiresAt: user.lockExpiresAt
               });
           } else {
-              console.log('Unlocking expired account lock');
+              //console.log('Unlocking expired account lock');
               user.accountLocked = false;
               user.lockReason = undefined;
               user.lockExpiresAt = undefined;
@@ -381,15 +355,15 @@ const login = async (req, res) => {
           }
       }
 
-      console.log('Starting password comparison...');
-      console.log('Input password length:', password.length);
-      console.log('Stored hashed password length:', user.password.length);
+      /***console.log('Comparing password...');
+      console.log('Password length:', password.length);
+      console.log('Stored hashed password length:', user.password.length);*/
       
       const isPasswordMatch = await bcrypt.compare(password, user.password);
-      console.log('Password comparison result:', isPasswordMatch);
+      //console.log('Password comparison result:', isPasswordMatch);
 
       if (!isPasswordMatch) {
-          console.log(`Password mismatch for user: ${email}`);
+          console.log(`Invalid password attempt for: ${email}`);
           
           user.failedLoginAttempts += 1;
           user.lastFailedLoginAt = new Date();
@@ -413,7 +387,7 @@ const login = async (req, res) => {
           return res.status(400).json({ message: "Invalid email or password." });
       }
 
-      console.log('Password is correct! Proceeding with login...');
+
       
       user.failedLoginAttempts = 0;
       user.lastLoginAt = new Date();
@@ -434,19 +408,19 @@ const login = async (req, res) => {
       }
 
       await user.save();
-      console.log('User data saved successfully');
+      //console.log('User data saved successfully');
 
       const accessToken = generateAccessToken(user._id);
       const refreshToken = generateRefreshToken(user._id);
 
-      console.log('Tokens generated:', { 
-          accessTokenLength: accessToken.length,
-          refreshTokenLength: refreshToken.length
-      });
+      //console.log('Tokens generated:', { 
+      //    accessTokenLength: accessToken.length,
+      //    refreshTokenLength: refreshToken.length
+      //});
 
       const tokenDocument = new Token({ owner: user._id, token: accessToken });
       await tokenDocument.save();
-      console.log('Token saved to database');
+      //console.log('Token saved to database');
 
       const responseData = {
           message: "Login successful",
@@ -479,11 +453,11 @@ const login = async (req, res) => {
           hasRefreshToken: !!responseData.refreshToken
       });
 
-      console.log('=== LOGIN ATTEMPT SUCCESS ===');
+      console.log('Succesful login attempt');
       return res.status(200).json(responseData);
 
   } catch (error) {
-      console.error('=== LOGIN ATTEMPT ERROR ===');
+      console.error('Error login attempt');
       console.error('Error logging in:', error);
       res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -591,16 +565,16 @@ const verifyEmail = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      console.log('User not found for email:', email); 
+      //console.log('User not found for email:', email); 
       return res.status(404).json({ 
         message: 'User not found.',
         errorType: 'USER_NOT_FOUND'
       });
     }
 
-    console.log('Received Code:', inputCode); 
-    console.log('Stored Code:', user.verificationCode);
-    console.log('Code Expires:', user.verificationCodeExpires);
+    //console.log('Received Code:', inputCode); 
+    //console.log('Stored Code:', user.verificationCode);
+    //console.log('Code Expires:', user.verificationCodeExpires);
 
     if (!user.verificationCode) {
       return res.status(400).json({ 
@@ -669,67 +643,42 @@ const forgotPassword = async (req, res) => {
       const resetToken = new ResetToken({ owner: user._id, token });
       await resetToken.save();
   
-      console.log(`Password Reset Request: 
-      - User ID: ${user._id}
-      - Reset Token: ${token}`);
+      //console.log(`Password Reset Request: 
+      //- User ID: ${user._id}
+      //- Reset Token: ${token}`);
   
       const resetLink = `http://localhost:3000/reset-password?token=${encodeURIComponent(token)}&id=${user._id}`;
       
       const htmlContent = `
+        <!DOCTYPE html>
         <html>
         <head>
+          <meta charset="utf-8">
+          <title>Password Reset Request - AgriConnect</title>
           <style>
-            body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #333333;
-            }
-            .container {
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 20px;
-              border: 1px solid #dddddd;
-              border-radius: 5px;
-            }
-            .header {
-              text-align: center;
-              padding-bottom: 15px;
-              border-bottom: 1px solid #eeeeee;
-            }
-            .content {
-              padding: 20px 0;
-            }
-            .button {
-              display: inline-block;
-              padding: 10px 20px;
-              background-color: #4A90E2;
-              color: white;
-              text-decoration: none;
-              border-radius: 5px;
-              margin: 15px 0;
-            }
-            .footer {
-              margin-top: 20px;
-              font-size: 12px;
-              color: #666666;
-              text-align: center;
-            }
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #4D7C2E; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; padding: 12px 24px; background: #4D7C2E; color: white; text-decoration: none; border-radius: 8px; margin: 15px 0; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h2>Password Reset Request</h2>
+              <h1 style="margin: 0; color: white;">AgriConnect</h1>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">Password Reset Request</p>
             </div>
             <div class="content">
-              <p>Hello ${user.name || 'Valued User'},</p>
+              <h2>Hello ${user.first_name || 'Valued User'},</h2>
               <p>We received a request to reset your password. If you didn't make this request, you can safely ignore this email.</p>
               <p>To reset your password, please click the button below:</p>
               <p style="text-align: center;">
                 <a href="${resetLink}" class="button">Reset My Password</a>
               </p>
               <p>Or copy and paste this link into your browser:</p>
-              <p>${resetLink}</p>
+              <p style="word-break: break-all;">${resetLink}</p>
               <p>This link will expire in 1 hour for security reasons.</p>
             </div>
             <div class="footer">
@@ -929,7 +878,7 @@ const getUser = async (req, res) => {
     const userId = req.userId;
 
     try {
-        console.log('Getting user data for:', userId);
+        //console.log('Getting user data for:', userId);
         const user = await User.findById(userId).select(
             'userId first_name middle_name last_name email birthDate country province cityOrTown barangay bio isVerified userType isSeller isAdmin createdAt updatedAt'
         );
@@ -938,7 +887,7 @@ const getUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        console.log('Returning safe user data');
+        //console.log('Returning safe user data');
         return res.status(200).json(user);
     } catch (error) {
         console.error('Error retrieving user:', error);
@@ -948,18 +897,82 @@ const getUser = async (req, res) => {
 
 const getSellerStatus = async (req, res) => {
   try {
-      console.log("Fetching seller status for:", req.userId);
+      //console.log("Fetching seller status for:", req.userId);
       const user = await User.findById(req.userId).select("userType");
 
       if (!user) {
           return res.status(404).json({ message: "User not found" });
       }
 
-      console.log("Returning isSeller:", user.userType === 'seller');
+      //console.log("Returning isSeller:", user.userType === 'seller');
       return res.status(200).json({ isSeller: user.userType === 'seller' });
   } catch (error) {
       console.error("Error retrieving seller status:", error);
       return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.userId; 
+
+  try {
+    
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ 
+        message: 'Current password and new password are required.' 
+      });
+    }
+
+    
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        message: 'New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character, and be at least 8 characters long.'
+      });
+    }
+
+    // Get user with password
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({ message: 'Current password is incorrect.' });
+    }
+
+    // Check if new password is different from current
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      return res.status(400).json({ 
+        message: 'New password must be different from your current password.' 
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update user password
+    user.password = hashedNewPassword;
+    await user.save();
+
+    // Track password change
+    await trackPasswordChange(userId, newPassword, 'user', req);
+
+    console.log(`Password changed successfully for user: ${userId}`);
+    
+    return res.status(200).json({ 
+      message: 'Password changed successfully.' 
+    });
+
+  } catch (error) {
+    console.error('Error changing password:', error);
+    return res.status(500).json({ 
+      message: 'An error occurred while changing your password. Please try again.' 
+    });
   }
 };
 
@@ -972,5 +985,6 @@ export {
     resetPassword, 
     resendVerificationCode, 
     getUser,
-    getSellerStatus
+    getSellerStatus,
+    changePassword
 };
