@@ -847,6 +847,17 @@ useEffect(() => {
                             </button>
                           </div>
                         )}
+                        
+                        {}
+                        <div className="sellarea-add-new-banking">
+                          <button 
+                            className="sellarea-add-bank-btn" 
+                            onClick={() => setShowAddBanking(true)}
+                          >
+                            <PlusCircle size={18} style={{ marginRight: '8px' }} />
+                            Add New Banking Details
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div className="sellarea-no-payment-method">

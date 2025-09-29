@@ -37,6 +37,17 @@ const AdminDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUsers(response.data);
+        
+        // Fetch online users count
+        try {
+          const onlineResponse = await axios.get(`${apiUrl}/api/admin/online-users`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setOnlineUsers(onlineResponse.data.count || 0);
+        } catch (onlineError) {
+          console.warn('Failed to fetch online users count:', onlineError);
+          setOnlineUsers(0);
+        }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
         navigate('/');
@@ -48,8 +59,9 @@ const AdminDashboard = () => {
     validateAdminAccess();
   }, [navigate]);
 
+  const [onlineUsers, setOnlineUsers] = useState(0);
+  
   const totalUsers = users.length;
-  const onlineUsers = 1; // Hardcoded to 1 for demonstration
   const verifiedSellers = users.filter(user => user.userType === 'seller' && user.isVerified).length;
 
   const maxUsers = 200; 
@@ -82,7 +94,7 @@ const AdminDashboard = () => {
                   text={`${totalUsersPercent}%`}
                   styles={buildStyles({
                     textSize: '28px',
-                    textColor: '#4D7C2E',
+                    textColor: '#ffffff',
                     pathColor: '#4D7C2E',
                     trailColor: '#f5f5f5',
                   })}
@@ -98,7 +110,7 @@ const AdminDashboard = () => {
                   text={`${onlineUsersPercent}%`}
                   styles={buildStyles({
                     textSize: '28px',
-                    textColor: '#4D7C2E',
+                    textColor: '#ffffff',
                     pathColor: '#4D7C2E',
                     trailColor: '#f5f5f5',
                   })}
@@ -114,7 +126,7 @@ const AdminDashboard = () => {
                   text={`${verifiedSellersPercent}%`}
                   styles={buildStyles({
                     textSize: '28px',
-                    textColor: '#007bff',
+                    textColor: '#ffffff',
                     pathColor: '#007bff',
                     trailColor: '#f5f5f5',
                   })}

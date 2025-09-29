@@ -135,7 +135,7 @@ const AuditLogViewer = () => {
           <button className="back-button" onClick={() => navigate('/admin')}>
             Back to Dashboard
           </button>
-          <h1>Audit Logs</h1>
+          <h1></h1>
           
           <div className="filters-section">
             <h3>Filters</h3>

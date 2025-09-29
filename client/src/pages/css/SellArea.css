@@ -1145,6 +1145,12 @@
   animation: fadeIn 0.3s ease;
 }
 
+.sellarea-add-new-banking {
+  text-align: center;
+  margin-top: 1rem;
+  padding-left: 2rem;
+}
+
 .sellarea-bank-select-wrapper {
   position: relative;
   width: 100%;

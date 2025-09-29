@@ -138,6 +138,9 @@ const io = new Server(server, {
   },
 }); //meow
 
+
+app.set('io', io);
+
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) {

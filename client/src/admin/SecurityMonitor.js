@@ -494,7 +494,7 @@ const SecurityMonitor = () => {
         <div className="security-container">
           <div className="security-header">
             <h1>Security Monitor</h1>
-            <p>Manage and monitor security system here</p>
+           
           </div>
 
           <div className="security-tabs">

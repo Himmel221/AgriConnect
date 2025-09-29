@@ -14,6 +14,12 @@ const ManageUsers = () => {
   const usersPerPage = 5;
   const [loading, setLoading] = useState(false); 
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [banModal, setBanModal] = useState({
+    isVisible: false,
+    userId: null,
+    action: '', // 'ban' or 'unban'
+    reason: ''
+  });
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -175,9 +181,21 @@ const ManageUsers = () => {
     }
   };
 
-  const handleBanUser = async (userId) => {
-    const reason = prompt('Enter ban reason:');
-    if (!reason) return;
+  const handleBanUser = (userId) => {
+    setBanModal({
+      isVisible: true,
+      userId,
+      action: 'ban',
+      reason: ''
+    });
+  };
+
+  const executeBanUser = async () => {
+    const { userId, reason } = banModal;
+    if (!reason.trim()) {
+      showNotification('Please enter a ban reason.', 'error');
+      return;
+    }
 
     try {
       const response = await axios.post(
@@ -199,6 +217,7 @@ const ManageUsers = () => {
           } : user
         );
         setUsers(updatedUsers);
+        setBanModal({ isVisible: false, userId: null, action: '', reason: '' });
       } else {
         console.error('Failed to ban user:', response.data);
         showNotification(response.data.message || 'Failed to ban user.', 'error');
@@ -209,9 +228,21 @@ const ManageUsers = () => {
     }
   };
 
-  const handleUnbanUser = async (userId) => {
-    const reason = prompt('Enter unban reason:');
-    if (!reason) return;
+  const handleUnbanUser = (userId) => {
+    setBanModal({
+      isVisible: true,
+      userId,
+      action: 'unban',
+      reason: ''
+    });
+  };
+
+  const executeUnbanUser = async () => {
+    const { userId, reason } = banModal;
+    if (!reason.trim()) {
+      showNotification('Please enter an unban reason.', 'error');
+      return;
+    }
 
     try {
       const response = await axios.post(
@@ -233,6 +264,7 @@ const ManageUsers = () => {
           } : user
         );
         setUsers(updatedUsers);
+        setBanModal({ isVisible: false, userId: null, action: '', reason: '' });
       } else {
         console.error('Failed to unban user:', response.data);
         showNotification(response.data.message || 'Failed to unban user.', 'error');
@@ -423,6 +455,35 @@ const ManageUsers = () => {
       {notification.show && (
         <div className={`notification-popup ${notification.type}`}>
           <p>{notification.message}</p>
+        </div>
+      )}
+
+      {banModal.isVisible && (
+        <div className="mcheckouts-modal-overlay">
+          <div className="mcheckouts-modal-content">
+            <p>
+              Please enter the reason for {banModal.action === 'ban' ? 'banning' : 'unbanning'} this user:
+            </p>
+            <textarea
+              value={banModal.reason}
+              onChange={(e) => setBanModal(prev => ({ ...prev, reason: e.target.value }))}
+              placeholder={`Enter ${banModal.action} reason...`}
+              className="mcheckouts-note-input"
+            />
+            <button 
+              className="mcheckouts-modal-button" 
+              onClick={banModal.action === 'ban' ? executeBanUser : executeUnbanUser}
+              disabled={!banModal.reason.trim()}
+            >
+              {banModal.action === 'ban' ? 'Ban User' : 'Unban User'}
+            </button>
+            <button 
+              className="mcheckouts-modal-button" 
+              onClick={() => setBanModal({ isVisible: false, userId: null, action: '', reason: '' })}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </div>

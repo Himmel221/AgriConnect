@@ -212,6 +212,29 @@ router.get('/users', auth, isAdminMiddleware, async (req, res) => {
   }
 });
 
+// Get online users count
+router.get('/online-users', auth, isAdminMiddleware, async (req, res) => {
+  try {
+    // Get the io instance from the server
+    const io = req.app.get('io');
+    if (!io) {
+      return res.json({ count: 0, message: 'Socket.io not available' });
+    }
+    
+    // Count connected sockets
+    const sockets = await io.fetchSockets();
+    const onlineCount = sockets.length;
+    
+    res.json({ 
+      count: onlineCount,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error fetching online users:', error);
+    res.status(500).json({ message: 'Server error', count: 0 });
+  }
+});
+
 router.get('/verify', auth, isAdminMiddleware, (req, res) => {
   res.status(200).json({
     message: 'Admin verified',
